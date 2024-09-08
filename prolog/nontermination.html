@@ -1,20 +1,83 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Nontermination</title>
+    <meta charset="UTF-8">
+    <title>停止しないプログラム - Nontermination</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Termination">
     <meta name="keywords" content="Prolog,Nontermination,Declarative">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
-    <center><h1>Nontermination</h1></center>
+    <center><h1>停止しないプログラム</h1></center>
 
+    <br><br>
+    <button onclick="toggleOriginalContent('原文')">原文</button>
+    <div id="原文" class="hide_on_start">
+    <center><h1>Nontermination</h1></center>
+    </div>
+
+    <center><h2>導入</h2></center>
+
+    Prologや他の言語で書かれたプログラムの中には、
+    <i>決して終了しない</i>
+    非常に興味深いプログラムの大きなクラスが存在します。
+
+    <br><br>
+
+    例えば、このようなプログラムは、
+    <i>無限</i>であることが分かっている集合から
+    できる限り多くのオブジェクトを<i>生成</i>するかもしれません。
+    素数の数列を生成するPrologプログラムは、このタイプのプログラムの例です。
+
+    <br><br>
+
+    もう一つの非常に重要な例として、存在そのものが
+    <i>事前には</i>知られていないオブジェクトを探すプログラムがあります。
+    例えば次のようなものです：
+
+    <ul>
+      <li><a href="clpfd"><i>特定の性質を持つ整数</i></a></li>
+      <li><a href="optimization#graph"><i>特定の構造を持つグラフ</i></a>や
+        他の組合せ的オブジェクト</li>
+      <li><a href="theoremproving"><i>有名な予想の証明</i></a></li>
+      <li><i>有名な仮説の反例</i></li>
+      <li>その他</li>
+    </ul>
+
+    このような場合、そのオブジェクトが存在しない場合、探索は終了しない
+    —そして実際には<i>終了してはならない</i>—
+    のです。
+    実際、このようなプログラムは非常に興味深いものであり、
+    実際に解が見つかるまではその解が存在するかどうか分からないのです。
+    難解な科学的問題に取り組むほど、
+    このタイプのプログラムを書く機会や取り組む機会が増えるでしょう。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     There is a huge class of interesting programs, written in Prolog
@@ -48,8 +111,29 @@
     know whether there is a solution before it is actually&nbsp;found.
     The more you work on tough scientific&nbsp;questions, the more
     you will write and work with this type of&nbsp;programs.
+    </div>
+
+    <center><h2>用語</h2></center>
+
+    Prologでは、<a href="termination">停止</a>に関して
+    <i>2つの種類</i>を区別します：
+    存在的停止と普遍的停止です。
+    Prologのクエリ<tt>Q</tt>が<b>停止しない</b>と言うのは、
+    それが<i>普遍的に停止しない</i>場合、
+    すなわち以下のクエリが:
+
+    <pre>
+?- Q, <b>false</b>.
+    </pre>
+
+    <i>停止しない</i>場合を指します。
+    クエリが<i>存在的に</i>停止しない場合、
+    それは<i>普遍的にも</i>停止しないため、
+    私たちの用語ではそのクエリは<i>停止しない</i>と表現します。
 
     <br><br>
+    <button onclick="toggleOriginalContent('原文_terminology')">原文</button>
+    <div id="原文_terminology" class="hide_on_start">
     <center><h2>Terminology</h2></center>
 
     In Prolog, we distinguish between <i>two kinds</i>
@@ -66,8 +150,88 @@
     terminate <i>existentially</i>, then it <i>also</i> does&nbsp;not
     terminate&nbsp;universally, and thus, using our
     terminology, <i>does&nbsp;not&nbsp;terminate</i>.
+    </div>
 
     <br><br>
+    <center><h2>意図しない停止しない状態</h2></center>
+
+    前述のように、多くのPrologプログラムは<i>停止してはいけません</i>。
+    例えば、クエリ<tt>?- length(Ls, _)</tt>は
+    任意の長さのリストを<i>生成しなければならず</i>、
+    したがって<i>停止することはありません</i>：
+
+    <pre>
+?- length(Ls, _).
+   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_B]
+;  Ls = [_A,_B,_C]
+;  ... .
+    </pre>
+
+    このクエリが停止する場合、その関係は<i>不完全</i>であり、
+    したがって<i>不正確</i>になります。
+
+    <br><br>
+
+    しかし、時にはPrologプログラマーが<i>意図せず</i>
+    停止しないプログラムやクエリを書いてしまうことがあります。
+
+    <br><br>
+
+    例えば、以下のクエリを考えてみましょう：
+
+    <pre>
+?- length(_, Ls), Ls = [].
+<b>停止しない</b>
+    </pre>
+
+    このクエリは停止せず、実際には1つの解も返しません。
+
+    <br><br>
+
+    別の例として、以下のプログラムを考えてみましょう：
+
+    <pre>
+adjacent(a, b).
+adjacent(e, f).
+adjacent(X, Y) :- adjacent(Y, X).
+    </pre>
+
+
+    ここでは、プログラマーが2つのファクトを入力しました。
+    最後の<i>ルール</i>は、
+    <tt>adjacent/2</tt>を<i>対称</i>な関係に
+    変えようとしています。
+
+    <br><br>
+
+    一見すると、すべてが意図した通りに動作しているように見えます：
+
+    <pre>
+?- adjacent(X, Y).
+   X = a, Y = b
+;  X = e, Y = f
+;  X = b, Y = a
+;  ... .
+    </pre>
+
+
+    しかし、有限の関係についての私たちの予想に反して、
+    このクエリは<i>停止しません</i>：
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>停止しない</b>
+    </pre>
+
+    このようなケースは初心者によく見られ、
+    しばしばPrologが「遅い」と認識される原因となりますが、
+    実際には彼らのプログラムが<i>全く停止していない</i>ということです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_inadvertent')">原文</button>
+    <div id="原文_inadvertent" class="hide_on_start">
     <center><h2>Inadvertent nontermination</h2></center>
 
     As already mentioned, many Prolog programs <i>must&nbsp;not</i>
@@ -140,8 +304,98 @@ adjacent(X, Y) :- adjacent(Y, X).
     Such cases are common among beginners, and often lead them to
     perceive Prolog as&nbsp;"slow", when in fact their program does not
     terminate <i>at&nbsp;all</i>.
+    </div>
+
+    <center><h2>失敗スライシング</h2></center>
+
+    停止しない理由を<b>説明する</b>ために、
+    <i>失敗スライシング</i>と呼ばれる
+    強力な宣言的デバッグ手法を使用します。
 
     <br><br>
+
+    この手法の主なアイデアは、プログラムに
+    <tt>false/0</tt>の呼び出しを挿入して、
+    まだ停止しない小さな<i>プログラム断片</i>を取得することです。
+
+    <br><br>
+
+    例えば、上記のクエリの場合、次のように
+    <tt>false/0</tt>を2つのゴールの間に挿入することができます：
+
+    <pre>
+?- length(_, Ls), <b>false</b>, Ls = [].
+<b>nontermination</b>
+    </pre>
+
+    操作的には、<tt>false/0</tt>の呼び出しの<i>後</i>の
+    すべてを<i>無視</i>し、
+    停止しない理由を考える際に無視するプログラムや
+    クエリの部分を<s>取り消し線</s>で示します：
+
+    <pre>
+?- length(_, Ls), <b>false</b>, <s>Ls = [].</s>
+<b>nontermination</b>
+    </pre>
+
+    この断片も<i>まだ</i>停止しません。
+    したがって、元のクエリを<i>停止させる</i>ためには、
+    <tt>length/2</tt>の呼び出しを<i>変更する</i>か、
+    前に追加のゴールを<i>追加する</i>必要があります。
+    現在の<tt>length/2</tt>のゴール<i>後</i>に現れる
+    純粋なゴールは、停止しない状態を取り除くことはできません！
+
+    <br><br>
+
+    同様に、<tt>adjacent/2</tt>の定義を再度考慮し、
+    <tt>false/0</tt>の呼び出しを使って停止しない理由を示す
+    関連プログラム断片のみを表示します：
+
+    <pre>
+<s>adjacent(a, b) :- <b>false</b>.</s>
+<s>adjacent(e, f) :- <b>false</b></s>
+adjacent(X, Y) :- adjacent(Y, X).
+    </pre>
+
+    残った1つのルールだけでも、停止しないことが観察されます：
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>停止しない</b>
+    </pre>
+
+    再び、追加または削除する純粋なクローズは、
+    この停止しない状態を取り除くことはできません。
+    クエリを停止させるには、残った1つのルールを<i>変更する</i>必要があります！
+
+    <br><br>
+
+    例えば、ファクトをメインの述語から<i>分離する</i>ことで、
+    両方の述語が停止するようにできます：
+
+    <pre>
+adjacent_(a, b).
+adjacent_(e, f).
+
+adjacent(X, Y) :- adjacent_(X, Y).
+adjacent(X, Y) :- adjacent_(Y, X).
+    </pre>
+
+    以下のクエリは、<tt>adjacent/2</tt>が現在
+    <i>停止する</i>ことを示しています：
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>false</b>.
+    </pre>
+
+    失敗スライシングは、
+    <a href="reading#slicing"><i>プログラムスライシング</i></a>
+    の特別なケースです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_failure_slicing')">原文</button>
+    <div id="原文_failure_slicing" class="hide_on_start">
     <center><h2>Failure slicing</h2></center>
 
     To produce <b>explanations</b> for nontermination, we use a
@@ -227,9 +481,30 @@ adjacent(X, Y) :- adjacent_(Y, X).
 
     Failure slicing is a special case
     of <a href="reading#slicing"><i>program&nbsp;slicing</i></a>.
+    </div>
+
+    <br><br>
+    <center><h2>さらなる読書</h2></center>
+
+    <i>プログラムスライシング</i>についての詳細は、
+    <a href="reading"><b>Reading Prolog Programs</b></a>
+    をご覧ください。
 
     <br><br>
 
+    停止しない理由の説明を<i>自動的に</i>生成するには、
+    <a href="http://www.cs.unipr.it/cTI/">cTI</a>と、特に
+    <a href="http://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU</b></a>を
+    ご覧ください。
+
+    <br><br>
+
+    <a href="memoization#tabling">テーブル化</a>は、
+    Prologプログラムの停止性の側面を改善するのに役立ちます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_failure_slicing')">原文</button>
+    <div id="原文_failure_slicing" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
 
@@ -246,7 +521,7 @@ adjacent(X, Y) :- adjacent_(Y, X).
 
     <a href="memoization#tabling">Tabling</a> can help to improve
     termination aspects of Prolog&nbsp;programs.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

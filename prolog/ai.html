@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Artificial Intelligence with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Memoization">
@@ -8,13 +9,83 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologによる人工知能</h1></center>
+    
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_ai')">原文</button>
+    <div id="原文_ai" class="hide_on_start">
     <h1>Artificial Intelligence with Prolog</h1>
+    </div>
 
+    <center><h2>はじめに</h2></center>
+
+    <i>知能</i>とは何か？
+    さまざまな研究者によってさまざまな説明や定義が提唱されてきました。
+    <i>知能</i>は、他の多くの提案の中でも、
+    知識を獲得して適用する能力、および論理的推論と自己認識の能力として
+    定義されてきました。
+    それは、理解、解決、計画、および
+    その他のいくつかの概念やタスクに関連しています。
+    知能は、感情的知能、社会的知能など、さまざまな種類の知能に分類されています。
+    この単語は、ラテン語の動詞
+    intellego「私は理解する、認識する、知覚する、見る、気づく」（他の意味を含む）
+    に由来し、
+    lego「私は収集する、収集する、取る、読む」（他の意味を含む）
+    に由来しています。知能 の一般的に受け入れられている定義がないため、
+    人工知能とは何かを定義することはさらに困難です。
+    大まかに言えば、人工知能（AI）には 2 つの異なるカテゴリがあります。
+
+    <ul>
+      <li><b>強い</b> AI: 知的能力が人間と区別がつかないメカニズムを意味します。
+      </li>
+      <li><b>弱い</b> AI: 人間の能力のサブセットを自動化するメカニズムを意味します。
+      </li>
+    </ul>
+
+    これまで、<i>弱い</i>AIには大きな進歩が見られます。
+    たとえば、
+    <a href="https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)">チェス</a>、
+    <a href="https://en.wikipedia.org/wiki/AlphaGo">囲碁</a>、
+    <a href="https://en.wikipedia.org/wiki/Watson_(computer)">ジョパディ</a>、
+    その他多くのゲームを
+    最も有能な人間達より上手にプレイするマシンが構築されました。
+    私たちの多くは、部分的に自動運転する電車や地下鉄を日常的に使用しており、
+    現在では、自動運転車の最初の試みを見ることができます。
+
+    <br><br>
+
+    一方で、<i>強い</i>AIにはまだ到達していません。
+    実際、強い AI は本質的に実装不可能であるという
+    <a href="https://en.wikipedia.org/wiki/Hubert_Dreyfus%27s_views_on_artificial_intelligence">主張</a>
+    があり、さらに繰り返し
+    <a href="https://en.wikipedia.org/wiki/Chinese_room">主張</a>
+    されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <h2>Introduction</h2>
 
     What is <i>intelligence</i>? Various explanations and definitions
@@ -64,7 +135,88 @@
     been <a href="https://en.wikipedia.org/wiki/Hubert_Dreyfus%27s_views_on_artificial_intelligence">argued</a>,
     and <a href="https://en.wikipedia.org/wiki/Chinese_room">further&nbsp;argued</a>,
     that strong&nbsp;AI is <i>inherently</i> impossible to implement.
+    </div>
 
+    <center><h2>アプローチ</h2></center>
+
+    大まかに、AI 実装には２つの可能性のある<i>アプローチ</i>に大別できます。
+
+    <ol>
+      <li><b>記号的</b>アプローチ:
+        <ul>
+          <li>ルールベースの<a href="expertsystems">エキスパートシステム</a></li>
+          <li><a href="theoremproving">定理証明</a></li>
+          <li>インテリジェントな<a href="sorting#searching">検索</a></li>
+          <li>制約ベースのアプローチ</li>
+          <li>その他</li>
+        </ul>
+      </li>
+      <li><b>統計的アプローチ</b>:
+        <ul>
+          <li>ニューラルネット</li>
+          <li>機械学習（ML）</li>
+          <li>データマイニング</li>
+          <li>その他</li>
+        </ul>
+      </li>
+    </ol>
+
+    どちらのアプローチも研究者の間では広く知られており、
+    何十年もの間実際に使用されてきました。
+    Prolog は、しばしば記号的アプローチと関連付けられています。
+    この種のよく知られたアプリケーションには、
+    <a href="/wumpusworld/">Wumpus&nbsp;World</a>、
+    <a href="/zurg/">Escape from Zurg</a>、
+    <a href="/conn4/">Connect&nbsp;4</a>
+    などの計画タスク、
+    <a href="/simsttab/">時間割作成</a>や
+    <a href="/sgp/">スポーツトーナメント</a>などの
+    スケジュールタスク、
+    <a href="/queens/">N クイーン</a>や
+    <a href="/sudoku/">数独</a>
+    などの他の組み合わせタスクがあります。
+    Prolog は、もちろん統計的アプローチも実装できます。
+    たとえば、<i>確率的</i>論理プログラミングと不確実性を伴う推論については、
+    <a href="https://dtai.cs.kuleuven.be/problog/index.html">ProbLog</a>、
+    <a href="https://github.com/friguzzi/cplint">cplint</a>、
+    <a href="https://www.cs.ubc.ca/~poole/aibook/code/ailog/ailog2.html">AILog&nbsp;2</a>
+    を参照してください。
+
+    <br><br>
+
+    これらのアプローチには、それぞれ異なる利点と欠点があります。
+    記号的アプローチは通常、形式<i>検証</i>に適しています。
+    ルールは明示的に利用可能であり、ルールが完全かどうか、
+    意図したとおりに表現されているかどうかを確認できます。
+    <i>帰納的</i>論理プログラミング (ILP) を使用すると、
+    正の例と負の例に基づいてプログラムにルールを<i>学習</i>させることもできます。
+    たとえば、
+    <a href="https://github.com/metagol/metagol">Metagol</a>
+    システムを参照してください。
+    ただし、<i>ルールを表現するのが難しすぎる</i>場合があるため、
+    すべてのタスクがシンボリックアプローチに適しているわけではありません。
+    たとえば、楽曲が無調の境界線上にあるかどうかや、
+    写真に花の絵が含まれているかどうかを決定するルールを表現することは困難です。
+
+    <br><br>
+
+    一方、 統計的アプローチには、いわゆる
+    <i>トレーニング</i>セット、
+    <i>テスト</i>セット、
+    <i>検証</i>セットに基づいて、
+    <i>暗黙的に</i>ルールを取得する機能があります。
+    これは、自分でルールについて考える必要がなく、
+    エンコードするのが難しすぎるルールをマシンが導き出す可能性があるため便利です。
+    残念ながら、これには重大な欠点もあります。
+    ルールについて明示的に推論できなくなり、
+    得られたメカニズムによって、
+    修正が難しい巨大な外れ値が生成される可能性があります。
+    たとえば、1 つのピクセルを変更すると、
+    ペンギンの写真を車と誤分類する可能性があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_approaches')">原文</button>
+    <div id="原文_approaches" class="hide_on_start">
     <h2>Approaches</h2>
 
     Broadly speaking, we distinguish two possible <i>approaches</i>
@@ -137,7 +289,66 @@
     produce colossal outliers that are hard to remedy. For example, it
     may misclassify the picture of a penguin as a car if you change a
     single&nbsp;pixel.
+    </div>
 
+    Prolog は AI と歴史的に非常に強いつながりを持っています。
+    1982 年、日本は、<i>並行論理プログラミング</i>を
+    プロジェクトのソフトウェア基盤として使用して、
+    超並列コンピュータを作成することを目標とした、
+    <b>第 5 世代コンピュータシステム</b>(FGCS) と呼ばれる
+    非常に野心的な政府プロジェクトを開始しました。
+
+    <br><br>
+
+    私が日本を訪れたとき、プロジェクトに携わっていた
+    退職した日本人科学者に、なぜプロジェクトが失敗したのか尋ねました。
+    彼は、「『失敗した』とはどういう意味ですか?
+    プロジェクトに携わった私の同僚は全員、教授になりました!」
+    と言いました。
+    別の研究者は、プロジェクトが実際に意図していたこと、
+    つまり日本語の文字をコンピュータに入力する方法を実現したと私に話しました。
+
+    <br><br>
+
+    私の見解では、このプロジェクトに携わった科学者の主な功績は、
+    政府を説得して、興味深く非常に野心的なプロジェクトに
+    多額の資金を提供することができたことです。
+
+    <br><br>
+
+    FGCS プロジェクトの終了時には、市販のハードウェアが非常に強力になり、
+    プロジェクトで構築されたようなカスタムビルドのマシンは
+    ほとんど必要なくなりました。
+
+    <br><br>
+
+    数十年後の今、もう一度挑戦する 時ではないでしょうか?
+    アプリケーションを構築し、興味深い研究を行うために
+    Prolog の力を活用したいと政府や資金提供機関に
+    説得する時期ではないでしょうか。
+
+    <br><br>
+
+    ここに いくつかのアイデアを示します。
+
+    <ul>
+      <li>管理者への質問に答える<i>チャットボット</i>を作成します。</li>
+      <li>コンピュータ支援教育で使用できるように、
+        学生が課題を解決できるようにガイドするアプリケーションを作成します。
+        例については、<a href="/rits/">RITS</a>RITS</a> を参照してください。</li>
+      <li>法律に関する質問に自動的に答えられるように、
+        立法を形式化する方法を見つけます。
+        例として、
+        <a href="https://github.com/bitlaw-jp/the-constitution-of-japan">日本国憲法</a>
+        の Prolog 定式化と、
+        <b>スマートコントラクト</b>の例としての
+        <a href="https://www.youtube.com/watch?v=YGG3e_1JX7Q">規制の推論</a>
+        を調べてください。</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_and_ai')">原文</button>
+    <div id="原文_prolog_and_ai" class="hide_on_start">
     <h2>Prolog and AI</h2>
 
     Prolog has very strong historic ties with AI. In 1982, Japan

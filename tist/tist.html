@@ -1,22 +1,183 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Thinking in States</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="States in declarative languages">
     <meta name="keywords" content="Prolog,Compiler,Puzzle,State,DCG">
     <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
     <link rel="stylesheet" type="text/css" href="/prolog/toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
+    <center> <h1>状態を考える</h1> </center>
 
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tist')">原文</button>
+    <div id="原文_tist" class="hide_on_start">
     <center>
       <h1>Thinking in States</h1>
     </center>
+    </div>
     <br>
 
+    <center> <h2>動機</h2> </center>
+
+    命令型プログラミング言語に慣れていると、
+    関数型や論理型プログラミング言語を学ぶときに、
+    最初はいくつかの簡単な練習問題を成功裏に解決し、
+    その後突然、宣言型言語で簡単なタスクを解決できなくなることがあります。
+    たとえば、
+    「変数の値をどうやって増やすのか？」や
+    「リストから要素をどうやって取り除くのか？」、もっと一般的には
+    「このデータ構造に簡単な変換をどうやって適用するのか？」
+    などと疑問に思うかもしれません。
+
+    <br><br>
+
+    そのような問題の解決策は、
+    異なるエンティティ間の<i>関係</i>で考えることです。
+    こうしたエンティティの例としては、変数、リスト、木、<i>状態</i>などがあります。
+
+    <br><br>
+
+    たとえば、命令型言語では、変数の<i>状態</i>を変更するのは簡単です:
+
+    <pre class="code">
+i = i + 1;
+    </pre>
+
+    このような文が実行されると、<tt>i</tt>の<i>状態</i>が<i>変わります</i>。
+    <tt>i</tt>の古い状態にはアクセスできなくなります。
+    宣言的には、この等式は意味を持ちません:
+    <tt>i</tt>という数値が<tt>i+1</tt>と等しいということはありません。
+
+    <br><br>
+
+    Prologでは、上記のスニペットは次のようになります:
+
+    <pre class="code">
+I #= I0 + 1
+    </pre>
+
+    これは、<tt>I</tt>と<tt>I0</tt>が特定の関係にあることを意味します。
+    この場合、<tt>(#=)/2</tt>は<a href="/prolog/clpfd">整数式の等価関係</a>を示します。
+
+    <br><br>
+
+    重要なのは、このような関係が<i>全ての方向</i>で使用できることです。
+    命令型の方法に対応するのは、<tt>I0</tt>が具体的な整数に初期化され、
+    <tt>I</tt>が次の整数を示すようにすることです。
+    Prologの一般性のおかげで、
+    <tt>I</tt>が初期化されていて<tt>I0</tt>がわからない場合、
+    または<i>両方</i>がまだ変数であっても、
+    この<i>同じ</i>スニペットを使用できます。
+    この一般性を活かすために必要な精神的な飛躍は、
+    一つの変数の代わりに<i>二つ</i>の変数で考えることです。
+    同じ変数が古い状態と新しい状態の両方を同時に反映することはできません。
+
+    <br><br>
+
+    もう一つの例として、
+    「リストから要素<i>E</i>をどうやって取り除くのか？」と尋ねる場合、
+    宣言的に考え、二つのリストの間の<i>関係</i>を記述します。
+    一つのリストには要素<i>E</i>が含まれており、
+    二番目のリストには、
+    最初のリストのすべての要素が<i>E</i>と等しくないものが含まれています。
+    実際には、ここでは<i>三つ</i>のエンティティ間の関係を記述しています:
+    二つのリストと一つの要素です。
+    この関係をPrologで表現するには、関係が<i>成立する</i>条件を述べます:
+
+    <pre class="code">
+list1_element_list2([], _, []).
+list1_element_list2([E|Ls1], E, Ls2) :-
+        list1_element_list2(Ls1, E, Ls2).
+list1_element_list2([L|Ls1], E, [L|Ls2]) :-
+        dif(L, E),
+        list1_element_list2(Ls1, E, Ls2).
+    </pre>
+
+    この関係はこれらのエンティティのそれぞれに対して一つの引数を持ち、
+    各節は<a href="/prolog/reading#declarative">宣言的に</a>
+    読むことができます。たとえば、
+    最初の節は、第一と第三の引数が空のリストであるときに
+    関係が成立することを意味します。
+    第二の節は、
+    関係が<tt>Ls1</tt>、<tt>E</tt>、<tt>Ls2</tt>に対して成立するならば、
+    <tt>[E|Ls1]</tt>、<tt>E</tt>、<tt>Ls2</tt>に対しても成立することを意味します。
+    第三の節も同様に読み取りますが、追加の制約として、
+    <tt>L</tt>と<tt>E</tt>が<i>異なる</i>項である場合にのみ成立します。
+
+    この述語は全ての方向で使用できます:
+    単に「リストから要素<i>E</i>をすべて取り除くとリストはどうなるか？」
+    という質問だけでなく、
+    「特定の例でどの要素が<i>取り除かれた</i>のか？」や、
+    最も一般的な質問である「この関係が成立する三つのエンティティは何か？」
+    などにも答えることができます。
+    この一般性が、命令型の名前「remove/3」がこの場合に適さない理由です。
+
+    <br><br>
+
+    Prologは、述語を一般的、効率的<i>かつ</i>簡潔にするための
+    いくつかの言語構造を提供しています。
+    たとえば、<tt>library(reif)</tt>のメタ述語<tt>tfilter/3</tt>を使用すると、
+    <tt>list1_element_list2/3</tt>を次のように書き換えることができます:
+
+    <pre>
+list1_element_list2(Ls1, E, Ls2) :-
+        tfilter(dif(E), Ls1, Ls2).
+    </pre>
+
+    このバージョンは、すべての引数が十分に初期化されている場合に<i>決定的</i>です。
+    たとえば:
+
+    <pre>
+?- list1_element_list2("abc", b, Ls).
+   Ls = "ac".
+    </pre>
+
+    もう一つの例として、
+    「木に対して変換をどうやって適用するのか？」と尋ねる場合も、
+    再び宣言的に考え、変換前と変換後の二つの木の間の<i>関係</i>を記述します。
+
+    <br><br>
+
+    <i>関数</i>は関係の特別な種類であり、したがって以下の多くの点は
+    関数型および論理型プログラミング言語の両方に当てはまります。
+    論理型プログラミング言語は、述語が複数の方向で使用できるため、
+    通常はより一般的な解決策を少ない労力で提供します。
+
+    <br><br>
+
+    このテキストでは、パズル、プログラム、コンパイラなどの
+    状態に関するいくつかの関係の例を見ていきますので、
+    さまざまなタスクが宣言型言語でどのように表現できるかがわかります。
+    核心となるアイデアは、すべての例で同じです:
+    <i>状態間の関係</i>で考えます。
+    命令型言語では、しばしば状態への破壊的な<i>変更</i>で考えますが、これとは対照的です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_motivation')">原文</button>
+    <div id="原文_motivation" class="hide_on_start">
     <center>
       <h2>Motivation</h2>
     </center>
@@ -164,9 +325,39 @@ list1_element_list2(Ls1, E, Ls2) :-
     states</i>. This is in contrast to imperative languages, where we
     often think in terms of destructive <i>modifications</i> to a
     state.
+    </div>
 
-    <br><br><br>
+    <center> <h2 id="global">グローバル状態</h2> </center>
 
+    命令型プログラミング言語での考え方に慣れていると、
+    宣言型言語でも<i>グローバル状態</i>を操作しようとするかもしれません。
+    たとえば、Prologで<a href="/prolog/global"><i>グローバル変数</i></a>を
+    クエリして変更しようとするかもしれません。
+
+    <br><br>
+
+    Prologは、さまざまな手段でグローバル状態を変更することをサポートしています。
+    たとえば、グローバルデータベースを破壊的に変更することができます。
+    しかし、Prologプログラムがグローバル変数を設定したり、
+    グローバルデータベースを変更したりすることで、
+    論理プログラムに期待される重要な特性が<i>壊れる</i>可能性があります。
+    そのようなプログラムは、すべての方向で使用できなくなり、
+    同一のクエリに対して異なる結果を返すことがあり、
+    通常、他のプログラムの断片から準備やクリーンアップが必要で、
+    テストや独立しての使用が困難になります。
+    このため、ここで扱うのはこのような状態ではありません。
+
+    <br><br>
+
+    Prologの<a href="/prolog/purity"><b>純粋</b></a>なプログラムの利点を
+    最大限に活かすためには、状態の変更を<i>宣言的</i>な方法で表現することを
+    常に目指すべきです。
+    状態の変更について宣言的に考える方法は、
+    そのような変更によって誘発される状態間の<i>関係</i>を記述することです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_global_states')">原文</button>
+    <div id="原文_global_states" class="hide_on_start">
     <center>
       <h2 id="global">Global states</h2>
     </center>
@@ -200,9 +391,180 @@ list1_element_list2(Ls1, E, Ls2) :-
     changes in states. The declarative way to reason about changes is
     to describe the <i>relations</i> between states that are induced
     by such changes.
-
+    </div>
     <br><br><br>
 
+    <center> <h2 id="puzzles">パズルにおける状態</h2> </center>
+
+    状態の表現方法の選択は、タスクをどれだけ優雅に説明できるかに
+    大きな影響を与えることがあります。
+    簡単なパズルを考えてみましょう：
+    <br>
+    <div class="example">
+      A、B、C の<b>水差し</b>(water jug) の容量がそれぞれ 8、5、3 で、
+      初期状態がそれぞれ <i>満杯</i>、<i>空</i>、<i>空</i> の場合に、
+      水差し A と B にそれぞれ正確に 4 単位を測る。
+    </div>
+    <br>
+
+    このパズルでの重要な<i>状態</i>は、各水差しに入っている水の量です。
+    Haskell を使うなら、この状態を三重項 (A, B, C) として表現します：
+
+    <pre class="code">
+type State = (Int,Int,Int)
+    </pre>
+
+    次に、状態 (8,0,0) から状態 (4,4,0) への一連の移動を見つける必要があります。
+    状態を与えると、すべての適切な後続状態のリストを生成する関数を始めます：
+
+    <pre class="code">
+successors :: State -> [State]
+successors (a,b,c) =
+    let ab = min a (5 - b)
+        ac = min a (3 - c)
+        ba = min b (8 - a)
+        bc = min b (3 - c)
+        ca = min c (8 - a)
+        cb = min c (5 - b)
+        ss = [(ab,a-ab,b+ab,c), (ac,a-ac,b,c+ac), (ba,a+ba,b-ba,c),
+              (bc,a,b-bc,c+bc), (ca,a+ca,b,c-ca), (cb,a,b+cb,c-cb)]
+    in
+      [(a',b',c') | (transfer,a',b',c') <- ss, transfer > 0]
+    </pre>
+
+    この関数を対話的にテストできます：
+
+    <pre class="code">
+Main> successors (8,0,0)
+[(3,5,0),(5,0,3)]
+    </pre>
+
+    次に、初期状態からターゲット状態に到達できるかどうかを確認します。
+    完全でスペース効率の悪い探索戦略である幅優先探索を試します：
+
+    <pre class="code">
+search :: [State] -> Bool
+search (s:ss)
+    | s == (4,4,0) = True
+    | otherwise = search $ ss ++ successors s
+    </pre>
+
+    各イテレーションで、指定された状態リストの最初の状態を検討します。
+    ターゲット状態であれば終了です。
+    そうでない場合は、その後続状態が残りの状態（後で検討される）に追加され、
+    探索が続けられます。次のクエリを実行できます：
+
+    <pre class="code">
+search [(8,0,0)]
+True
+    </pre>
+
+    これで、パズルに解決策があることがわかります。
+    ターゲット状態へのアクションのシーケンスを見つけるために、
+    <i>状態の表現</i>を再考します。
+    水の量だけでなく、各構成を取得する方法も記録します。
+    この新しい状態はペア (J, P) として表現されます：
+    J は水差しの構成 (A, B, C) で、
+    P は開始状態から構成 J までの「パス」です。
+    パスは、<tt>FromTo Jug1 Jug2</tt> の移動のリストであり、
+    <tt>Jug1</tt> から <tt>Jug2</tt> へ水を注いだことを意味します。
+    各後続状態について、
+    前の状態のパスのコピーに対応するパス要素を追加することで、
+    その構成がどのように到達されたかを記録します。
+    新しいプログラム（<a href="jugs.hs">jugs.hs</a>）は次の通りです：
+
+    <pre class="code">
+data Jug = A | B | C deriving Show
+
+data Move = FromTo Jug Jug deriving Show
+type Path = [Move]
+
+type State = ((Int,Int,Int), Path)
+
+start :: State
+start = ((8,0,0), [])
+
+successors :: State -> [State]
+
+successors ((a,b,c),path) =
+    let ab = min a (5 - b)
+        ac = min a (3 - c)
+        ba = min b (8 - a)
+        bc = min b (3 - c)
+        ca = min c (8 - a)
+        cb = min c (5 - b)
+        ss = [(ab, a-ab, b+ab,    c, path ++ [FromTo A B]),
+              (ac, a-ac,    b, c+ac, path ++ [FromTo A C]),
+              (ba, a+ba, b-ba,    c, path ++ [FromTo B A]),
+              (bc,    a, b-bc, c+bc, path ++ [FromTo B C]),
+              (ca, a+ca,    b, c-ca, path ++ [FromTo C A]),
+              (cb,    a, b+cb, c-cb, path ++ [FromTo C B])]
+    in
+      [((a',b',c'), path') | (amount,a',b',c',path') <- ss, amount > 0]
+
+search :: [State] -> Path
+
+search (s:ss)
+    | fst s == (4,4,0) = snd s
+    | otherwise = search $ ss ++ successors s
+    </pre>
+
+    これでパスがすぐに見つかります：
+
+    <pre class="code">
+search [start]
+[FromTo A B,FromTo B C,FromTo C A,FromTo B C,FromTo A B,FromTo B C,FromTo C A]
+    </pre>
+
+    これをより効率的にする方法はいくつかあります。
+    たとえば、新しいパス要素を前に追加し、探索の最後にパスを反転させることができます。
+
+    <br><br>
+
+    より重要なのは、より優雅にする方法もあることです：
+    コードには明らかにいくつかの冗長性があり、
+    異なる状態の表現で回避できます。
+    以下の Prolog バージョンがこれを示しています：
+
+    <pre class="code">
+jug_capacity(a, 8).
+jug_capacity(b, 5).
+jug_capacity(c, 3).
+
+moves(Jugs) -->
+        { member(jug(a,4), Jugs),
+          member(jug(b,4), Jugs) }.
+moves(Jugs0) --> [from_to(From,To)],
+        { select(jug(From,FromFill0), Jugs0, Jugs1),
+          FromFill0 #> 0,
+          select(jug(To,ToFill0), Jugs1, Jugs),
+          jug_capacity(To, ToCapacity),
+          ToFill0 #< ToCapacity,
+          Move #= min(FromFill0, ToCapacity-ToFill0),
+          FromFill #= FromFill0 - Move,
+          ToFill #= ToFill0 + Move },
+        moves([jug(From,FromFill),jug(To,ToFill)|Jugs]).
+    </pre>
+
+    この状態の表現では、移動を均等に記述でき、
+    明示的に列挙する必要がありません。
+    最短解を見つけるために、<i>反復深化</i>を使用します：
+
+    <pre class="code">
+?- length(Ms, _), phrase(moves([jug(a,8),jug(b,0),jug(c,0)]), Ms).
+Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b,c),from_to(c,a)] .
+    </pre>
+
+    <br>
+    <b>演習</b>: この状態の表現を Haskell バージョンにも使用してみてください。
+    <br><br>
+
+    同様に、「狼とヤギ」、「8 パズル」、「<a href="/zurg/"><b>Zurgからの脱出</b></a>」、
+    および「宣教師と食人族」など、検索を含む他のパズルも解決できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_puzzles')">原文</button>
+    <div id="原文_puzzles" class="hide_on_start">
     <center>
       <h2 id="puzzles">States in puzzles</h2>
     </center>
@@ -381,9 +743,202 @@ Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b
     like "wolf and goat",
     8-puzzles, <a href="/zurg/"><b>Escape from Zurg</b></a> and
     "missionary and cannibal".
+    </div>
+
+    <center><h2>プログラムにおける状態</h2></center>
+
+    ここでは、整数を扱う簡単なプログラミング言語の<b>インタープリタ</b>を
+    Prolog で構築してみます。
+    Prolog の項を使用して、プログラムを抽象構文木（AST）として次のように表現します：
+
+    <pre class="code">
+function(Name, Parameter, Body)
+call(Name, Expression)
+return(Expression)
+assign(Variable, Expression)
+if(Condition, Then, Else)
+while(Condition, Body)
+sequence(First, Second)
+    </pre>
+
+    算術式の中で変数と数値を記号的に区別するために、
+    単項ファンクタ "v" と "n" を使用します。
+    選択した表現の完全な宣言仕様については、
+    ソースコードの<b>is_program/2</b> を参照してください
+    （<a href="interp.pl">interp.pl</a>）。
+    また、より読みやすい構文から自動的に
+    この項表現を生成するパーサも含まれています。
+    たとえば、以下のプログラムは（再帰的に）4 番目のカタラン数を計算し表示します：
+
+    <pre class="code">
+catalan (n) {
+        if (n == 0) {
+                return 1;
+        } else {
+                c = catalan(n-1);
+                r = 2*(2*n + 1)*c / (n + 2);
+                return r;
+        }
+}
+
+print catalan(4);
+    </pre>
+
+これは次のような構文木に変換されます：
+
+    <pre class="code">
+?- string_ast("catalan (n) { if (n == 0) { return 1; } else { c = catalan(n-1);
+          r = 2*(2*n + 1)*c / (n + 2); return r; } } print catalan(4);", AST).
+
+AST = sequence(function(catalan, n,
+                         if(bin(=, v(n), n(0)),
+                            return(n(1)),
+                            sequence(assign(c, call(catalan, bin(-, v(n), n(1)))),
+                                     sequence(assign(r, bin(/,
+                                                            bin(*,
+                                                                bin(*,
+                                                                    n(2),
+                                                                    bin(+,
+                                                                        bin(*,
+                                                                            n(2),
+                                                                            v(n)),
+                                                                        n(1))),
+                                                                v(c)),
+                                                            bin(+, v(n), n(2)))),
+                                              return(v(r)))))),
+               print(call(catalan, n(4))))
+    </pre>
+
+    <br>
+
+    このようなプログラムを解釈するには、
+    計算の<i>状態</i>を追跡する必要があります。
+    それには次の二つが含まれます：
+
+    <ul>
+      <li>変数のバインディング環境</li>
+      <li>すべての関数定義</li>
+    </ul>
+
+    これら二つは、変数名を値と関連付ける連想リストと、
+    関数ヘッドを関数本体と関連付ける連想リストのペアとして表現されます。
+    これにより、関数の定義や変数へのアクセスが、
+    関数や変数の数に対して O(log(N)) の操作となります。
+
+    <br><br>
+
+    明らかに、構文木を解釈するための述語は、
+    このような環境との関係を定義し、
+    したがって<i>状態</i>との関係を定義します。
+    これが、命令型プログラムを純粋に宣言的な方法で解釈する方法です。
+
+    <br><br>
+
+    現在の環境に基づいて式を<i>評価</i>するために、述語<b>eval/3</b>を使用します：
+
+    <pre class="code">
+eval(bin(Op,A,B), Env, Value) :-
+        eval(A, Env, VA),
+        eval(B, Env, VB),
+        eval_(Op, VA, VB, Value).
+eval(v(V), Env, Value) :-
+        env_get_var(Env, V, Value).
+eval(n(N), _, N).
+eval(call(Name, Arg), Env0, Value) :-
+        eval(Arg, Env0, ArgVal),
+        env_func_body(Env0, Name, ArgName, Body),
+        env_clear_variables(Env0, Env1),
+        env_put_var(ArgName, ArgVal, Env1, Env2),
+        interpret(Body, Env2, Value).
 
 
-    <br><br><br>
+eval_(+, A, B, V) :- V #= A + B.
+eval_(-, A, B, V) :- V #= A - B.
+eval_(*, A, B, V) :- V #= A * B.
+eval_(/, A, B, V) :- V #= A // B.
+eval_(=, A, B, V) :- goal_truth(A #= B, V).
+eval_(>, A, B, V) :- goal_truth(A #> B, V).
+eval_(<, A, B, V) :- goal_truth(A #< B, V).
+
+goal_truth(Goal, V) :- ( Goal -> V = 1 ; V = 0).
+    </pre>
+
+    環境にアクセスする述語（<b>env_get_var/3</b> など）は簡単で、
+    その定義はソースコードで確認できます。
+    最後に、述語<b>interpret/3</b>は、各構文がどのように環境を変更するかを指定します：
+
+    <pre class="code">
+interpret(print(P), Env, Env) :-
+        eval(P, Env, Value),
+        format("~w\n", [Value]).
+interpret(sequence(A,B), Env0, Env) :-
+        interpret(A, Env0, Env1),
+        (   A = return(_) ->
+            Env = Env1
+        ;   interpret(B, Env1, Env)
+        ).
+interpret(call(Name, Arg), Env0, Env0) :-
+        eval(Arg, Env0, ArgVal),
+        env_func_body(Env0, Name, ArgName, Body),
+        env_clear_variables(Env0, Env1),
+        env_put_var(ArgName, ArgVal, Env1, Env2),
+        interpret(Body, Env2, _).
+interpret(function(Name,Arg,Body), Env0, Env) :-
+        env_put_func(Name, Arg, Body, Env0, Env).
+interpret(if(Cond,Then,Else), Env0, Env) :-
+        eval(Cond, Env0, Value),
+        (   Value #\= 0 ->
+            interpret(Then, Env0, Env)
+        ;   interpret(Else, Env0, Env)
+        ).
+interpret(assign(Var, Expr), Env0, Env) :-
+        eval(Expr, Env0, Value),
+        env_put_var(Var, Value, Env0, Env).
+interpret(while(Cond, Body), Env0, Env) :-
+        eval(Cond, Env0, Value),
+        (   Value #\= 0 ->
+            interpret(Body, Env0, Env1),
+            interpret(while(Cond, Body), Env1, Env)
+        ;   Env = Env0
+        ).
+interpret(return(Expr), Env0, Value) :-
+        eval(Expr, Env0, Value).
+interpret(nop, Env, Env).
+    </pre>
+
+    二つの点に特に注意が必要です。
+    まず、<tt>print</tt> 文は<i>副作用</i>を引き起こします：
+    端末に出力を表示するため、
+    これはバインディング環境を変換することで表現できません。
+    したがって、インタープリタは純粋に論理的ではありません。
+    これを修正するためには、「世界」の状態の適切な表現を環境に組み込み、
+    <tt>print</tt> 文が出現するたびに適切に調整することができます。
+    次に、<tt>return</tt> 文は特別で、その結果の環境は単一の値から成ります。
+    述語<b>eval/3</b>は、関数呼び出しを評価する際にこれを利用しています。
+
+    <br><br>
+
+    プログラムを解釈するには、新しい環境で開始し、結果の環境を破棄します：
+
+    <pre class="code">
+run(AST) :-
+        env_new(Env),
+        interpret(AST, Env, _).
+    </pre>
+
+    以下のようにして、簡単な例のプログラムを実行できます：
+
+    <pre class="code">
+
+?- string_ast("catalan (n) { if (n == 0) { return 1; } else { c = catalan(n-1);
+          r = 2*(2*n + 1)*c / (n + 2); return r; } } print catalan(4);", AST), run(AST).
+
+42
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_states_in_programs')">原文</button>
+    <div id="原文_states_in_programs" class="hide_on_start">
     <center><h2>States in programs</h2></center>
 
     Let us now build an <b>interpreter</b> for a simple programming
@@ -582,10 +1137,435 @@ run(AST) :-
 
 42
     </pre>
+    </div>
 
+    <center><h2 id="compilers">コンパイラにおける状態</h2></center>
 
+    変数や関数の定義を環境内で調べるための
+    インタプリタのオーバーヘッドを取り除くために、
+    プログラムを<i>仮想マシンコード</i>に<b>コンパイル</b>します。
+    このコードでは、変数や関数は仮想マシンの「メモリ」の特定の領域への
+    オフセットでアドレッシングされます。
+    効率的な配列インデックスを許可するプログラミング言語を使用することで、
+    変数アクセスや関数呼び出しをO(1)で解釈できます。
+
+    <br><br>
+
+    私たちの仮想マシン（VM）はスタックベースで、以下の命令を持ちます：
+
+    <br><br>
+    <center>
+      <table>
+        <tr>
+          <td><b>命令&nbsp;&nbsp;</b></td>
+          <td><b><center>効果</center></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td><tt>halt</tt></td>
+          <td>実行を停止する</td>
+        </tr>
+
+        <tr>
+          <td><tt>alloc</tt> <i>n</i></td>
+          <td>スタックに <i>n</i> 個のゼロを積む</td>
+        </tr>
+
+        <tr>
+          <td><tt>pushc</tt> <i>c</i></td>
+          <td>定数 <i>c</i> をスタックに積む</td>
+        </tr>
+
+        <tr>
+          <td><tt>pushv</tt> <i>v</i></td>
+          <td>変数 <i>v</i> の値をスタックに積む</td>
+        </tr>
+
+        <tr>
+          <td><tt>pop</tt> <i>v</i></td>
+          <td>スタックの最上部の要素を取り出し、その値を変数 <i>v</i> に代入する</td>
+        </tr>
+
+        <tr>
+          <td><tt>add</tt></td>
+          <td>スタックの最上部の2つの要素をその合計で置き換える</td>
+        </tr>
+
+        <tr>
+          <td><tt>sub</tt></td>
+          <td>... 引き算</td>
+        </tr>
+
+        <tr>
+          <td><tt>mul</tt></td>
+          <td>... 掛け算</td>
+        </tr>
+
+        <tr>
+          <td><tt>div</tt></td>
+          <td>... 整数除算</td>
+        </tr>
+
+        <tr>
+          <td><tt>jmp</tt> <i>adr</i></td>
+          <td>命令 <i>adr</i> から実行を再開する</td>
+        </tr>
+
+        <tr>
+          <td><tt>jne</tt> <i>adr</i></td>
+          <td>スタックの最上部の2つの要素を取り出し、
+            それらが等しくない場合は <i>adr</i> にジャンプする</td>
+        </tr>
+
+        <tr>
+          <td><tt>jge</tt> <i>adr</i></td>
+          <td>大なりまたは等しい場合にジャンプする</td>
+        </tr>
+
+        <tr>
+          <td><tt>jle</tt> <i>adr</i></td>
+          <td>小なりまたは等しい場合にジャンプする</td>
+        </tr>
+
+        <tr>
+          <td><tt>call</tt> <i>adr</i></td>
+          <td><i>adr</i> から始まるサブルーチンを呼び出す</td>
+        </tr>
+
+        <tr>
+          <td><tt>print</tt></td>
+          <td>スタックの最上部の要素を取り出し、その値を出力する</td>
+        </tr>
+
+        <tr>
+          <td><tt>ret</tt></td>
+          <td>サブルーチンから戻る</td>
+        </tr>
+
+      </table>
+    </center>
     <br>
 
+    <i>変数</i> は実際には整数で、
+    実行中の関数のスタックフレーム内のオフセットを示します。
+    0（ゼロ）は関数の唯一の引数に対応し、
+    <tt>call</tt> 命令に遭遇するとスタックにコピーされます。
+    また、<tt>call</tt> は現在のフレームポインタとプログラムカウンタを
+    スタックに保存します。
+    関数は <tt>alloc</tt> 命令を使って
+    ローカル変数のための追加のスペースを確保できます。
+    戻り命令（<tt>ret</tt>）は現在の関数によって確保された
+    すべてのスタック要素を削除し、
+    フレームポインタとプログラムカウンタを復元し、
+    関数の戻り値をスタックに積みます。
+
+    <br><br>
+
+    以下の例のプログラムと対応するVMコードは、ほとんどの命令を示しています：
+
+    <br><br>
+
+    <center>
+      <table>
+        <tr>
+          <td valign="center" style="padding: 0 50pt 0 50pt">
+            <pre>
+fac(n) {
+        f = 1;
+        while (n > 1) {
+                f = f*n;
+                n = n - 1;
+        }
+        return(f);
+}
+
+print fac(4);
+            </pre>
+          </td>
+          <td valign="center" style="padding: 0 50pt 0 50pt">
+            <pre>
+ 0:     jmp 33
+ 2:     alloc 1
+ 4:     pushc 1
+ 6:     pop 1
+ 8:     pushv 0
+10:     pushc 1
+12:     jle 30
+14:     pushv 1
+16:     pushv 0
+18:     mul
+19:     pop 1
+21:     pushv 0
+23:     pushc 1
+25:     sub
+26:     pop 0
+28:     jmp 8
+30:     pushv 1
+32:     ret
+33:     pushc 4
+35:     call 2
+37:     print
+38:     halt
+            </pre>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    抽象構文木からこのようなVMコードを生成するのは簡単です。
+    本質的には、次のような形の節を持つ述語<b>compilation/3</b>を記述します：
+
+    <pre class="code">
+compilation(functor(Arg1,Arg2,...,ArgN), State0, State) :-
+        compilation(Arg1, State0, State1),
+        compilation(Arg2, State1, State2),
+           :
+           :
+        compilation(Argn, State_(N-1), State_N),
+        vminstr(instruction_depending_on_functor, State_N, State).
+    </pre>
+
+    連続する状態の命名規則として
+    <tt>S0</tt>、<tt>S1</tt>、<tt>S2</tt>、…、<tt>S</tt>
+    を使用することに注意してください。
+
+    <br><br>
+
+    以下のように、状態にアクセスし変更する必要がある述語はわずかです。
+    そのため、Prologの
+    <a href="/prolog/dcg#semicontext"><b>セミコンテキスト表記</b></a>
+    を使用して、状態を暗黙的にスレッドすることで、
+    より読みやすい非終端記号<b>compilation//1</b>を提供します：
+    <!-- state monadsとの類似性に注意 -->
+
+
+    <pre class="code">
+compilation(functor(Arg1,Arg2,...,ArgN)) -->
+        compilation(Arg1),
+        compilation(Arg2),
+           :
+           :
+        compilation(Argn),
+        vminstr(instruction_depending_on_functor).
+    </pre>
+
+    <br><br>
+
+    VMコードへのコンパイル時に、コンパイルプロセスの<i>状態</i>を追跡します：
+
+    <ul>
+      <li>これまでに発行されたVM命令</li>
+      <li>出現した関数定義のオフセット</li>
+      <li>現在の関数内で出現した変数のオフセット</li>
+      <li>次の命令のオフセット（「プログラムカウンタ」）</li>
+    </ul>
+
+    これらすべてを四重項 <tt>s(Is, Fs, Vs, PC)</tt> に保存します。
+    コンパイルのエントリーポイントは<b>ast_vminstrs/2</b>で、
+    抽象構文木と仮想マシン命令のリストを関連付けます。
+    新しい状態で開始し、<b>compilation//1</b> を介して変換し、
+    累積された命令を抽出し、関数呼び出しで名前をオフセットに変換します：
+
+    <pre class="code">
+ast_vminstrs(AST, VMs) :-
+        initial_state(S0),
+        phrase(compilation(AST), [S0], [S]),
+        state_vminstrs(S, VMs).
+
+initial_state(s([],[],[],0)).
+
+state_vminstrs(s(Is0,Fs,_,_), Is) :-
+        reverse([halt|Is0], Is1),
+        maplist(resolve_calls(Fs), Is1, Is).
+
+resolve_calls(Fs, I0, I) :-
+        (   I0 = call(Name) ->
+            memberchk(Name-Adr, Fs),
+            I = call(Adr)
+        ;   I = I0
+        ).
+    </pre>
+
+    DCG表記で暗黙的にスレッドされた状態にアクセスし変更するために、
+    次の2つの非終端記号を使用します：
+
+    <pre class="code">
+state(S), [S] --> [S].
+
+state(S0, S), [S] --> [S0].
+    </pre>
+
+    したがって、<tt>state(S)</tt> は
+    「現在の状態は <tt>S</tt> である」と読み取ることができ、
+    <tt>state(S0, S)</tt> は
+    「現在の状態は <tt>S0</tt> であり、以後は <tt>S</tt> である」
+    と読み取ることができます。
+
+    <br><br>
+
+    状態の一部にアクセスし変換するための補助述語は次の通りです：
+
+    <pre class="code">
+current_pc(PC) --> state(s(_,_,_,PC)).
+
+vminstr(I) -->
+        state(s(Is,Fs,Vs,PC0), s([I|Is],Fs,Vs,PC)),
+        { I =.. Ls,
+          length(Ls, L),   % length of instruction including arguments
+          PC #= PC0 + L }.
+
+start_function(Name, Arg) -->
+        state(s(Is,Fs,_,PC), s(Is,[Name-PC|Fs],[Arg-0],PC)).
+
+num_variables(Num) -->
+        state(s(_,_,Vs,_)),
+        { length(Vs, Num0),
+          Num #= Num0 - 1 }.      % don't count parameter
+
+variable_offset(Name, Offset) -->
+        state(s(Is,Fs,Vs0,PC), s(Is,Fs,Vs,PC)),
+        { (   memberchk(Name-Offset, Vs0) ->
+              Vs = Vs0
+          ;   Vs0 = [_-Curr|_],
+              Offset #= Curr + 1,
+              Vs = [Name-Offset|Vs0]
+          ) }.
+    </pre>
+
+    例えば、<b>start_function//2</b> は定義される関数のオフセット
+    （= 現在のプログラムカウンタ）を記録し、
+    最初は関数の引数だけからなる新しい変数リストを開始します。
+    この引数のスタックフレーム内でのオフセットは0です。
+    さらに変数が遭遇するたびに、追加のオフセットが割り当てられます。
+    これは<b>variable_offset//2</b>によって処理され、
+    変数が既にリストに存在する場合はリストからオフセットを決定し、
+    新しい変数の場合は、以前登録された変数のオフセットに1を追加して
+    新しいオフセットを計算して登録します。
+
+    <br><br>
+
+    次に<b>compilation//1</b>を定義します：
+
+    <pre class="code">
+compilation(nop) --> [].
+compilation(print(P)) -->
+        compilation(P),
+        vminstr(print).
+compilation(sequence(A,B)) -->
+        compilation(A),
+        compilation(B).
+compilation(call(Name,Arg)) -->
+        compilation(Arg),
+        vminstr(call(Name)).
+compilation(function(Name,Arg,Body)) -->
+        vminstr(jmp(Skip)),
+        start_function(Name, Arg),
+        vminstr(alloc(NumVars)),
+        compilation(Body),
+        num_variables(NumVars),
+        current_pc(Skip).
+compilation(if(Cond,Then,Else)) -->
+        { Cond = bin(Op,A,B) },
+        compilation(A),
+        compilation(B),
+        condition(Op, Adr1),
+        compilation(Then),
+        vminstr(jmp(Adr2)),
+        current_pc(Adr1),
+        compilation(Else),
+        current_pc(Adr2).
+compilation(assign(Var,Expr)) -->
+        variable_offset(Var, Offset),
+        compilation(Expr),
+        vminstr(pop(Offset)).
+compilation(while(Cond,Body)) -->
+        current_pc(Head),
+        { Cond = bin(Op,A,B) },
+        compilation(A),
+        compilation(B),
+        condition(Op, Break),
+        compilation(Body),
+        vminstr(jmp(Head)),
+        current_pc(Break).
+compilation(return(Expr)) -->
+        compilation(Expr),
+        vminstr(ret).
+compilation(bin(Op,A,B)) -->
+        compilation(A),
+        compilation(B),
+        { op_vminstr(Op, VI) },
+        vminstr(VI).
+compilation(n(N)) -->
+        vminstr(pushc(N)).
+compilation(v(V)) -->
+        variable_offset(V, Offset),
+        vminstr(pushv(Offset)).
+
+
+op_vminstr(+, add).
+op_vminstr(-, sub).
+op_vminstr(*, mul).
+op_vminstr(/, div).
+
+condition(=, Adr) --> vminstr(jne(Adr)).
+condition(<, Adr) --> vminstr(jge(Adr)).
+condition(>, Adr) --> vminstr(jle(Adr)).
+    </pre>
+
+    論理変数の利点がいくつかのケースでどのように役立つかに注意してください。
+    例えば、<tt>alloc</tt> が発行されるときには、
+    まだどれだけのスペースを確保する必要があるかはわかりません。
+    それにもかかわらず、命令を仮想マシン命令のシーケンスに追加し、
+    後でその引数をインスタンス化します。
+
+    <br><br>
+
+    さらに、<tt>call_n</tt> 命令を導入し、
+    指定された関数を呼び出す前に最近確保された
+    <tt>n</tt> 個のローカル変数を破棄することで、
+    <i>尾呼び出し最適化</i>や、より一般的には
+    <i>スタックのトリミング</i>をVMに追加することができます。
+    関数呼び出し後に変数が必要ない場合、
+    そのスタックスペースは呼び出し前に回収できます。
+
+    <br><br><br>
+
+    生成されたVMコードを、コンパクトに、かつ
+    他のプログラミング言語で簡単にアクセスできるようにするために、
+    ニーモニック仮想マシン命令を整数のリストに関連付けます：
+
+    <pre class="code">
+vminstrs_ints([])     --> [].
+vminstrs_ints([I|Is]) -->
+        vminstr_ints(I),
+        vminstrs_ints(Is).
+
+vminstr_ints(halt)      --> [0].
+vminstr_ints(alloc(A))  --> [1,A].
+vminstr_ints(pushc(C))  --> [2,C].
+vminstr_ints(pushv(V))  --> [3,V].
+vminstr_ints(pop(V))    --> [4,V].
+vminstr_ints(add)       --> [5].
+vminstr_ints(sub)       --> [6].
+vminstr_ints(mul)       --> [7].
+vminstr_ints(div)       --> [8].
+vminstr_ints(jmp(Adr))  --> [9,Adr].
+vminstr_ints(jne(Adr))  --> [10,Adr].
+vminstr_ints(jge(Adr))  --> [11,Adr].
+vminstr_ints(jle(Adr))  --> [12,Adr].
+vminstr_ints(call(Adr)) --> [13,Adr].
+vminstr_ints(print)     --> [14].
+vminstr_ints(ret)       --> [15].
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_compilers')">原文</button>
+    <div id="原文_compilers" class="hide_on_start">
     <center><h2 id="compilers">States in compilers</h2></center>
 
     To get rid of the interpreter's overhead incurred by looking up
@@ -1021,9 +2001,153 @@ vminstr_ints(call(Adr)) --> [13,Adr].
 vminstr_ints(print)     --> [14].
 vminstr_ints(ret)       --> [15].
     </pre>
+    </div>
+
+    <center><h2>仮想マシンの状態</h2></center>
+
+    ここでは、私たちが考案したVMを実装します。VMの<i>状態</i>は以下によって決まります：
+
+    <ul>
+      <li>スタック上の値</li>
+      <li>実行する命令のリスト</li>
+      <li>pc: プログラムカウンタ（命令のリストへのオフセット）</li>
+      <li>fp: フレームポインタ（スタックへのオフセット）</li>
+    </ul>
+
+    Haskellを使って、状態を4つ組（quadruple）で表現することができます：
+
+    <pre class="code">
+type State = ([Int], [Int], Int, Int)
+    </pre>
+
+    関数stepは、VM命令の整数コードと現在のVMの状態を受け取り、
+    VMの新しい状態を計算して返します：
+
+
+    <pre class="code">
+step :: Int -> State -> State
+step instr (stack,instrs,pc,fp) =
+    case instr of
+      1 -> ((replicate next 0) ++ stack, instrs, pc2, fp + next)
+      2 -> (next:stack, instrs, pc2, fp+1)
+      3 -> ((stack!!(fp - next)):stack, instrs, pc2, fp + 1)
+      4 -> (tail $ set_nth stack (fp - next) first, instrs, pc2, fp1)
+      5 -> ((second+first):drop2, instrs, pc1, fp1)
+      6 -> ((second-first):drop2, instrs, pc1, fp1)
+      7 -> ((second*first):drop2, instrs, pc1, fp1)
+      8 -> ((div second first):drop2, instrs, pc1, fp1)
+      9 -> (stack, instrs, next, fp)
+      10 -> if second /= first then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      11 -> if second >= first then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      12 -> if second <= first  then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      13 -> ([first,fp,pc2] ++ tail stack, instrs, next, 0)
+      15 -> let fp' = stack !! (fp + 1)
+                pc' = stack !! (fp + 2)
+            in
+              (first : drop (fp+3) stack, instrs, pc', fp')
+    where next = instrs !! (pc+1)
+          first = head stack
+          second = stack !! 1
+          drop2 = drop 2 stack
+          fp1 = fp - 1
+          fp2 = fp - 2
+          pc1 = pc + 1
+          pc2 = pc + 2
+
+
+set_nth :: [a] -> Int -> a -> [a]
+set_nth (x:xs) n a
+    | n == 0 = a:xs
+    | otherwise = x:(set_nth xs (n - 1) a)
+    </pre>
+
+    整数コードのリストを実行するには、
+    <tt>halt</tt>命令が到達するまで状態を継続的に変換します：
+
+    <pre class="code">
+exec :: State -> IO ()
+exec s0@(stack,instrs,pc,fp) =
+    let instr = instrs !! pc
+    in
+      case instr of
+        0 -> return ()
+        14 -> do putStr $ (show $ head stack) ++ "\n"
+                 exec (tail stack, instrs, pc + 1, fp - 1)
+        otherwise -> exec $ step instr s0
+
+
+main :: IO ()
+main =
+    do prog <- getLine
+       let ints = read prog::[Int]
+           s0 = ([],ints,0,0)
+       exec s0
+    </pre>
+    <br>
+
+    このコードは<a href="vm.hs">vm.hs</a>として利用可能です。
+    リストを使用してスタックと命令セットを表現したため、
+    インデックス付けが非効率的です。これを解決するために、
+    命令セットに関しては少なくとも配列を使用することができます。
+    ただし、スタックは成長したり縮小したりする必要があるため、
+    サイズを人工的に固定するか、要求に応じてサイズを変更し、
+    Haskell配列を使用し続けることができます。
+    それよりも、配列操作が効率的な言語でプログラムを定式化しましょう：
+    APLの後継である<a href="http://www.jsoftware.com">J</a>です。
+    Jバージョン（<a href="vm.ijs">vm.ijs</a>）では、
+    VMの状態を4つのボックス化されたベクトルの配列を使用して表現します。
+    強力な結合子 <tt>^:</tt>を使用して、
+    <tt>step</tt>の繰り返し適用の限界を生成します：
+
+    <pre class="code">
+st =. 3 : '> 0 { y'
+is =. 3 : '> 1 { y'
+pc =. 3 : '> 2 { y'
+fp =. 3 : '> 3 { y'
+
+next =. (>:&pc { is)
+
+print =. 3 : 'y (1!:2) 2'
+
+adv =. 3 : '(2 }.st y); (is y); (2+pc y); ((fp y) - 2)'
+jmp =. 3 : '(2 }.st y); (is y); (next y); ((fp y) - 2)'
+
+i1  =: 3 : '(((next y) # 0),st y); (is; 2&+&pc; next+fp) y'
+i2  =: 3 : '((next,st); is ; 2&+&pc; >:&fp) y'
+i3  =: 3 : '((((fp-next) { st),st); is; 2&+&pc; >:&fp) y'
+i4  =: 3 : '(}.({.st y) ((fp-next)y) } st y); (is; 2&+&pc; <:&fp) y'
+i5  =: 3 : '((+/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i6  =: 3 : '((-/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i7  =: 3 : '((*/1 0 { st y),2}.st y); (is; >:& pc; <:&fp) y'
+i8  =: 3 : '((<.%/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i9  =: 3 : '(st; is; next; fp) y'
+i10 =: 3 : '(adv ` jmp @. (-.=/1 0 {st y)) y'
+i11 =: 3 : '(adv ` jmp @. (>:/1 0 {st y)) y'
+i12 =: 3 : '(adv ` jmp @. (<:/1 0 {st y)) y'
+i13 =: 3 : '(((({.&st), fp, 2&+&pc),}.& st) y); (is y); (next y);0'
+i14 =: 3 : '(print {. st y)]((}.&st); is; (>:&pc); (<:&fp)) y'
+i15 =: 3 : 0
+   fp1 =. (>:&fp { st) y
+   pc1 =. (2&+&fp { st) y
+   (({. st y),(3+fp y)}. st y) ; (is y); pc1 ; fp1
+)
+
+step =: 3 : 0
+   instr =. (pc { is) y
+   (]`i1`i2`i3`i4`i5`i6`i7`i8`i9`i10`i11`i12`i13`i14`i15  @. instr) y
+)
+
+state0 =:  ($0); instrs; 0; 0
+
+step ^: _ state0
+    </pre>
 
     <br><br>
-
+    <button onclick="toggleOriginalContent('原文_compilers')">原文</button>
+    <div id="原文_compilers" class="hide_on_start">
     <center><h2>States in virtual machines</h2></center>
 
     Let us now implement the VM we devised.  Its <i>state</i> is
@@ -1169,7 +2293,41 @@ state0 =:  ($0); instrs; 0; 0
 
 step ^: _ state0
     </pre>
+    </div>
 
+    <center><h2>ソースファイル</h2></center>
+
+    ソースファイルは以下の通りです：
+
+    <ul>
+      <li><a href="jugs.hs">jugs.hs</a>:
+        Haskellによる水差しのパズル。</li>
+      <li><a href="jugs2.hs">jugs2.hs</a>:
+        Haskellによる水差しのパズル（異なる状態表現）</li>
+      <li><a href="jugs.pl">jugs.pl</a>:
+        Prologによる水差しのパズル。</li>
+      <li><a href="interp.pl">interp.pl</a>:
+        Prologによる簡単なプログラミング言語のインタプリタとコンパイラ。</li>
+      <li><a href="vm.hs">vm.hs</a>:
+        Haskellによるコンパイラが生成した抽象機械コードのインタプリタ。</li>
+      <li><a href="vm.ijs">vm.ijs</a>:
+        Jによる抽象機械コードのインタプリタ。</li>
+    </ul>
+
+    <br>
+
+    これらのプログラムの呼び出し方法を示すトランスクリプト：
+    <a href="log.txt">log.txt</a>
+
+    <br><br>
+
+    Prologコードを試すには、
+    <a href="https://github.com/mthom/scryer-prolog">Scryer Prolog</a>
+    を使用できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_source_files')">原文</button>
+    <div id="原文_source_files" class="hide_on_start">
     <br>
     <center><h2>Source files</h2></center>
 
@@ -1197,6 +2355,7 @@ step ^: _ state0
 
     You can use <a href="https://github.com/mthom/scryer-prolog">Scryer Prolog</a> to
     try the Prolog code.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

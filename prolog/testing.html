@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Testing Prolog Programs</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Declarative testing of Prolog programs">
@@ -8,21 +9,86 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologプログラムのテスト</h1></center>
+    <br><br>
+
+    ここでは、いくつかの<b>宣言的テスト</b>の方法を説明します。
+    「宣言的」とは、プログラムが<i>説明</i>している内容について
+    考えることを意味します。
+    つまり、プログラムの実際の<i>意味</i>と意図した意味、
+    実際の<i>プロパティ</i>とプログラムが
+    正しく実装されていれば持つと知っているプロパティを比較します。
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_testing')">原文</button>
+    <div id="原文_testing" class="hide_on_start">
     <center><h1>Testing Prolog Programs</h1></center>
-    <br><br>
-
     We explain several methods of <b>declarative testing</b>.
     "Declarative" means that we reason about what is
     being <i>described</i> by the program: We compare the actual
     <i>meaning</i> of the program with the intended one, and the
     actual <i>properties</i> with those that we <i>know</i> will hold
     if the program is implemented correctly.
+    </div>
 
+    <center><h2>例: リストの長さ</h2></center>
+
+    ここでは、<i>ミス</i>を含む簡単なPrologプログラムを考えてみましょう:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 2,
+        list_length(Ls, N0).
+    </pre>
+
+    私たちの意図は、<i>リスト</i>とその <i>長さ</i>との関係を説明することです。
+
+    <br><br>
+
+    一見すると、このプログラムは複数の点で
+    意図した通りに動作しているように見えます。
+    たとえば、クエリ <tt>?-&nbsp;list_length([],&nbsp;0).</tt> は
+    意図した通りに<i>成功</i>し、
+    プログラムを使用して回答を<i>生成</i>することができます:
+
+    <pre>
+?- list_length(Ls, _).
+   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_B]
+;  ... .
+    </pre>
+
+    それでも、このプログラムは<i><b>間違っています</b></i>!
+
+    <br><br>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_ex_list')">原文</button>
+    <div id="原文_ex_list" class="hide_on_start">
     <center><h2>Example: Length of a list</h2></center>
 
     Let us consider a simple Prolog program that <i>contains a
@@ -58,7 +124,48 @@ list_length([_|Ls], N) :-
     Nevertheless, the program is <i><b>wrong</b></i>!
 
     <br><br>
+    </div>
 
+    <center><h2>非終了のテスト</h2></center>
+
+    最初のテストの目的は、プログラムの望ましい
+    <a href="termination"><b>終了性のプロパティ</b></a>
+    を確認することです。
+    たとえば、<tt>list_length/2</tt> の場合、
+    プログラムが<i>最も一般的な</i>クエリで終了してはならないことがわかります。
+    これは、リストの<i>すべての</i> 長さに対して関係が成り立つと期待しており、
+    このセットを有限の数の回答で報告する方法がないからです。
+
+    <br><br>
+
+    Prologクエリ <i>Q</i>の終了性を調べるには、次のクエリを使用します:
+
+    <br>
+
+    <pre>
+?- <i>Q</i>, <b>false</b>.
+    </pre>
+
+    <i>このクエリが終了する</i>場合、
+    <i>Q</i>は<b>普遍的に終了する</b>と言います。
+
+    <br><br>
+
+    具体的な例では、次のように使用します:
+
+    <pre>
+?- list_length(Ls, L), <b>false</b>.
+    </pre>
+
+    <i>終了しない</i>ことが観察できます。
+    この点では、プログラムは期待通りに動作しています。
+    しかし、終了性のプロパティをテストするだけでは、
+    すべてのミスを検出するには<i>不十分</i>です。
+    他に何をすることができますか？
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_nontermination')">原文</button>
+    <div id="原文_nontermination" class="hide_on_start">
     <center><h2>Testing nontermination</h2></center>
 
     Our first tests aim to ensure
@@ -96,9 +203,48 @@ list_length([_|Ls], N) :-
     program behaves as expected. However, testing termination
     properties is <i>not sufficient</i> to detect all mistakes. What
     else can we do?
+    </div>
+
+    <center><h2>具体的なテストケース</h2></center>
+
+    <i>具体的な</i> <b>テストケース</b>を試すことで、
+    <i>成功するべき</i>または<i>失敗するべき</i>ことが
+    わかっていることを確認できます。
+    Prologでは、<a href="purity">純粋な</a>プログラムを
+    この方法でテストするのが非常に簡単です。
+    トップレベルでクエリを試すだけで済みます！
+    さらに、Prologの組み込みバックトラッキング機構を使うと、
+    多くの具体的なテストケースを一度に表現するのが非常に簡単です。
 
     <br><br>
 
+    たとえば、すでに述べたように、この関係は
+    <i>すべての</i> 長さのリストに対して回答を返すべきです。
+    特に、<tt>[]</tt>、<tt>[a]</tt>、<tt>[a,a]</tt>、...&nbsp;
+    などの形のリストに対して成功するべきです。
+
+    <br><br>
+
+    反例が存在するかどうかを確認してみましょう:
+
+    <pre>
+?- maplist(=(a), Ls), \+ list_length(Ls, _).
+    </pre>
+
+    反例は報告されません。
+    したがって、この点でもプログラムは意図通りに動作しています。
+    このテストケースをさらに<i>一般化</i>して、
+    たとえば次のようにしてみましょう:
+
+    <pre>
+?- maplist(=(_), Ls), \+ list_length(Ls, _).
+    </pre>
+
+    この大規模な一般化を行っても、反例は報告されません。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_concrete_test_cases')">原文</button>
+    <div id="原文_concrete_test_cases" class="hide_on_start">
     <center><h2>Concrete test cases</h2></center>
 
     We can try <i>concrete</i> <b>test cases</b> that we <i>know</i>
@@ -135,8 +281,31 @@ list_length([_|Ls], N) :-
 
     Again, no counterexample is reported, even with this massive
     generalization.
+    </div>
+
+    <center><h2>リファレンス実装とのテスト</h2></center>
+
+    他に何ができるでしょうか？
+    例えば、<i>リファレンス</i>実装に対してテストすることができます。
+    具体的なケースでは、ほぼすべてのProlog実装には、
+    私たちが記述しようとしている関係と<i>完全に一致する</i>
+    <tt>length/2</tt>という述語が含まれています。
+    リファレンス実装に対してテストすることで、
+    プログラムに間違いがあることが即座に明らかになります：
+
+    <pre>
+?- A #\= B, length(Ls, A), list_length(Ls, B).
+   A = 1, B = 2, Ls = [_A]
+;  A = 2, B = 4, Ls = [_A,_B]
+;  A = 3, B = 6, Ls = [_A,_B,_C]
+;  ... .
+    </pre>
+
+    もちろん、ほとんどの場合、リファレンス実装は<i>存在しません</i>！
 
     <br><br>
+    <button onclick="toggleOriginalContent('原文_reference_implementation')">原文</button>
+    <div id="原文_reference_implementation" class="hide_on_start">
     <center><h2>Testing against a reference implementation</h2></center>
 
     What else can we do? We can for example test against
@@ -157,9 +326,45 @@ list_length([_|Ls], N) :-
 
     Of course, in most cases we do <i>not</i> have a reference
     implementation!
+    </div>
+
+    <center><h2>宣言的性質のテスト</h2></center>
+
+    私たちは、関係が正しく実装されている場合に
+    <i>必ず</i>成り立つ<em>プロパティ</em>を用いて
+    その関係をテストできます。
+    例えば、今回のケースでは、
+    リスト<tt>Ls</tt>の長さが<i>N</i>であるならば、
+    リスト<tt>[_|Ls]</tt>の長さは<i>N</i>+1であるべきだ
+    と知っています。
+    このプロパティに対する<em>反例</em>を探してみましょう：
+
+    <pre>
+?- list_length(Ls, N), list_length([_|Ls], N1), N1 #\= N + 1.
+   Ls = [], N = 0, N1 = 2
+;  ... .
+    </pre>
+
+    これが反例です。
+    この解決策から、
+    <tt>[]</tt>の長さまたは
+    <tt>[]</tt>の長さが
+    <i>正しく</i>記述されていないことがわかります。
+    この場合、<tt>[]</tt>の長さは<i>1であるべき</i>ですが、
+    <i>不正確に</i>2として扱われています。
+    特に、次のクエリが<i>不正確に</i>失敗します：
+
+    <pre>
+?- list_length([_], 1).
+false.
+    </pre>
+
+    次に<b><a href="debugging">宣言的デバッグ</a></b>に進み、
+    どのようにして間違いを特定し、修正するかを見ていきましょう。
 
     <br><br>
-
+    <button onclick="toggleOriginalContent('原文_declarative_properties')">原文</button>
+    <div id="原文_declarative_properties" class="hide_on_start">
     <center><h2>Testing declarative properties</h2></center>
 
     We can test the relation by using further <b>properties</b> that
@@ -190,9 +395,23 @@ false.
     Continue with <b><a href="debugging">Declarative
     Debugging</a></b> to see how we can locate and correct the
     mistake.
+    </div>
 
+    <center><h2>さらなる読み物</h2></center>
+
+    上で紹介した方法は決して網羅的ではありません。
+    Prologプログラムをテストするための他の宣言的な方法もいくつか存在します。
+    その中でも特に有望な方法として、Mesnardらによって説明された
+    <i>concolic testing</i>があります。
+    詳細については、
+    Mesnard&nbsp;et&nbsp;al.
+    <a href="https://personales.upv.es/gvidal/german/iclp15/paper_CORR.pdf"><i><b>Concolic
+    Testing in Logic Programming</b></i></a>
+    や、関連する参考文献を参照してください。
     <br><br>
 
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
     
     The approaches we describe above are by no means exhaustive. There
@@ -203,7 +422,7 @@ false.
     <a href="https://personales.upv.es/gvidal/german/iclp15/paper_CORR.pdf"><i><b>Concolic
     Testing in Logic Programming</b></i></a> and the included
     references.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

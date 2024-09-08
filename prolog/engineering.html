@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Engineering Aspects</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Programming: Software Engineering Aspects">
@@ -8,14 +9,80 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>エンジニアリングの側面</h1></center>
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_engineering_aspects')">原文</button>
+    <div id="原文_engineering_aspects" class="hide_on_start">
     <center><h1>Engineering Aspects</h1></center>
+    </div>
+
+    <center><h2>Prolog開発環境</h2></center>
+
+    Prolog コーディングを特別サポートする優れた開発環境がいくつかあります。
+
     <br>
 
+    たとえば、GNU Emacs をProlog 用に構成するには、
+    <a href="/pceprolog/">PceProlog</a>
+    を参照してください。
+
+    <br><br>
+
+    <tt>comp.lang.prolog</tt> の <a href="/prolog/faq/">FAQ</a>
+    には、いくつかの追加環境へのポインタが含まれています。
+
+    <br><br>
+
+    Prologシステムには、コードの<i>コンパイル</i>と<i>コンサルト</i>を容易にする
+    さまざまな機能が搭載されています。
+    たとえば、SWI-Prolog では、組み込み述語<tt>make/0</tt>を呼び出して、
+    すべてのソース ファイルを再コンサルトできます。
+    この機能は、使用している他の機能に応じて、さまざまな程度で機能します。
+    <a href="/ediprolog/">ediprolog</a>を使用すると、
+    Emacs バッファーにとどまり、バッファー内で直接 Prolog を操作できます。
+
+    <br><br>
+
+    自分にとって最も適したシステムを使用することをお勧めします。
+    つまり、Prolog 開発には Emacs を使用することをお勧めします。
+    キーボードを構成して、<tt>Caps Lock</tt>を追加の<tt>Ctrl</tt>キーとして
+    使用できるようにしてください。
+    私の経験では、Emacs は<i>Dvorak</i>キーボードレイアウトが最も使いやすいです。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="/prolog/videos/emacs"><img src="/prolog/videos/t_emacs.png" alt="Prolog development with GNU Emacs"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_development_environment')">原文</button>
+    <div id="原文_development_environment" class="hide_on_start">
     <center><h2>Prolog Development Environment</h2></center>
 
     There are several good <i>development environments</i> with
@@ -59,7 +126,63 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2>モジュールシステム</h2></center>
+
+    <i>大規模</i>プログラミング、
+    <i>中規模</i>プログラミング、さらには
+    <i>他の</i>いくつかの種類のプログラミングでも、
+    Prolog の<i>モジュールシステム</i>を使用して
+    コードの論理単位を分離する必要があります。
+
+    <br><br>
+
+    異なる Prolog 実装では、さまざまな<i>種類</i>のモジュールシステムを
+    サポートしています。
+    特に、
+    <i>関数ベース</i>のモジュールシステムと
+    <i>述語ベース</i>のモジュールシステムがあり、
+    結果とトレードオフが異なります。
+    モジュールシステムを<i>設計</i>し、すべての結果について考えるのは
+    非常に困難です。通常、モジュール システムには矛盾する要件が課されます。
+    一方では、モジュールを使用して
+    <i>関心事を分離したい</i>が、他方では、真の分離に反する
+    <i>コードイントロスペクション</i>や
+    その他の機能をサポートしたいという要件です。
+    したがって、一般的なモジュール システムは最終的に一貫性がありませんが、
+    ソース ファイルを構造化し、名前の競合を回避するのに役立ちます。
+
+    <br><br>
+
+    特定のモジュール システムの<i>使用</i>は通常、非常に簡単です。
+    基本的に、通常は、次のように、ソースファイルに
+    <tt>module/2</tt> (または同様の) ディレクティブ を配置します。
+
+    <pre>
+:- module(my_nice_module, [first_exported_predicate/2,
+                           second_exported_predicate/1,
+                           third_exported_predicate/4,
+                           ...
+                          ]).
+    </pre>
+
+    ここで、<i>エクスポート</i>されたさまざまな述語は、
+    述語<i>インジケータ</i>(名前とアリティ) によってリストされます。
+    モジュールを<i>使用する</i>Prolog ファイルでは、
+    次のように、対応する<tt>use_module/1</tt> (または同様の)
+    ディレクティブを配置します:
+
+    <pre>
+:- use_module(my_nice_module).
+    </pre>
+
+    大きな利点は、<tt>my_nice_module</tt>の<i>内部</i>述語が
+    他のプログラムやモジュールの内部述語と競合しないことです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_module_systems')">原文</button>
+    <div id="原文_module_systems" class="hide_on_start">
     <center><h2>Module Systems</h2></center>
 
 
@@ -112,7 +235,56 @@
     A major advantage is that the <i>internal</i> predicates
     of <tt>my_nice_module</tt> cannot cause conflicts with internal
     predicates of other programs and modules.
+    </div>
 
+    <center><h2>タイミングとプロファイリング</h2></center>
+
+    Prolog システムによって、述語の時間を計測してプロファイルする方法は異なります。
+    たとえば、Scryer Prolog では、
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/time.pl"><tt>library(time)</tt></a>
+    述語<tt>time/1</tt>を使用して、任意の目標の実行時間を測定できます。
+    たとえば、次のようになります:
+
+    <pre>
+?- <b>time</b>((X in 0..1_000,indomain(X),false)).
+   <b>% CPU time: 0.389s</b>
+false.
+    </pre>
+
+    SWI-Prolog には、<tt>profile/1</tt>で呼び出せる
+    非常に優れたプロファイラーが付属しています。
+    プロファイルする目標を引数として指定するだけです。
+    SICStus Prolog などの他のシステムにも組み込みの
+    <a href="https://sicstus.sics.se/sicstus/docs/4.3.2/html/sicstus/Execution-Profiling.html">プロファイラー</a>
+    が付属しています。
+
+    <br><br>
+
+    ほとんどの Prolog システムでは、述語の<tt>statistics/2</tt>が提供されており、
+    これを使用して独自の測定を行うことができます。
+    たとえば、ゴールとそれが成功するまでの CPU 時間の<i>関係</i>を定義できます。
+
+    <pre>
+goal_time(Goal, T) :-
+        statistics(runtime, [T0|_]),
+        Goal,
+        statistics(runtime, [T1|_]),
+        T #= T1 - T0.
+    </pre>
+
+    次のクエリを使用して、任意のGoalの CPU 時間 (ミリ秒単位) を
+    取得できるようになりました 。
+
+    <pre>
+?- goal_time(Goal, Time).
+    </pre>
+
+    述語のパフォーマンスを測定するには、
+    このようなツールの利用を強くお勧めします。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_timing_and_profiling')">原文</button>
+    <div id="原文_timing_and_profiling" class="hide_on_start">
     <center><h2>Timing and Profiling</h2></center>
 
     Different Prolog systems provide different ways to <i>time</i>
@@ -156,8 +328,79 @@ goal_time(Goal, T) :-
     </pre>
 
     I highly recommend such tools to measure the performance of your predicates.
+    </div>
 
+    <center><h2 id="errors">例外とエラー</h2></center>
 
+    Prolog は<i>例外</i>の発生と処理をサポートしています。
+    名前が示すように、このメカニズムは<i>例外的な</i>状況を処理するのに役立ちます。
+    これらの状況のいくつかは、すでに ISO 標準で規定されています。
+    最も重要なものは次のとおりです:
+
+    <ul>
+      <li><b>型エラー</b>:
+        この例外は、特定の<i>型</i>の項が期待されているのに、
+        異なる種類の項が存在する場合に発生します。
+        ISO 標準では、型エラーが発生する可能性のある項のセット
+        (<i>整数</i>、<i>リスト</i>など) が明示的に定義されています。</li>
+      <li><b>ドメインエラー</b>:
+        これは型エラーと非常によく似ています。
+        存在するものとは異なる<i>種類</i>の項が期待されています。
+        型エラーとの違いは、期待される項の種類が、
+        標準で定義されている定義済み型の中にないことです。</li>
+      <li><b>インスタンス化エラー</b>:
+        この例外は、述語引数が十分に<i>インスタンス化</i>されていない場合、
+        つまり、より具体的な用語が予想される場所に
+        <i>変数</i>が発生した場合に発生します。</li>
+    </ul>
+
+    これらの例外には非常に重要な意味上の違いがあります。
+    宣言的には、<i>型</i>エラーまたは<i>ドメイン</i>エラーは、
+    サイレント<i>失敗</i>に置き換えることができます。
+    これは、(単調な) プログラムにこれ以上の制約を追加しても、
+    このような状況を成功に変えることができないためです。
+    一方、<i>インスタンス化</i>エラーは、サイレント エラーに
+    <i>置き換えてはなりません</i>。
+    このような場合でも解決策が存在する可能性があり、
+    さらに制約を追加すると、解決策が明らかになる可能性があるためです。
+
+    <br><br>
+
+    これらのケースを示す 2 つの例を次に示します:
+
+    <pre>
+?- X #= a.
+ERROR: <b>Domain error</b>: `clpfd_expression' expected, found `a'
+
+?- X in Y.
+ERROR: Arguments are not sufficiently instantiated
+    </pre>
+
+    さらに制約を追加すると、<i>2 番目の</i>クエリが成功することが簡単にわかります。
+
+    <pre>
+?- <b>Y = 0..5</b>, X in Y.
+Y = 0..5,
+X in 0..5.
+    </pre>
+
+    ただし、追加の目標では<tt>X #= a</tt>を
+    成功させることはできないため、この<i>ドメインエラー</i>は
+    失敗に置き換えられる可能性もあります。
+
+    <br><br>
+
+    例外的な状況では、問題の<i>原因</i>を推測できるため、
+    通常はサイレント失敗よりも例外の方が便利です。
+
+    <br><br>
+
+    標準述語<tt>throw/1</tt>を使用して例外を発生させ、
+    標準述語<tt>catch/3</tt>を使用して例外を処理できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_errors')">原文</button>
+    <div id="原文_errors" class="hide_on_start">
     <center><h2 id="errors">Exceptions and Errors</h2></center>
 
     Prolog supports raising and handling <i>exceptions</i>. As the
@@ -232,7 +475,28 @@ X in 0..5.
     You can use the standard&nbsp;predicate <tt>throw/1</tt>
     to <i>raise</i> an exception, and the standard
     predicate <tt>catch/3</tt> to handle exceptions.
+    </div>
 
+    <center><h2>単体テスト</h2></center>
+
+    <i>単体テスト</i>は、コードの回帰を検出するのに非常に重要なツールです。
+
+    <br><br>
+
+    Prologは、ユニット テストの作成と実行に非常に適しています。
+    宣言的な記述と Prolog に組み込まれた
+    バックトラッキング メカニズムを使用すると、
+    さまざまなテストを網羅するテストをすばやく作成できます。
+    基本的に、保持<i>すべき</i>内容を記述し、これらのクエリを<i>実行</i>して、
+    保持<i>している</i>かどうかをテストします。
+
+    <a href="http://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)">PlUnit</a>
+    と呼ばれるユニット テスト フレームワークがあり、
+    SWI-Prolog<i>および</i>SICStus Prolog で使用できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_unit_tests')">原文</button>
+    <div id="原文_unit_tests" class="hide_on_start">
     <center><h2>Unit Tests</h2></center>
 
     <i>Unit tests</i> are an extremely important tool to detect
@@ -252,7 +516,7 @@ X in 0..5.
     There is a unit testing framework
     called <a href="http://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)">PlUnit</a>
     that is available for SWI-Prolog <i>and</i> for SICStus&nbsp;Prolog.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

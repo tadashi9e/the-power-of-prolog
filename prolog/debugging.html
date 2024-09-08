@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Debugging Prolog Programs</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Declarative debugging of Prolog programs">
@@ -8,11 +9,63 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
+    <center><h1>Prologプログラムのデバッグ</h1></center> <br><br>
+
+    最初に用語について一言：
+    以下では、「バグ」ではなく<b>ミス</b>という言葉を使用します。
+    その理由は以下の通りです。
+    <ul>
+      <li><i>私たち</i>がこれらのミスを犯しています。
+        それらが自然に発生するわけではありません。</li>
+      <li>ソフトウェアのミスは真剣に受け止めるべきです。
+        それらを軽視したり、言い訳をするべきではありません。</li>
+      <li>ミスは<i>修正される</i>べきです。</li>
+    </ul>
+
+    次に、Prologプログラムのミスを<i>特定</i>し、
+    <i>修正</i>するための<i>宣言的</i>な方法について考えます。
+    ここで説明する技術は、Ulrich Neumerkel が Prolog 教育環境
+    <a href="http://www.complang.tuwien.ac.at/ulrich/papers/PDF/#2002-wlpe"><b>GUPU</b></a>
+    で発明し、普及させたものです。
+
     <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/debugging"><img src="videos/t_debugging.png" alt="Prologのデバッグ"></a> </td>
+      </tr>
+    </table>
     <br><br>
+
+    この方法は、Prologプログラムの
+    <a href="reading"><b>読み方</b></a>に基づいており、
+    論理的な特性を活用してミスを素早く特定します。
+    このアプローチは<b>宣言的デバッグ</b>と呼ばれています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_debugging')">原文</button>
+    <div id="原文_debugging" class="hide_on_start">
     <center><h1>Debugging Prolog Programs</h1></center>
     <br><br>
 
@@ -49,8 +102,55 @@
     of <a href="reading"><b>reading Prolog programs</b></a>,
     exploiting logical properties to quickly narrow down mistakes.  We
     call this approach <b>declarative&nbsp;debugging</b>.
+    </div>
 
+    <center><h2>トレースの限界</h2></center>
 
+    Prologプログラムでミスを発見し、手続き型言語に慣れている場合、
+    Prologプログラムを主に<i>手続き的</i>に考え、
+    計算の制御フローを理解しようとして<i>トレース</i>を試みるかもしれません。
+    これを手助けするいくつかのツールがあります。
+    例えば、次のコマンドを試してください。
+
+    <pre>
+?- trace, your_goal.
+    </pre>
+
+    または、
+
+    <pre>
+?- gtrace, your_goal.
+    </pre>
+
+    これで、Prologシステムが提供する
+    テキストまたはグラフィカルなトレーサーで
+    プログラムをトレースできます。
+
+    <br><br>
+
+    しかし、<b>トレースには限界</b>があります。
+    重要な理由の一つは、トレーサーも<i>プログラム</i>であり、
+    <i>また</i>ミスを含むことがあるためです。
+    特に複雑なプログラムでは、トレーサーのミスや不備、限界に対処することが、
+    プログラムのミスに加えて必要になります。
+    また、トレースはすぐに非常に<i>複雑</i>になり、
+    理解が難しくなります。
+    さらに、トレーサーを使うことで手続き的な考え方が助長され、
+    宣言的プログラムのミスを見つけるための
+    よりエレガントな技術や方法を学ぶことが難しくなります。
+
+    <br><br>
+
+    これらの理由から、本テキストでは
+    <i>宣言的</i>アプローチに重点を置いています。
+    これらは簡単に適用でき、ミスを素早く特定することができ、
+    宣言的な技術の使用を促進します。
+    これにより、宣言的プログラムのミスを見つけるためのアプローチが、
+    より広く適用可能になります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tracing')">原文</button>
+    <div id="原文_tracing" class="hide_on_start">
     <center><h2>Tracing falls short</h2></center>
 
     When you detect a mistake in a Prolog program, and you are used to
@@ -92,8 +192,50 @@
     mistakes, and encourage the use of declarative techniques that
     also make declarative approaches for locating mistakes more widely
     applicable.
-    
+    </div>
 
+    <center><h2>Prologプログラムにおけるミス</h2></center>
+
+    純粋なPrologプログラムが<i>終了</i>しても、
+    間違いが発生する主な原因は2つあります。
+    それは以下のいずれかです：
+
+    <ul>
+      <li><i>一般化されすぎている</i></li>
+      <li><i>特定されすぎている</i></li>
+    </ul>
+
+    Prologプログラムが<b>一般化されすぎている</b>場合、
+    それは意図しない解が生成されていることを意味します。
+    逆に、Prologプログラムが<b>特定されすぎている</b>場合、
+    意図した解が報告されません。
+    前者の場合は、意図しない解を排除するために
+    <i>制約</i>を追加する必要があります。
+    後者の場合、プログラムを<i>一般化</i>する必要があります。
+    これらのケースは相互排他的ではなく、
+    Prologプログラムが同時に一般化されすぎている場合と、
+    特定されすぎている場合があります。
+
+    <br><br>
+
+    初心者が最初のPrologプログラムを書く際によくある質問は、
+    「<i>なぜ</i>私の述語が失敗するのですか？」というものです。
+    これは、述語が<i>成功するはず</i>なのに失敗することを意味します。
+    つまり、述語が<i>特定されすぎている</i>ため、
+    <i>一般化</i>する必要があるということです。
+    この質問自体は非常に適切です：
+    <i>なぜ</i>という問いは自然です。
+    Prologが実行する正確な<i>ステップ</i>、
+    つまり<i>どのように</i>失敗するかを追跡するのは、
+    極めて不便であり、多くの場合、ほぼ不可能です。
+    私たちは、低レベルの<i>トレース</i>よりも、
+    高レベルの<i>説明</i>に関心を持っています。
+    したがって、Prologを使用して意図しない失敗の<i>理由</i>、
+    すなわちプログラム内で意図しない失敗を<i>引き起こしている</i>部分を特定します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_mistakes')">原文</button>
+    <div id="原文_mistakes" class="hide_on_start">
     <center><h2>Mistakes in a Prolog program</h2></center>
 
     There are two main ways in which a pure Prolog program
@@ -128,8 +270,47 @@
     We will thus use Prolog to locate the <i>reasons</i> for
     unintended failures, i.e., those parts of our programs
     that <i>cause</i> unintended failures.
+    </div>
 
+    <center><h2>例：リストの長さ</h2></center>
 
+    次に、<i><b>ミス</b></i>を含むシンプルな
+    Prologプログラムを考えてみましょう：
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 2,
+        list_length(Ls, N0).
+    </pre>
+
+    このプログラムは、<i>リスト</i>と
+    その <i>長さ</i>の関係を記述することを意図しています。
+    ここで、<a href="testing"><b>宣言的テスト</b></a>で
+    説明されている方法を使って、以下のクエリが
+    <i>間違って</i>失敗することから、
+    このプログラムが<i>特定されすぎている</i>ことがわかります：
+
+    <pre>
+?- list_length([_], 1).
+   false.
+    </pre>
+
+    実際には、このプログラムは<i>一般化されすぎている</i>部分もあり、
+    以下のクエリが意図せず<b>成功</b>します：
+
+    <pre>
+?- list_length([_], 2).
+   true.
+    </pre>
+
+    ここでは、計算の詳細を理解しようとするのではなく、
+    プログラムの<i>意味</i>について宣言的に推論しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_ex_list')">原文</button>
+    <div id="原文_ex_list" class="hide_on_start">
     <center><h2>Example: Length of a list</h2></center>
 
     Let us consider a simple Prolog program that <i>contains a
@@ -166,7 +347,95 @@ list_length([_|Ls], N) :-
     Note that we declaratively reason about the <i>meaning</i> of the
     program, without attempting to understand details of the
     computation.
+    </div>
     
+    <center><h2>ミスの特定</h2></center>
+
+    プログラム内のミスの正確な<b>場所</b>を
+    どのように見つけられるでしょうか？
+    Prologの<a href="purity"><b>純粋な</b></a>単調部分に適用できる、
+    とても優れた方法が Ulrich Neumerkel によって
+    SWI-Prolog メーリングリストに投稿されました。
+    ここではその技法を使用します。
+
+    <br><br>
+
+    この方法のアイデアは、プログラム内に以下の定義を導入することです：
+
+    <div>
+      <pre class="box">
+:- op(920,fy, *).
+
+*_. </pre>
+    </div>
+
+    Scryer Prologでは、<tt>(*)/1</tt>は
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/debug.pl"><tt>library(debug)</tt></a>
+    で使用できます。
+
+    <br><br>
+
+    目標の前に<tt>(*)/1</tt>を置くことで、その目標を<b>一般化</b>します。
+    これは、その目標が<i>まったく</i>記述されていないかのように
+    扱うことを意味します。目標を「コメントアウト」することもできますが、
+    <tt>(*)/1</tt>を使う方がはるかに便利です。
+    特に、<i>最後</i>の目標でもエラーなく使える点が有利です。
+    ここでは、取り除かれた目標を<s>取り消し線</s>で示します。
+
+    <br><br>
+
+    まず、<i>すべての</i>明示的な目標を一般化します：
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        <b>*</b> <s>N #&gt; 0</s>,
+        <b>*</b> <s>N #= N0 + 2</s>,
+        <b>*</b> <s>list_length(Ls, N0)</s>.
+    </pre>
+
+    これにより、プログラムは大幅に<i>一般化</i>されます。
+    もちろん、今度は非常に<i>一般化されすぎ</i>ていますが、
+    少なくとももう特定されすぎではなくなりました。
+    特に、以前意図せず<i>失敗</i>したクエリが今度は<i>成功</i>します：
+
+    <pre>
+?- list_length([_], 1).
+   true.
+    </pre>
+
+    導入した<tt>(*)/1</tt>の一部を体系的に取り除くことで、
+    ミスの箇所を<b>絞り込む</b>ことができます。
+    例えば、次の定義を使用すると：
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        * <s>N #= N0 + 2</s>,
+        list_length(Ls, N0).
+    </pre>
+
+    この場合、クエリはまだ<i>成功</i>しますが、
+    今一般化された目標を<i>含める</i>と、クエリは再び<i>失敗</i>します。
+    したがって、この<b>目標をチェック</b>してください！
+    少し考えると、次の修正にすぐにたどり着きます：
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + <b>1</b>,
+        list_length(Ls, N0).
+    </pre>
+
+    この修正されたプログラムは、
+    <a href="testing"><b>宣言的テスト</b></a>で説明された
+    すべてのテストに合格します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_locating_mistakes')">原文</button>
+    <div id="原文_locating_mistakes" class="hide_on_start">
     <center><h2>Locating mistakes</h2></center>
 
     How can we find the precise <b>location</b> of mistakes in our
@@ -250,7 +519,60 @@ list_length([_|Ls], N) :-
 
     This corrected program passes all tests explained
     in <a href="testing"><b>Declarative Testing</b></a>.
+    </div>
 
+    <center><h2>この技法の評価</h2></center>
+
+    ここで一息ついて、上記で説明されたアプローチについて振り返ってみましょう。
+    明らかに、この方法は次の重要な性質に基づいています：
+
+    <blockquote>
+      <b>目標を取り除く</b>ことは、
+      述語を<b>より一般化</b>させるだけで、
+      <i>決して</i>より特定化することはない。
+    </blockquote>
+
+    この性質は、純粋かつ単調なPrologコードに対して<b>成り立ちます</b>。
+    これは、Prologの
+    <a href="https://https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%B3%E3%82%B0%E5%AE%8C%E5%85%A8">チューリング完全</a>
+    （<a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing&nbsp;complete</a>）
+    な部分集合であり、既知のすべての計算を表現するのに十分です。
+    しかし、議論のために仮に、あなたのアプリケーションのアイデアが非常に巨大で、
+    この断片の表現力を<i>超える</i>と仮定しましょう。
+    それでもなお、プログラムに<i>変更</i>を加えたときに、
+    その意味にどのように影響するかについて、
+    これほど強力で一般的な主張ができるのは驚くべきことです。
+    現実的には、この断片は計算上、言語全体と同じくらい表現力豊かであるため、
+    なおさら驚異的です。
+
+    <br><br>
+
+    実際、この性質だけでもPrologは非常に独特です。
+    他のプログラミング言語とこの性質を比較してみましょう。
+    Java、C++、またはHaskellのプログラムに同様の変更を加えた場合、
+    その意味にどのような影響がありますか？
+    例えば、Javaプログラムの<tt>for</tt>ループや、
+    C++プログラムの<tt>if-then-else</tt>ブロック、
+    Haskellの<tt>do</tt>ブロック内の行を削除した場合、
+    プログラムはどのように変わるでしょうか？
+    そのようなプログラムは常に<i>コンパイル</i>されるでしょうか？
+
+    <br><br>
+
+    Prolog以外の<i>どの</i>プログラミング言語の<i>どの</i>断片に対しても、
+    このような主張をすることはできるでしょうか？
+
+    <br><br>
+
+    純粋かつ単調なPrologコードに対しては、他にも興味深い性質が多数存在し、
+    これらもプログラム内のミスを特定するために利用できます。
+    このような宣言的な手法の利用可能性と有用性が、
+    Prologプログラムの論理的な純度を評価し、
+    保つことを促進することを期待しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_appreciating')">原文</button>
+    <div id="原文_appreciating" class="hide_on_start">
     <center><h2>Appreciating the technique</h2></center>
 
     Let us briefly pause and reflect on the approach outlined above.
@@ -298,8 +620,31 @@ list_length([_|Ls], N) :-
     that the availability and usefulness of such declarative methods
     encourage you to value and retain logical&nbsp;purity of your
     Prolog programs.
+    </div>
 
+    <center><h2>さらなる読み物</h2></center>
 
+    Ehud Shapiroは、1982年の博士論文
+    <a href="http://cpsc.yale.edu/sites/default/files/files/tr237.pdf"><i>Algorithmic Program Debugging</i></a>
+    でPrologにおける宣言的デバッグ手法を先駆けて提唱しました。
+
+    <br><br>
+
+    プログラムが意図せず<i>終了しない</i>場合の理由については、
+    <a href="nontermination"><b>非終了</b></a>のセクションを参照してください。
+
+    宣言的にプログラムを考察するための追加の定義については、
+    StackOverflowの
+    <a href="http://stackoverflow.com/questions/tagged/failure-slice"><b>failure-slice</b></a>
+    タグや
+    <a href="http://stackoverflow.com/a/30791637/1613573">こちらの回答</a>、
+    そして
+    <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/diadem.pl"><b>library(diadem)</b></a>
+    を参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
     Ehud Shapiro pioneered declarative debugging methods for Prolog in
@@ -318,7 +663,7 @@ list_length([_|Ls], N) :-
     <a href="http://stackoverflow.com/a/30791637/1613573">additional
     definitions</a> for reasoning declaratively about programs,
     and <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/diadem.pl"><b>library(diadem)</b></a>.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

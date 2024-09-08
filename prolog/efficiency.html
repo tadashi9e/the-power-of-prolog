@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Efficiency of Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Efficiency">
@@ -8,11 +9,42 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologの効率</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      <pre>
+        Prologの重要な点として、PUREなものは高速で、命令形のものは遅い。
+        これは Pascal のような言語とは正反対である。
+        (<a href="http://www.cs.otago.ac.nz/staffpriv/ok/">Richard O'Keefe</a>, Prolog Digest, 1987)
+      </pre>
+    </div>
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_efficiency')">原文</button>
+    <div id="原文_efficiency" class="hide_on_start">
     <center><h1>Efficiency of Prolog</h1></center>
     <br>
 
@@ -24,8 +56,91 @@ imperative things are slow, which is the direct opposite of languages
 like Pascal. (<a href="http://www.cs.otago.ac.nz/staffpriv/ok/">Richard O'Keefe</a>, Prolog Digest, 1987)
       </pre>
     </div>
+    </div>
+
+    <center><h2>はじめに</h2></center>
+
+    Prolog は<i>高速</i>ですか?<i>遅い</i>ですか?
+    タスクを実行するのに十分な速さですか?
+    (ほとんどの場合、はい)。
+
     <br><br>
 
+    Prologは<i>プログラミング言語</i>であり、
+    他のプログラミング言語と同様に、<i>実装方法</i>は多数あります。
+    たとえば、Prolog プログラムを
+    抽象または具体的なマシンコードに<i>コンパイル</i>したり、
+    さまざまな手法で Prolog プログラムを<i>解釈</i>したりできます。
+    Prolog の最も一般的な実装手法は、
+    <i>抽象マシンコード</i>に<i>コンパイル</i>することです。
+    これは、Pascal、Lisp、Java などの他の言語の最も一般的な実装方法に似ています。
+    <a href="https://en.wikipedia.org/wiki/Warren_Abstract_Machine"><b>Warren Abstract Machine (WAM)</b></a>
+    は、 Prolog の最もよく知られたターゲットマシンの 1 つです。
+    その他の一般的な選択肢は、ZIP と TOAM です。
+    一部の実装は、<i>ネイティブコード</i>にコンパイルすることもできます。
+
+    <br><br>
+
+    たとえば、GNU Prolog では、
+    <a href="clpfd#list_length"><tt>list_length/2</tt></a>
+    Prolog <a href="data#term">項</a>を使用して表される
+    次の抽象マシン命令に変換されます。
+
+    <pre>
+predicate(list_length/2,5,static,private,user,[
+    switch_on_term(1,2,fail,4,fail),
+
+label(1),
+    try_me_else(3),
+
+label(2),
+    get_nil(0),
+    get_integer(0,1),
+    proceed,
+
+label(3),
+    trust_me_else_fail,
+
+label(4),
+    allocate(2),
+    get_list(0),
+    unify_void(1),
+    unify_variable(y(0)),
+    put_value(x(1),0),
+    put_structure((+)/2,1),
+    unify_variable(y(1)),
+    unify_integer(1),
+    call((#=)/2),
+    put_value(y(0),0),
+    put_value(y(1),1),
+    deallocate,
+    execute(list_length/2)]).
+    </pre>
+
+    <i>実際に</i>この述語を呼び出すときに解釈されるのは、このような命令です。
+    実際、GNU Prolog はこれを超えて、このような命令を
+    <i>ネイティブコード</i>にさらに変換します。
+
+    <br><br>
+
+    以下では、<i>効率</i>は言語自体<i>ではなく</i>、
+    Prolog<i>実装</i>の特性であることに注意してください。
+
+    <br><br>
+
+    少なくとも 2<i>種類</i>の効率を区別します：
+    <ul>
+      <li><b>空間</b>効率。
+        プログラムが<i>メインメモリ</i>（RAM）をどれだけ使用するかを示す。</li>
+      <li><b>時間</b>効率。
+        プログラムがどのくらいの時間実行されるかを示します。</li>
+    </ul>
+
+    どちらの種類の効率も、実際には、Prolog でプログラミングする場合にも、非常に重要です。 
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     <i>Is Prolog <i>fast</i>? Is it <i>slow</i>? Will it be fast enough
@@ -111,7 +226,120 @@ label(4),
 
     Both kinds of efficiency are of considerable importance in
     practice, also when programming in&nbsp;Prolog.
+    </div>
 
+    <center><h2>空間効率</h2></center>
+
+    Prolog プログラムのメモリ使用法を理解するには、
+    Prolog プログラムの実行方法について基本的な知識が必要です。
+    非常にわかりやすい入門書として、
+    Richard O'Keefe の著書「<i>The Craft of Prolog</i>」を参照してください。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/memory_usage"><img src="videos/t_memory_usage.png" alt="Memory usage of Prolog programs"></a>
+        </td>
+      </tr>
+    </table>
+
+    具体的なメモリ使用量は、使用している Prolog コンパイラ
+    またはインタープリタ、適用される最適化、および使用されている仮想マシン
+    アーキテクチャによって異なります。
+
+    <br><br>
+
+    ただし、ほとんどすべての Prolog コンパイラとインタープリタは、
+    少なくとも次のメモリ領域を区別します。
+
+    <ul>
+      <li><b>グローバルスタック</b>。
+        <i>ヒープ</i>、<i>コピースタック</i>、または単に
+        <i>スタック</i>と呼ばれることもあります。
+        Prolog<i>項</i>はこの領域で作成され、格納されます。
+      <li><b>ローカルスタック</b>。
+        述語呼び出しに用います。
+        スタック<i>フレーム</i>(<i>環境</i>とも呼ばれる) は、
+        述語が呼び出された後の処理方法を記憶するために
+        このスタックに割り当てられます。
+        述語が呼び出されたときに複数の節の先頭が一致する場合、
+        システムは後で代替案を試すことができるように
+        これを内部的に記憶する必要があります。
+        システムは、この情報を格納するために
+        <i>選択点</i>を作成すると言われます。
+      <li><b>トレイル</b>。
+        バックトラック時のバインディング取り消しに用います。</li>
+    </ul>
+
+    たとえば、使用可能な量よりも多くの
+    グローバル スタックを使用した場合に
+    Prolog システムがどのように動作するかをテストできます。
+
+    <pre>
+?- length(_, E), L #= 2^E, portray_clause(L), length(Ls, L), false.
+1.
+2.
+4.
+...
+16777216.
+33554432.
+67108864.
+ERROR: Out of global stack
+    </pre>
+
+    Prolog は、システム メモリを直接操作する手段を提供していません。
+    このため、低レベル言語でよくあるようなミスの多くは、
+    Prolog でプログラミングするときには<i>まったく発生しません</i>。
+    たとえば、Prolog では、ポインターを二重に解放したり、
+    無効な参照にアクセスしたり、
+    システム メモリの予期しない領域に誤って書き込んだり
+    することはできません。
+    プログラム実行の低レベルの側面を制御できないため、
+    Prolog 実装はいくつかのタスクを<i>自動的に</i>実行する必要があります。
+
+    <br><br>
+
+    Prolog実装は、メモリ消費量を削減するために
+    さまざまな最適化を自動的に適用します。
+    最も重要な最適化は次のとおりです。
+    <ul>
+      <li id="indexing">節の<b>引数のインデックス付け</b>により、
+        一致する節を効率的に選択し、冗長な選択ポイントの作成を防止します。
+        どの Prolog システムでも、
+        <i>少なくとも</i>述語の<i>最初の引数</i>をインデックス付け
+        することが期待できます。
+        最新の Prolog システムでは、<i>JITインデックス付け</i>を実行して、
+        パフォーマンスに<i>最も関連している</i>と思われる引数を
+        動的にインデックス付けします。
+
+      <br>
+      <br>
+      <table>
+        <tr>
+          <td><i>ビデオ</i>:</td>
+          <td><a href="videos/argument_indexing"><img src="videos/t_argument_indexing.png" alt="Argument Indexing"></a>
+          </td>
+        </tr>
+      </table>
+      <br>
+      </li>
+      <li><b>末尾呼び出し最適化</b>により、
+        呼び出しが<i>末尾の位置</i>で発生し、
+        選択ポイントが残っていない場合に、
+        ローカル スタック領域を消費せずに述語を呼び出します。</li>
+    </ul>
+
+    末尾<i>再帰</i>最適化は、末尾<i>呼び出し</i>最適化の特殊なケースです。
+
+    <br><br>
+
+    実装では通常、<i>ガベージ コレクション</i>を適用して、
+    安全に再度使用できるスタック領域を自動的に再利用します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_space')">原文</button>
+    <div id="原文_space" class="hide_on_start">
     <center><h2>Space efficiency</h2></center>
 
     To understand memory usage of Prolog programs, you need to have a
@@ -222,7 +450,98 @@ ERROR: Out of global stack
     Prolog implementations typically apply <i>garbage collection</i>
     to automatically reclaim areas of the stack that can be safely
     used&nbsp;again.
+    </div>
 
+    <center><h2>時間効率</h2></center>
+
+    Prolog プログラムの<b>時間効率</b>は、
+    使用しているコンパイラやインタープリタに大きく依存し、
+    利用可能な Prolog 実装はパフォーマンスに関して<i>大幅</i>に異なります。
+    一部の Prolog 実装者は、多数のベンチマークで最高のパフォーマンスを達成するために
+    多大な努力を払ってきました。
+    たとえば、 Peter Van Roy による
+    <a href="https://www.info.ucl.ac.be/~pvr/aquarius.html">Aquarius&nbsp;Prolog</a>
+    と、それに付随する博士論文
+    「論理プログラミングは命令型プログラミングと同じくらい速く実行できますか?」
+    (<a href="https://www.info.ucl.ac.be/~pvr/Peter.thesis/Peter.thesis.html"><i>Can Logic Programming Execute as Fast as Imperative Programming?</i></a>)
+    を参照してください。
+    今日でも、 Ralph Haygood による
+    <a href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/1989/5197.html"><i>A Prolog Benchmark Suite for Aquarius</i></a>
+    は、Prolog プログラマーがシステムの
+    パフォーマンスを評価するために頻繁に使用しています。
+    一部の Prolog ベンダーは、パフォーマンスよりも他の機能を優先しています。
+
+    <br><br>
+
+    ただし、すべての Prolog 実装に共通する一般的なポイントがいくつかあります。
+    まず、Prolog プログラムは通常、他の言語の同等のプログラムよりもはるかに汎用的です。
+    たとえば、Prolog 実装は<i>論理変数</i>をサポートしていますが、
+    これは他のほとんどのプログラミング言語の変数よりもはるかに汎用的です。
+    さらに、Prolog は組み込みのバックトラッキングと非決定性をサポートしていますが、
+    これらにも追加のメカニズムが必要です。
+    この汎用性のオーバーヘッドは、ほとんどの場合、<i>許容できるほど小さい</i>です。
+    こう考えてみましょう。
+    これらの機能が必要な場合、これらの機能を備えていない他の言語で実装するには、
+    <i>ほぼ同等の</i>オーバーヘッドが必要だったでしょう。
+
+    <br><br>
+
+    第 2 に、<a href="purity">純粋な</a>Prologには項の<i>破壊的な</i>更新がありません。
+    このため、(たとえば) 効率的な行列演算を実装するには、
+    Prolog コンパイラからの特別なサポートが必要です。
+    あるいは、純粋な方法で更新を表現するには、
+    少なくとも対数オーバーヘッドが必要です。
+    Prolog プログラムは、いわゆる<i>ツリーモデル</i>の計算では効率的です。
+    Prolog プログラムを、いわゆる<i>ポインタモデル</i>で
+    可能な限り効率的にできるかどうかは、未解決の研究問題です。
+    制約処理規則(<a href="https://dtai.cs.kuleuven.be/CHR/">CHR</a>)
+    がこの特性を満たすことがわかっているため、
+    各命令型アルゴリズムは、CHR で<i>漸近的に</i>最適な効率で実装できます。
+
+    <br><br>
+
+    第 3 に、アルゴリズムの選択は、通常、特定の実装よりも
+    実行時間に<i>大きな</i>影響を与えます。
+    Prolog プログラムを C++ で書き直すと 10 倍高速化できますが、
+    通常、たとえば 100 倍または 1000 倍高速化することはできません。
+
+    <br><br>
+
+    それにもかかわらず、Prolog は<i>低速</i>と関連付けられることがあります。
+    私たちの経験では、その主な理由は次のとおりです。
+
+    <ol>
+      <li>指数時間アルゴリズムは Prolog で簡単にエンコードできます。</li>
+      <li>初心者は、終了すらしない Prolog プログラムを誤って書いてしまい、
+        それを「遅い」と呼ぶことがあります。
+    </ol>
+
+    ポイント(1) については、指数時間アルゴリズムは、
+    <i>どんな</i>プログラミング言語でも、
+    <i>どんな</i>実装方法を使用しても、
+    最終的には許容できないほど遅くなるとしか言えません。
+    また、多くの Prolog システムでは、大規模な
+    <a href="optimization">組み合わせ最適化</a>タスクを
+    非常に効率的に解決できる組み込みメソッドとライブラリが提供されています。
+    実際には、これらの特殊なメカニズムのパフォーマンスは、
+    システム全体の全体的な速度よりもはるかに重要であることがよくあります。
+
+    <br><br>
+
+    ポイント (2) については、失敗スライスを介して
+    Prolog プログラムの非終了性を推論する宣言的な方法を示します。
+    「遅すぎる」プログラムを実行するときは、まずこの手法を適用して、
+    プログラムが終了するか、少なくとも終了する可能性があることを確認します。
+
+    <br><br>
+
+    一般に、効率性に関して、Prolog は、ほとんどのプロジェクトで、
+    たとえば Python や Java と同じくらい受け入れられる選択肢であり、
+    通常はほぼ同じように機能します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_time')">原文</button>
+    <div id="原文_time" class="hide_on_start">
     <center><h2>Time efficiency</h2></center>
 
     The <b>time efficiency</b> of any Prolog program depends a lot on
@@ -318,7 +637,88 @@ ERROR: Out of global stack
     In general, regarding efficiency, Prolog is at least as acceptable
     a choice as for example Python or Java for most projects, and will
     typically perform in roughly the same&nbsp;way.
+    </div>
 
+    <center><h2>効率的なPrologコードを書く</h2></center>
+
+    効率的な Prolog コードを取得するためのヒントをいくつか紹介します。
+
+    <ol>
+      <li>パフォーマンスについて考える前に、
+        述語が<i>意図したオブジェクトのみを記述</i>し、
+        終了することが<i>予想</i>されるケースで
+        <a href="termination"><i>終了する</i></a>
+        ことを確認してください。
+        初心者が Prolog のパフォーマンスについて不満を言う場合、
+        通常は終了しない述語を書いています。
+        <tt>Goal</tt>の普遍的な終了をテストするには、
+        <tt>?- Goal, <b>false</b>.</tt>
+        を使用します。</li>
+      <li>できる限り多くの作業を、基盤となる Prolog エンジンに委任します。
+        たとえば、データベースで効率的な検索が必要な場合は、
+        Prolog システムのインデックス メカニズムが
+        タスクを解決できるようにデータを表します。
+        別の例として、効率的な検索とバックトラックが必要な場合は、
+        Prolog 内で検索を定式化するよりも、
+        <i>組み込みの</i>メカニズムを使用する方が効率的である可能性があります。</li>
+      <li>常に<a href="data#clean">クリーンな</a>データ構造を目指してください。
+        これにより、さまざまなケースを<i>記号的に</i>区別し、
+        自動引数インデックスを適用できるようになります。</li>
+      <li>引数のインデックス付けを使用できない場合は、
+        一般性と決定論を維持しながら、
+        <a href="metapredicates#if_3"><tt>if_/3</tt></a>
+        を使用してさまざまなケースを区別します。</li>
+      <li>述語が<a href="clpfd"><i>整数</i></a>間の算術比較の結果に依存する場合は、
+        比較を<i>具体化</i>するために<tt>zcompare/3</tt>の使用を検討してください。
+        これにより、その結果がアトム
+        (<tt>&lt;</tt>, <tt>=</tt> または <tt>&gt;</tt>) として
+        利用できるようになるため、これも引数のインデックス付けが可能になります。</li>
+      <li>探索空間のサイズを小さくするために、早めに
+        <a href="sorting#pruning">刈り込み</a>を実行します。
+        単純なヒューリスティックは、CLP(FD)制約や<tt>dif/2</tt>など、
+        <i>常に終了する</i>目標を最初に配置することです。</li>
+      <li><a href="memoization">メモ化</a>や
+        その他の代替実行戦略について詳しく学びます。</li>
+      <li>コンパイル時により効率的なコードを生成するために、
+        <a href="macros">マクロ</a>と
+        <a href="/acomip/#pe">部分評価</a>の使用を検討してください。</li>
+    </ol>
+
+    パフォーマンスが優れていることは、多くの場合重要です。
+    ただし、マイクロ最適化に夢中にならないでください。
+    たとえば、ユーザー プログラムでは、時々選択ポイントを残すことは、
+    多くの場合まったく問題ありません。
+    同様に、冗長なソリューションを報告することは、
+    本質的に悪いことではありません。
+    初心者は、手続き的な側面にあまりにも早く引きずり込まれがちです。
+    この罠に陥らないでください。
+    代わりに、最も注意が必要なプログラムの側面に焦点を当ててください。
+    マシンと Prolog システムに、より些細な側面を処理させましょう。
+    <i>すべて</i>を最大限の効率で実装する必要はありません。
+
+    <br><br>
+
+    最も重要なのは、
+    <i>パフォーマンスのために正確さを犠牲にしない</i>ことです！
+    Prolog プログラムを作成する場合、
+    最もエレガントなソリューションは、多くの場合、
+    最も効率的なソリューションの 1 つでもあります。
+
+    <br><br>
+
+    したがって、 Prolog コードを<a href="writing">作成する</a>ときは、
+    常にエレガントで一般的なソリューションを目指してください。
+    このページのアドバイスに従っても十分に効率的でない場合は、
+    他の多くの Prolog プログラマーも恩恵を受ける可能性のある
+    新しい言語構造が必要であることを示している可能性があります。
+    そのような場合は、Prolog コミュニティに詳細を問い合わせてください。
+    たとえば、ニュースグループ
+    <a href="https://groups.google.com/forum/#!forum/comp.lang.prolog"><tt>comp.lang.prolog</tt></a>
+    は、このような議論に適した場所です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_writing_efficient')">原文</button>
+    <div id="原文_writing_efficient" class="hide_on_start">
     <center><h2>Writing efficient Prolog code</h2></center>
 
     Here are a few tips for obtaining efficient Prolog&nbsp;code:
@@ -409,7 +809,7 @@ ERROR: Out of global stack
     potentially benefit&nbsp;too. In such cases, ask the
     Prolog&nbsp;community for more information! For example, the
     newsgroup <a href="https://groups.google.com/forum/#!forum/comp.lang.prolog"><tt>comp.lang.prolog</tt></a> is a good place for such discussions.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

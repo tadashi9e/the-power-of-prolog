@@ -1,18 +1,55 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Termination</title>
+    <meta charset="UTF-8">
+    <title>停止性 - Termination</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Termination">
     <meta name="keywords" content="Prolog,Termination,Declarative">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>停止性</h1></center> <br><br>
+
+    Prologには、<i>2種類の</i> <b>停止性</b>があります：
+    <ul>
+      <li><b>存在的</b>停止性</li>
+      <li><b>普遍的</b>停止性</li>
+    </ul>
+
+    どちらの性質も一般的には
+    <a href="https://en.wikipedia.org/wiki/Undecidable_problem"><i>決定不能</i></a>
+    ですが、観察によって興味深い洞察を得ることがしばしば可能です。
+
+    <br><br>
+
+    以下では、計算中に<i>例外が発生しない</i>ことを前提とします。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_termination')">原文</button>
+    <div id="原文_termination" class="hide_on_start">
     <center><h1>Termination</h1></center>
     <br><br>
 
@@ -33,7 +70,37 @@
 
     In the following, we assume that <i>no exceptions</i> arise during
     the computation.
-        
+    </div>
+
+    <center><h2>存在的停止性</h2></center>
+
+    Prologのクエリ<tt>Q</tt>が<b>存在的に停止する</b>のは、
+    <tt>Q</tt>を実行した際に<i>解答</i>が得られる場合です。
+
+    <br><br>
+
+    たとえば、以下のクエリは<i>存在的に停止</i>します。なぜなら、解答が得られるからです：
+
+    <pre>
+?- length(Ls, L).
+<b>Ls = [],
+L = 0 .</b>
+    </pre>
+
+    もしPrologが関数型プログラミング言語であれば、これで話は終わりです。
+    なぜなら、（部分的な）関数は<i>1つ</i>の結果しか返さないからです。
+
+    <br><br>
+
+    しかし、Prologは<i>関係的</i>プログラミング言語であり、
+    関係は<i>複数の</i>エンティティ間に成立し、
+    バックトラッキングによって報告されることがあります。
+    そのため、<i>存在的</i>停止性だけでは
+    Prologクエリの手続き的な振る舞いを完全には特定できません。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_existential')">原文</button>
+    <div id="原文_existential" class="hide_on_start">
     <center><h2>Existential termination</h2></center>
 
     A Prolog query <tt>Q</tt> <b>terminates existentially</b>
@@ -62,7 +129,28 @@ L = 0 .</b>
     reported on backtracking. Therefore,
     <i>existential</i> termination does not fully characterize the
     procedural behaviour of a Prolog query.
+    </div>
 
+    <center><h2>普遍的停止性</h2></center>
+
+    Prologのクエリ<tt>Q</tt>が<b>普遍的に停止する</b>のは、
+    以下のクエリ
+
+    <pre>
+?- Q, <b>false</b>.
+    </pre>
+
+    の停止が<i>存在する</i>場合です。
+
+    <br><br>
+
+    宣言的には、クエリ<tt>?- Q, false.</tt>は常に<i>false</i>です。
+    このため、<i>もし</i>最終的に解答が得られるなら、
+    その解答は必然的に<tt>false</tt>となります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_universal')">原文</button>
+    <div id="原文_universal" class="hide_on_start">
     <center><h2>Universal termination</h2></center>
 
     A Prolog query <tt>Q</tt> <b>terminates universally</b> <i>iff</i>
@@ -80,7 +168,70 @@ L = 0 .</b>
     always <i>false</i>. For this reason, <i>if</i> an answer is
     eventually reported, then the answer is
     necessarily&nbsp;<tt>false</tt>.
+    </div>
 
+    <center><h2>停止性についてさらに詳しく</h2></center>
+
+    再度、
+    <a href="reading#list_list_together3"><tt>list_list_together/3</tt></a>
+    の定義を考えてみましょう。
+    この述語は、
+    3つ目の引数が、
+    最初と2つ目の引数のリストを<i>連結</i>したものであれば
+    真となります。
+
+    <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    この定義における2つのケースのうち、より単純なもの、
+    つまり<i>事実（ファクト）</i>は、この述語の普遍的な停止性の性質に
+    <i>何の影響も与えません</i>。
+    したがって、このファクトを「停止条件」や「終了基準」、
+    あるいはそれに関連する用語で呼ぶことは<b>誤り</b>です。
+
+    <br><br>
+
+    次のコード片だけで、最も一般的なクエリが
+    この場合に<i>停止しない</i>ことがわかります。
+
+    <pre>
+<s>list_list_together([], Bs, Bs) :- <b>false.</b></s>
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    さらに<a href="purity"><b>純粋な</b></a>節を追加しても、
+    停止しないことを防ぐことはできません。
+
+    <br><br>
+
+    この技法については、
+    <a href="reading"><b>Prologプログラムの読み方</b></a>や
+    <a href="nontermination"><b>停止しない場合</b></a>を
+    参照してください。
+    この技法は<i>プログラムスライシング</i>と呼ばれます。
+
+    <br><br>
+
+    重要なのは、プログラムスライスは<i>自動的に</i>生成でき、
+    停止しない原因を見つけるのに役立ちます。
+    詳しくは、
+    <a href="http://www.cs.unipr.it/cTI/">cTI</a>
+    や特に
+    <a href="http://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU</b></a>
+    を参照してください。
+
+    <br><br>
+
+    <a href="memoization#tabling">テーブル化</a>を使用すると、
+    Prologプログラムの停止性の側面を改善するのに役立つことがあります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_more')">原文</button>
+    <div id="原文_more" class="hide_on_start">
     <center><h2>More about termination</h2></center>
 
     Consider again the definition
@@ -133,7 +284,7 @@ list_list_together([A|As], Bs, [A|Cs]) :-
 
     <a href="memoization#tabling">Tabling</a> can help to improve
     termination aspects of Prolog&nbsp;programs.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

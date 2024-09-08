@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Combinatorial Optimization with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Combinatorial Optimization with Prolog">
@@ -8,11 +9,140 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologによる組み合わせ最適化</h1></center>
+
+    Prologは、次のような<b>組合せ</b>および
+    <b>最適化</b>タスクの解決に非常に適しています：
+
+    <ul>
+      <li><a href="/simsttab/">時間割作成</a></li>
+      <li>リソース割り当て</li>
+      <li>計画（依存するタスクの適切な順序を見つける）</li>
+      <li><a href="/sgp/">スケジューリング</a></li>
+      <li>その他</li>
+    </ul>
+
+    Prologでは、このようなタスクの解決策を<i>生成してテスト</i>するのが簡単です。
+    しかし、Prologであれ他の言語であれ、これを<i>単純に</i>行うと、
+    通常は組み合わせの数が非常に多いため、
+    すべてを生成することが不可能なプログラムになります。
 
     <br><br>
+
+    実際に役立つ多くのケースでは、Prologは
+    <b>制約</b>という宣言的な解決策を提供します。
+    制約は、探索が始まる前や進行中に探索木の大部分を<i>剪定</i>することができ、
+    これにより単純に解を列挙するよりも効率的です。
+    さらに、制約は<i>関係</i>に期待される一般性を保持しているため、
+    制約ベースのPrologプログラムを使用して、組合せタスクの解の
+    <i>生成</i>、<i>テスト</i>、および<i>完成</i>を行うことができます。
+
     <br><br>
+
+    原理的には、制約はどのプログラミング言語でも提供可能ですが、
+    論理プログラミング言語（Prologのような）では、
+    その関係性と組み込みの探索およびバックトラック機構により、
+    特にスムーズに統合されます。
+    このため、論理プログラミング言語は制約にとって
+    最も重要なホスト言語となっており、
+    広く使用されているすべてのPrologシステムには、
+    制約解決のためのいくつかのライブラリや組み込み述語が提供されています。
+
+    <br><br>
+
+    <b>CLP(<i>X</i>)</b>は、
+    <i>ドメイン</i> <i><b>X</b></i>上の
+    <b>制約論理プログラミング</b>を意味します。
+    通常のPrologは、<i>Herbrand項</i>上の制約論理プログラミング、
+    つまり、<tt>(=)/2</tt>と<tt>dif/2</tt>という、
+    項の等式と非等式を表す重要な制約を持つCLP(<i>H</i>)と見なすことができます。
+
+    いくつかの重要なドメインには専用のライブラリがあり、
+    これらのサポートはPrologシステムによって異なるため、
+    詳細は各Prologシステムのマニュアルを確認してください。
+
+    <br><br>
+
+    たとえば、SICStus Prologには以下が含まれます：
+
+    <ul>
+      <li><b>整数</b>用のCLP(FD)</li>
+      <li><b>ブール変数</b>用のCLP(B)</li>
+      <li><b>有理数</b>用のCLP(Q)</li>
+      <li><b>浮動小数点数</b>用のCLP(R)</li>
+    </ul>
+
+    Prologでは、宣言的な<a href="clpfd"><b>整数演算</b></a>を使用して、
+    組合せタスクを自然に解決することができます。
+
+    <br><br>
+
+    ここに一例があります：
+
+    <br>
+    <div class="example"> 鶏農家には牛も飼っており、
+      <b>30頭の動物</b>がいます。
+      また、すべての動物で<b>74本の足</b>があります。
+
+      <br><br>
+
+      農家には何羽の鶏がいるでしょうか？
+    </div>
+    <br><br>
+
+    答え：
+
+    <pre>
+?- Chickens + Cows #= 30,
+   Chickens*2 + Cows*4 #= 74,
+   Chickens in 0..sup,
+   Cows in 0..sup.
+<b>Chickens = 23,
+Cows = 7</b>.
+    </pre>
+
+    探索は全く必要ありませんでした。
+    制約ソルバーが<a href="clpfd#propagation"><b>制約伝播</b></a>を通じて、
+    このパズルの唯一の解を導き出しました。
+
+    <br><br>
+
+    産業および学術的な用途では、Prologシステムの制約ソルバーの効率が、
+    システムを選択する際の重要な要因になることがよくあります。
+    これは、Prologの商業利用の多くが、組合せ最適化タスクを伴うためです。
+
+    <br><br>
+
+    実際には、<i>有限</i>なドメインはすべて、
+    整数の有限な部分集合にマッピングできるため、
+    整数は最も関連性の高いドメインです。
+    したがって、すべての有限な組合せ最適化タスクは、
+    CLP(FD)の制約を通じて表現できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_combinational_optimization_with_prolog')">原文</button>
+    <div id="原文_combinational_optimization_with_prolog" class="hide_on_start">
     <center><h1>Combinatorial Optimization with Prolog</h1></center>
     <br><br>
 
@@ -135,8 +265,126 @@ Cows = 7</b>.
     all <i>finite</i> domains can be mapped to finite subsets
     of&nbsp;<i>integers</i>. Hence, all finite combinatorial
     optimization tasks can be expressed via CLP(FD)&nbsp;constraints.
+    </div>
+
+    <center><h2 id="mapcolouring">例: 地図の塗り分け</h2></center>
+
+    <b>地図の塗り分け</b>を考えます。
+    これは、隣接する地域に同じ色を割り当てないように、
+    地図上の地域に色を割り当てるという課題です。
 
     <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/map_colouring"><img src="videos/t_map_colouring.png" alt="Map Colouring"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    この課題は、各地域に1つの変数、各色に1つの整数を対応させることで、
+    簡単に<i>整数</i>を使った組合せ課題にマッピングできます。
+
+    <br><br>
+
+    具体例として、次の地図に色を塗ってみましょう。
+
+    <br><br>
+    <center>
+      <object data="map.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    色を表すために、0、1、2、…といった<i>整数</i>を使用します。
+    さらに、
+    <a href="https://en.wikipedia.org/wiki/Four_color_theorem">四色定理</a>
+    から、<i>最大でも</i>4色あれば十分であることがわかっています。
+
+    <br><br>
+
+    次のPrologプログラムは、
+    <a href="clpfd">CLP(FD)制約</a>を使用して、この課題を表現しています：
+
+    <pre>
+regions(Rs) :-
+        Rs = [A,B,C,D,E,F],
+        Rs ins 0..3,
+        A #\= B, A #\= C, A #\= D, A #\= F,
+        B #\= C, B #\= D,
+        C #\= D, C #\= E,
+        D #\= E, D #\= F,
+        E #\= F.
+    </pre>
+
+    不等制約 (<tt>(#=)/2</tt>) を使用して、
+    隣接する地域に対応する整数が<i>異なる</i>必要があることを示しています。
+
+    具体的な<i>解</i>を得るためには、
+    <a href="clpfd#labeling"><i>ラベリング</i></a>を使います：
+
+    <pre>
+<b>?- regions(Rs), label(Rs).</b>
+   Rs = [0,1,2,3,0,1]
+;  Rs = [0,1,2,3,0,2]
+;  Rs = [0,1,2,3,1,2]
+;  Rs = [0,1,3,2,0,1]
+;  ... .
+    </pre>
+
+    もっと読みやすい解を得るために、整数を色に関連付けることができます。
+    例えば：
+
+    <pre>
+integer_color(0, red).
+integer_color(1, green).
+integer_color(2, blue).
+integer_color(3, yellow).
+    </pre>
+
+    これにより、次のように問い合わせることができます：
+
+    <pre>
+?- regions(Rs), label(Rs),
+   <b><a href="metapredicates#maplist">maplist</a>(integer_color, Rs, Cs),
+   pairs_keys_values(Pairs, "abcdef", Cs)</b>.
+   Rs = [0,1,2,3,0,1],
+   Cs = [red,green,blue,yellow,red,green],
+   <b>Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-green]</b>
+;  Rs = [0,1,2,3,0,2],
+   Cs = [red,green,blue,yellow,red,blue],
+   <b>Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-blue]</b>
+;  ... .
+    </pre>
+
+    これらの解は次のように見えます：
+
+    <center>
+      <object data="map_solution1.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+      <object data="map_solution2.svg" type="image/svg+xml" style="padding:20pt"></object>
+    </center>
+
+    次の問い合わせにより、この場合<i>少なくとも</i>4色が必要であることがわかります：
+
+    <pre>
+?- regions(Rs), Rs ins 0..2, label(Rs).
+   <b>false.</b>
+    </pre>
+
+    組合せ課題に対してCLP(FD)制約を使用する主な利点は次のとおりです：
+    <ul>
+      <li>宣言的な記述の<i>簡潔さ</i>と<i>優雅さ</i></li>
+      <li><a href="sorting#pruning"><i>剪定</i></a>による<i>効率性</i></li>
+      <li>残りのドメインに基づいてガイドされる賢明な<a href="clpfd#labeling"><i>ラベリング戦略</i></a></li>
+      <li>特定のアプリケーション向けに調整された<i>グローバル制約</i>の利用可能性</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_mapcolouring')">原文</button>
+    <div id="原文_mapcolouring" class="hide_on_start">
     <center><h2 id="mapcolouring">Example: Map Colouring</h2></center>
 
     Let us consider <b>map colouring</b>, i.e., the task of assigning
@@ -258,8 +506,24 @@ integer_color(3, yellow).
       <li>intelligent <a href="clpfd#labeling"><i>labeling strategies</i></a> guided by remaining domains</li>
       <li>availability of <i>global constraints</i> tailored for specific applications.</li>
     </ul>
+    </div>
+    
+    <center><h2 id="graph">グラフ</h2></center>
+
+    <b>グラフ</b>は、数学やコンピュータサイエンスにおいて
+    非常に重要な概念であり、多くの組み合わせ的なタスクは
+    グラフに関連する問題として定式化することができます。
+    たとえば、先に述べた
+    <a href="#mapcolouring">地図の色分け</a>タスクは、
+    <i>グラフの色分け</i>と呼ばれる一般的なタスクの一例です。
 
     <br><br>
+
+    私たちは、<i>有向グラフ</i>と<i>無向グラフ</i>を区別します。
+    
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_graphs')">原文</button>
+    <div id="原文_graphs" class="hide_on_start">
     <center><h2 id="graph">Graphs</h2></center>
 
     <b>Graphs</b> are an extremely important concept in mathematics
@@ -273,7 +537,124 @@ integer_color(3, yellow).
 
     We distinguish between <i>directed</i> and <i>undirected</i>
     graphs.
+    </div>
+    
+    <center><h3>有向グラフ</h3></center>
 
+    <i>有向</i>グラフは次の要素で構成されます：
+
+    <ul>
+      <li>頂点（<i>V</i>）の集合</li>
+      <li>辺（<i>A</i>）の集合。
+        これは<i>v</i>→<i>w</i>の形式を取る有向辺で、
+        <i>v</i>、<i>w</i>は<i>V</i>に属します。</li>
+    </ul>
+
+    Prologでは、有向グラフを表現するためにさまざまな方法があります。
+    その一つは、Prologの<a href="concepts#fact"><i>事実</i></a>
+    として辺を記述することです：
+
+    <pre>
+arc_from_to(a, b).
+arc_from_to(b, c).
+arc_from_to(a, c).
+arc_from_to(c, a).
+    </pre>
+
+    このような表現は<i>テンポラル</i>（時間的）と呼ばれ、
+    解が<i>バックトラッキング</i>によって順次報告されます。
+    この表現は、大量のデータを効率的にアクセスできるようにするのに
+    非常に適しています。
+    例としては、異なる場所間の<i>公共交通機関</i>のルートが挙げられます。
+
+    <br><br>
+
+    このような表現で<i>経路</i>を記述する典型的な方法は次の通りです：
+
+    <pre>
+path_from_to(A, A, _) --&gt; [A].
+path_from_to(A, B, Visited) --&gt; [A],
+        { arc_from_to(A, Next),
+          maplist(dif(Next), Visited) },
+        path_from_to(Next, B, [A|Visited]).
+    </pre>
+
+    訪問した頂点を追跡し、任意の頂点が<i>一度だけ</i>訪問されるようにします。
+
+    <br><br>
+
+    例：
+
+    <pre>
+<b>?- phrase(path_from_to(a, c, []), Ps).</b>
+   Ps = "abc"
+;  Ps = "ac"
+;  false.
+
+<b>?- phrase(path_from_to(a, To, []), Ps).</b>
+   To = a, Ps = "a"
+;  To = b, Ps = "ab"
+;  ... .
+    </pre>
+
+    <br><br>
+
+    <a href="metapredicates#solutions">すべての解</a>を
+    求める述語を使えば、任意のテンポラル表現を
+    <i>スペーシャル</i>（空間的）な表現、
+    つまりPrologのデータ構造
+    （例：<a href="data#list"><i>リスト</i></a>）に変換できます：
+
+    <pre>
+?- findall(From-To, arc_from_to(From, To), Arcs).
+<b>    Arcs = [a-b,b-c,a-c,c-a].</b>
+    </pre>
+
+    別の例：
+
+    <pre>
+?- bagof(To, arc_from_to(From, To), Arcs).
+   From = a, <b>Arcs = "bc"</b>
+;  From = b, <b>Arcs = "c"</b>
+;  From = c, <b>Arcs = "a"</b>.
+    </pre>
+
+    これらの述語を使って、任意の頂点から到達可能な頂点を記録する
+    <i>隣接リスト</i>の形式でグラフを表現できます：
+
+    <pre>
+?- findall(From-Ls, bagof(To, arc_from_to(From, To), Ls), Is).
+   <b>Is = [a-"bc",b-"c",c-"a"].</b>
+    </pre>
+
+    Prologでは、これはグラフに対して一般的によく使われる表現です。
+    これを容易に<a href="data#assoc"><i>連想リスト</i></a>の形式
+    （<i>V→Vs</i>）に変換して、
+    特定の頂点から到達可能な頂点<i>Vs</i>を取得する際の
+    最悪ケースや期待される時間を<i>対数</i>にすることができます。
+    Prologシステムが対応していれば、各頂点をPrologの変数として表し、
+    変数に情報（辺を含む）を
+    <a href="attributedvariables"><i>属性</i></a>として
+    付加することもできます。
+    この方法では、破壊的な変更をO(1)で行うことができ、
+    たとえば有向グラフの<i>強連結成分</i>を効率的に計算することができます。
+    詳細は<a href="/scc.pl"><b><tt>scc.pl</tt></b></a>をご覧ください。
+
+    <br><br>
+
+    <i>孤立した</i>頂点は、いかなる辺にも関与しないため、
+    少なくとも一般的には頂点を別に表現する必要があります：
+
+    <pre>
+vertices("abcd").
+    </pre>
+
+    隣接リスト表現では、孤立した頂点<tt>d</tt>は
+    <tt>d-[]</tt>のように表現できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_directed_graphs')">原文</button>
+    <div id="原文_directed_graphs" class="hide_on_start">
     <center><h3>Directed graphs</h3></center>
 
     A <i>directed</i> graph consists of:
@@ -395,7 +776,50 @@ vertices("abcd").
 
     In the adjacency list representation, the isolated
     vertex&nbsp;<tt>d</tt> can be represented as&nbsp;<tt>d-[]</tt>.
+    </div>
 
+    <center><h3>無向グラフ</h3></center>
+
+    <i>無向</i>グラフは次の要素で構成されます：
+    <ul>
+      <li>ノード（<i>N</i>）の集合</li>
+      <li>無向の辺（<i>E</i>）の集合で、
+        形式は<i>x</i>&minus;<i>y</i>（<i>x</i>、<i>y</i>は<i>N</i>に属する）。</li>
+    </ul>
+
+    たとえば、<i>地図</i>の色分けタスクを
+    グラフ理論の観点から再考してみましょう。
+    CLP(FD)の定式化は、変数間に述べられた<i>制約</i>によって
+    暗黙的にグラフを記述していると見なすことができます。
+    これを明示的に無向グラフとしてPrologの項で表現します：
+
+    <pre>
+edges([a-b,a-c,a-d,a-f,
+       b-c,b-d,
+       c-d,c-e,
+       d-e,d-f,
+       e-f]).
+
+edge(X, Y) :- edges(Es), ( member(X-Y, Es) ; member(Y-X, Es) ).
+    </pre>
+
+    このようにしてクエリを実行できます：
+
+    <pre>
+?- bagof(E, edge(N, E), Es).
+   Es = "bcdf", N = a
+;  Es = "cda", N = b
+;  Es = "deab", N = c
+;  Es = "efabc", N = d
+;  Es = "fcd", N = e
+;  Es = "ade", N = f.
+    </pre>
+
+    明示的な表現は、グラフのさらなる解析に適しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_undirected_graphs')">原文</button>
+    <div id="原文_undirected_graphs" class="hide_on_start">
     <center><h3>Undirected graphs</h3></center>
 
     An <i>undirected</i> graph consists of:
@@ -439,7 +863,41 @@ edge(X, Y) :- edges(Es), ( member(X-Y, Es) ; member(Y-X, Es) ).
 
     An explicit representation is well suited for further analysis of
     the&nbsp;graph.
+    </div>
 
+    <center><h3 id="tree">木</h3></center>
+
+    グラフ理論において、<b>木</b>とは、任意の2つのノードが
+    ちょうど<i>1つ</i>のパスで接続される無向グラフのことです。
+    <br><br>
+
+    Prologでは、木は特別な意味を持ちます。
+    なぜなら、Prologの<a href="data#term">項</a>が自然に木に対応するからです。
+
+    <br><br>
+
+    たとえば、次のようにして二分木を<i>公平に列挙</i>できます：
+
+    <pre>
+tree(nil) --&gt; [].
+tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
+    </pre>
+
+    クエリの例：
+
+    <pre>
+<b>?- length(Ls, _), phrase(tree(T), Ls)</b>.
+   Ls = [], T = nil
+;  Ls = [_A], T = node(_B,nil,nil)
+;  Ls = [_A,_B], T = node(_C,nil,node(_D,nil,nil))
+;  Ls = [_A,_B], T = node(_C,node(_D,nil,nil),nil)
+;  Ls = [_A,_B,_C], T = node(_D,nil,node(_E,nil,node(_F,nil,nil)))
+;  ... .
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_trees')">原文</button>
+    <div id="原文_trees" class="hide_on_start">
     <center><h3 id="tree">Trees</h3></center>
 
     In graph theory, a <b>tree</b> is an undirected graph in which any
@@ -470,8 +928,29 @@ tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
 ;  Ls = [_A,_B,_C], T = node(_D,nil,node(_E,nil,node(_F,nil,nil)))
 ;  ... .
     </pre>
+    </div>
+
+    <center><h2>さらなる読書</h2></center>
+
+    ここでは、CLP(FD)システムでできることを印象付ける
+    いくつかのアプリケーションを紹介します：
+
+    <ul>
+      <li><a href="/sudoku/"><b>数独</b></a>パズルを解く</li>
+      <li><a href="/queens/"><b>N-クイーン問題</b></a></li>
+      <li>さらに多くの例: <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a></li>
+    </ul>
+
+    他の制約解決ツールやライブラリにも重要なアプリケーションがあります。
+    例えば、CLP(B)のいくつかの使用例については
+    <a href="puzzles"><b>論理パズル</b></a>をご覧ください。
+    また、<tt>library(simplex)</tt>を使用した
+    <a href="/various/colgen/"><b>遅延カラム生成</b></a>
+    の例もあります。
 
     <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
     Here are several applications that give you an impression of what
@@ -489,7 +968,7 @@ tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
     <a href="puzzles"><b>logic&nbsp;puzzles</b></a> for several use
     cases of&nbsp;CLP(B), and a <a href="/various/colgen/"><b>delayed
     column generation</b></a> example with <tt>library(simplex)</tt>.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

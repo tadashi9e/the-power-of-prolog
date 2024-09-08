@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Expert Systems in Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Expert Systems">
@@ -8,13 +9,61 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
-    <center><h1>Expert Systems in Prolog</h1></center>
+    <center><h1>Prologにおけるエキスパートシステム</h1></center>
 
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_combinational_optimization_with_prolog')">原文</button>
+    <div id="原文_combinational_optimization_with_prolog" class="hide_on_start">
+    <center><h1>Expert Systems in Prolog</h1></center>
+    </div>
+
+    <center><h2>はじめに</h2></center>
+
+    <b>エキスパートシステム</b>は、人間の<i>専門家</i>の意思決定能力を模倣します。
+
+    <br><br>
+
+    Prologは、以下の理由からエキスパートシステムの<i>実装</i>に非常に適しています：
+
+    <ul>
+      <li>Prolog自体が、既知のルールから結論を導き出す
+        簡単な<i>推論エンジン</i>や
+        <a href="theoremproving">定理証明器</a>と見なすことができます。
+        非常にシンプルなエキスパートシステムは、
+        Prologの組み込みの<a href="sorting#searching">探索</a>と
+        バックトラッキングメカニズムを利用して実装できます。</li>
+      <li>Prologの<a href="data">データ構造</a>は、
+        追加機能として確率的推論などが必要なルールベースのシステムを
+        柔軟かつ便利に<i>表現</i>できます。</li>
+      <li>Prologで<a href="/acomip/"><b>メタインタープリタ</b></a>を簡単に記述し、
+        ルールのカスタム評価戦略を実装できます。</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
 
@@ -40,7 +89,41 @@
         write <a href="/acomip/"><b>meta-interpreters</b></a> in Prolog
         to implement custom evaluation strategies of&nbsp;rules.</li>
     </ul>
+    </div>
 
+    <center><h2>例: 動物の識別</h2></center>
+
+    私たちの目標は、動物を<i>識別する</i>のを助ける
+    エキスパートシステムを作成することです。
+
+    <br><br>
+
+    次のような動物に関する知識、すなわち推論のルールが既に得られているとします：
+
+    <ul>
+      <li>もしその動物が<i>毛皮</i>を持ち、
+        「ワンワン」と鳴くなら、
+        その動物は<b>犬</b>です。</li>
+      <li>もしその動物が<i>毛皮</i>を持ち、
+        「ニャー」と鳴くなら、
+        その動物は<b>猫</b>です。</li>
+      <li>もしその動物が<i>羽毛</i>を持ち、
+        「ガーガー」と鳴くなら、
+        その動物は<b>カモ</b>です。</li>
+    </ul>
+
+    これらのルールは網羅的ではありませんが、
+    エキスパートシステムのいくつかのポイントを説明するための実例として役立ちます。
+
+    <br><br>
+
+    エキスパートシステムの重要なアイデアは、
+    ユーザーから提供された入力に基づいて有用な新しい情報を導き出すことです。
+    以下に、Prologでこれを行ういくつかの方法を示します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_ex_animal_identification')">原文</button>
+    <div id="原文_ex_animal_identification" class="hide_on_start">
     <center><h2>Example: Animal identification</h2></center>
 
     Our aim is to write an expert system that helps us <i>identify
@@ -70,7 +153,62 @@
     The key idea of an expert system is to derive useful new
     information based on user-provided input. In the following, we see
     several&nbsp;ways to do this in&nbsp;Prolog.
+    </div>
 
+    <center><h2>直接的なProlog実装</h2></center>
+
+    次に、前述の推論ルールを実装するために、
+    <a href="concepts#rule"><b>Prologルール</b></a>を
+    <i>直接的に</i>使用する実装を考えます。
+
+    <br><br>
+
+    これは簡単で、<tt>is_true/1</tt>を使用して質問を出し、
+    ユーザーの入力がアトム <tt>yes</tt>の場合のみ、現在の節を進めます：
+
+    <pre>
+animal(dog)  :- is_true("has fur"), is_true("says woof").
+animal(cat)  :- is_true("has fur"), is_true("says meow").
+animal(duck) :- is_true("has feathers"), is_true("says quack").
+
+is_true(Q) :-
+        format("~s?\n", [Q]),
+        read(yes).
+    </pre>
+
+    このアプローチには明確な欠点があり、
+    以下のサンプルインタラクションで示されています：
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>has fur?</b>
+|: yes.
+says meow?
+|: yes.
+
+A = cat .
+    </pre>
+
+    システムは質問を<i>冗長に</i>尋ねています。
+    理想的には、動物が<i>毛皮</i>を持っているという事実は、
+    ユーザーによって最大でも<i>一度</i>述べられるべきです。
+
+    <br><br>
+
+    これを最良の方法で実装するにはどうすればよいでしょうか？
+    ユーザー入力をバックトラッキングを通じて保存するために、
+    グローバルデータベースを何らかの形で操作するのは魅力的ですが、
+    グローバル状態を変更することは、
+    多くの基本的なプロパティを破壊するため、
+    一般的に非常に悪いアイデアです。そのため、この方法は使用しません。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_direct_prolog_implementation')">原文</button>
+    <div id="原文_direct_prolog_implementation" class="hide_on_start">
     <center><h2>Direct Prolog implementation</h2></center>
 
     We now consider an implementation that
@@ -122,7 +260,145 @@ A = cat .
     elementary properties we expect
     from <a href="purity">pure</a> logical relations and is
     generally a very bad&nbsp;idea, so we don't do it this way.
+    </div>
+    
+    <h2><center>ドメイン特化型言語の使用</center></h2>
 
+    上記の欠点を解決するために、ルールの表現をPrologの節から、
+    Prologとは少し異なる方法で記述し解釈するカスタム言語に
+    <i>変更</i>します。
+    特定のアプリケーションドメインに特化して作られた言語は、
+    <i>ドメイン特化型言語</i>（DSL）と呼ばれます。
+
+    <br><br>
+
+    以下のように知識を表現します：
+
+    <pre>
+animals([animal(dog, [is_true("has fur"), is_true("says woof")]),
+         animal(cat, [is_true("has fur"), is_true("says meow")]),
+         animal(duck, [is_true("has feathers"), is_true("says quack")])]).
+    </pre>
+
+    推論ルールは、<tt>animal(A, Conditions)</tt>の形で表現され、
+    これはすべての<tt>Conditions</tt>が真であれば
+    <tt>A</tt>が特定されることを意味します。
+    特に、<i>リスト</i>を使用することが
+    条件の<a href="data#clean"><b>クリーンな</b></a>表現
+    であることに注意してください。
+
+    <br><br>
+
+    この新しい表現のための<i>インタープリタ</i>を実装するのは簡単です。
+    例えば、以下のスニペットは、<tt>is_true/1</tt>が
+    以前と同様に定義されていると仮定すると、
+    前のセクションで見た専門家システムのように振る舞います：
+
+    <pre>
+animal(A) :-
+        animals(As),
+        member(animal(A,Cs), As),
+        maplist(call, Cs).
+    </pre>
+
+    当然ながら、このアプローチも先述の欠点を共有しています：
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>has fur?</b>
+    </pre>
+
+    ここで重要なのは、ルールを<i>異なる</i>方法で解釈することで、
+    インタープリタを変更するだけでルールを変更せずに対応できる点です。
+    例えば、この専門家システムに、ユーザーによって
+    すでに<i>知られている</i>事実を記録する<i>メモリ</i>を追加しましょう。
+
+    <br><br>
+
+    このメモリを<a href="purity">純粋な</a>方法で実装します。
+    これは、ユーザーに追加の事実を問い合わせる前後のメモリの
+    状態間の<i>関係</i>を説明する追加の引数を
+    スレッド経由で渡すことによって行います。
+    便宜上、状態を<i>暗黙的に</i>持ち運ぶために
+    <a href="dcg"><b>DCG表記</b></a>を使用します。
+
+    <br><br>
+
+    これを実装したものが以下です：
+
+    <pre>
+animal(A) :-
+        animals(Animals),
+        Known0 = [],
+        phrase(any_animal(Animals, A), [Known0], _).
+
+any_animal([Animal|Animals], A) --&gt;
+        any_animal_(Animal, Animals, A).
+
+any_animal_(animal(A0, []), Animals, A) --&gt;
+        (   { A0 = A }
+        ;   any_animal(Animals, A)
+        ).
+any_animal_(animal(A0, [C|Cs]), Animals, A) --&gt;
+        state0_state(Known0, Known),
+        { condition_truth(C, T, Known0, Known) },
+        next_animal(T, animal(A0,Cs), Animals, A).
+
+next_animal(yes, Animal, Animals, A)  --&gt; any_animal([Animal|Animals], A).
+next_animal(no, _, Animals, A)        --&gt; any_animal(Animals, A).
+
+state0_state(S0, S), [S] --&gt; [S0].
+    </pre>
+
+    次に、<tt>condition_truth/4</tt>を定義する必要があります。
+    これは、既に<i>知られている</i>情報に応じて、この述語が
+    既存の知識を使用するか、ユーザーに追加の情報を問い合わせるかを決定します。
+
+    <br><br>
+
+    これらの2つのケースを純粋に区別するために、
+    メタ述語<a href="metapredicates#if_3"><tt><b>if_/3</b></tt></a>を使用します：
+
+    <pre>
+condition_truth(is_true(Q), Answer, Known0, Known) :-
+        if_(known_(Q,Answer,Known0),
+            Known0 = Known,
+            ( format("~s?\n", [Q]),
+              read(Answer),
+              Known = [known(Q,Answer)|Known0])).
+
+known_(What, Answer, Known, Truth) :-
+        if_(memberd_t(known(What,yes), Known),
+            ( Answer = yes, Truth = true ),
+            if_(memberd_t(known(What,no), Known),
+                ( Answer = no, Truth = true),
+                Truth = false)).
+    </pre>
+
+    これにより、最後には質問が冗長に表示されなくなります：
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>says meow?</b>
+|: yes.
+
+A = cat .
+    </pre>
+
+    知識ベースを解釈方法から分離することで、
+    推論ルールを変更せずに機能を追加できるようになりました。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_using_dsl')">原文</button>
+    <div id="原文_using_dsl" class="hide_on_start">
     <h2><center>Using a domain-specific language</center></h2>
 
     To solve the shortcoming explained above, we will
@@ -260,7 +536,91 @@ A = cat .
 
     Separating the knowledge base from the way it is interpreted has
     allowed us to add features while leaving the inference rules unchanged.
+    </div>
+    
+    <h2><center>異なるDSLの使用</center></h2>
 
+    同じ問題を解決する別の方法を考えてみましょう。
+    動物の識別タスクを、以下の<b>意思決定図</b>を解釈するものと考えます。
+    点線は<i>いいえ</i>を、実線は<i>はい</i>を示しています：
+
+    <center>
+      <object data="animals1.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    この場合、図は実際には完全な<i>二分木</i>であり、
+    Prologの項を使って自然に表現できます。
+    例えば、次のように意思決定ツリーを表現します。
+    内部ノードには<tt>if_then_else/3</tt>の項を、
+    葉ノードには<tt>animal/1</tt>と<tt>false/0</tt>を
+    使用します：
+
+    <pre>
+tree(if_then_else("has fur",
+                  if_then_else("says woof",
+                               animal(dog),
+                               if_then_else("says meow",
+                                            animal(cat),
+                                            false)),
+                  if_then_else("has feathers",
+                               if_then_else("says quack",
+                                            animal(duck),
+                                            false),
+                               false))).
+    </pre>
+
+    他の種類の意思決定図もPrologの項を使って効率的に表現できます。
+
+    <br><br>
+
+    このようなツリーは、再びユーザーに問い合わせるために
+    <tt>is_true/1</tt>の定義を使用して、直感的に解釈できます：
+
+    <pre>
+
+animal(A) :-
+        tree(T),
+        tree_animal(T, A).
+
+tree_animal(animal(A), A).
+tree_animal(if_then_else(Cond,Then,Else), A) :-
+        (   is_true(Cond) ->
+            tree_animal(Then, A)
+        ;   tree_animal(Else, A)
+        ).
+    </pre>
+
+    <div>
+      <blockquote class="box">
+        <b>注</b>:
+        この断片は<i>非純粋な</i>if-then-else構造を使用しています。
+        これは、条件が十分に具体化されており、
+        その真偽が一方の枝に早くコミットせずに安全に判断できる
+        場合にのみ論理的に妥当です。
+      </blockquote>
+    </div>
+
+    <br><br>
+
+    各質問がルートから葉までのすべてのパスで最大一回しか現れないため、
+    どの質問がすでに回答されたかを追跡する必要は<i>ありません</i>：
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>says meow?</b>
+|: yes.
+
+A = cat.
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_using_different_dsl')">原文</button>
+    <div id="原文_using_different_dsl" class="hide_on_start">
     <h2><center>Using a different DSL</center></h2>
 
     Consider now yet another way to solve the exact same problem. Let
@@ -347,7 +707,57 @@ says woof?
 
 A = cat.
     </pre>
+    </div>
+    
+    <center><h2>アプローチの比較</h2></center>
 
+    これまでに、Prologでエキスパートシステムを実装する
+    3つの異なる方法を見てきました：
+
+    <ul>
+      <li>直接的なPrologの実装</li>
+      <li>ドメイン固有言語を考案し、解釈する方法</li>
+      <li>全く異なるドメイン固有言語を使用する方法</li>
+    </ul>
+
+    これらのアプローチはどれもPrologでの実装が比較的容易であり、
+    他にも適したDSLがいくつかあります。
+    したがって、どのDSLを選んでエキスパートシステムを
+    Prologで実装すべきかという問題が生じます。
+    これまで見てきた主なポイントを簡単に考えてみましょう：
+    <ol>
+      <li>Prologを<i>直接</i>使用するのは直感的です。
+        しかし、単純な実装にはいくつかの欠点があります。
+        私たちの場合、同じ質問が不必要に繰り返し尋ねられました。</li>
+      <li><i>ドメイン固有言語</i>を使用することで、
+        エキスパートシステムの主要なロジックと、
+        すでに回答された質問を追跡するなどの追加機能をきれいに分離できます。</li>
+      <li>意思決定図に基づくDSLは非常に解釈が容易で、
+        冗長な質問を自動的に回避します。</li>
+    </ol>
+
+    これらの点だけを見ると、選択肢(3)は非常に魅力的に思えます。
+    しかし、いくつかの重要な疑問も生じます。
+    まず、意思決定図はどのように<i>得られた</i>のか、
+    そしてそれは私たちが表現したい条件を忠実にモデル化しているのか？
+    この例では手作業で行うのは比較的簡単ですが、
+    より複雑なケースではどうするのでしょうか？
+    次に、選択肢(2)のような比較的単純な事実ベースから
+    意思決定図を使用する方法への変換はどれほど<i>コスト</i>がかかるのか？
+    第三に、これは本当に<i>良い</i>図なのか、
+    そして<i>良い</i>とは何を意味するのか？
+    ノードの順序を工夫することで質問の数を<i>減らす</i>ことができるのか？
+    最悪の場合、平均的に、最良の場合は？
+    第四に、意思決定図の言語はどれほど拡張可能か？
+    例えば、すべての動物識別タスクをこの方法でモデル化できるのか？など。
+
+    <br><br>
+
+    これらの質問は、最適な選択が多くの要因に依存することを示しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_comparison_of_approaches')">原文</button>
+    <div id="原文_comparison_of_approaches" class="hide_on_start">
     <center><h2>Comparison of approaches</h2></center>
 
     We have now seen three different ways to implement an expert
@@ -394,7 +804,7 @@ A = cat.
     <br><br>
 
     These questions show that the best choice depends on many&nbsp;factors.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

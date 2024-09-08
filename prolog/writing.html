@@ -1,18 +1,64 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Writing Prolog Programs</title>
+    <meta charset="UTF-8">
+    <title>Prologプログラムの書き方 - Writing Prolog Programs</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Writing Prolog Programs">
     <meta name="keywords" content="Prolog,Writing,Semantics,Naming Convention">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
+    <h1>Prologプログラムの書き方</h1> <br><br>
+
+    Prologコードを書く際の最良の一般的なアドバイスは、Richard O'Keefe の著書
+    <i>The Craft of Prolog</i> によって提供されました：
+
+    <div>
+      <blockquote class="box">
+        <b>優雅さは任意ではありません。</b>
+      </blockquote>
+    </div>
+
+    このアドバイスを心に留めてください！
+    Prologコードがやや不格好に見える場合は、<i>一時停止</i>して、
+    より優雅にする方法を考えてみてください。
+
     <br><br>
+
+    このページでは、Prologコードを書く際のいくつかの追加的なガイドラインを説明します。
+
     <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/writing"><img src="videos/t_writing.png" alt="Prologコードの作成"></a> </td>
+      </tr>
+    </table>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_writing')">原文</button>
+    <div id="原文_writing" class="hide_on_start">
     <h1>Writing Prolog Programs</h1>
     <br><br>
 
@@ -42,9 +88,123 @@
         </td>
       </tr>
     </table>
-
+    </div>
 
     <br><br>
+    <h2>始め方</h2>
+
+    <a href="reading">Prologプログラムの読み方</a>で言及されたような
+    <tt>list_list_together/3</tt> のような関係を考えてみましょう。
+    最初にそのような定義をどのように思いつくかを考えます。
+    <br><br>
+
+    Prolog述語を<i>作成する</i>ときは、
+    その述語を<i>真にする条件</i>について考えます。
+    たとえば、<tt>list_list_together/3</tt> の場合は次のように進めます：
+    まず、リストに関する関係を説明したいと考えます。
+    その帰納的定義から、少なくとも二つの可能なケースを考慮する必要があることがわかります：
+    <ol>
+      <li><i>アトム</i> <tt>[]</tt></li>
+      <li><i>複合項</i> <tt>[L|Ls]</tt></li>
+    </ol>
+
+    これらの二つのケースが、私たちの見込みの定義の骨組みを形成します：
+
+    <pre>
+list_list_together([], Bs, Cs) :-
+        ...
+list_list_together([L|Ls], Bs, Cs) :-
+        ...
+    </pre>
+
+    これらの二つの節は、異なる<i>ケース</i>を説明する
+    論理的な<i>選択肢</i>を形成します。
+    次に、これらのケースが
+    <i>いつ</i>、つまりどのような<i>条件</i>の下で成立するかを考えます。
+    考えてみると、最初の節は <tt>Bs = Cs</tt> の場合に成立することがわかるので、
+    次のように書くことができます：
+
+    <pre>
+list_list_together([], Bs, Cs) :-
+        Bs = Cs.
+    </pre>
+
+    このような単一化は常に節の頭部に取り込むことができるので、
+    次のように書くことができます：
+
+    <pre>
+list_list_together([], Bs, Bs).
+    </pre>
+
+    同様の推論を第二の節にも適用します：
+    <i>いつ</i> <tt>Cs</tt> が
+    <tt>[L|Ls]</tt> と <tt>Bs</tt> の結合であるかが成立しますか？
+    少し考えると、これは <tt>Cs</tt> が <tt>[L|Rest]</tt> の形であり、
+    <tt>Rest</tt> が <tt>Ls</tt> と <tt>Bs</tt> の結合である場合に成立します。
+    これを表現するために、
+    <a href="concepts#builtin">組み込み述語</a> <tt>(',')/2</tt> を使用して
+    条件の<i>論理積</i>を表現します。
+    <tt>Rest</tt> が <tt>Ls</tt> と <tt>Bs</tt> の結合であることを説明するために、
+    <tt>list_list_together(Ls, Bs, Rest)</tt> を使用します。
+    これはまさにこのケースで<i>成立する</i>関係です。
+
+    <br><br>
+
+    したがって、節全体は次のようになります：
+
+    <pre>
+list_list_together([L|Ls], Bs, Cs) :-
+        Cs = [L|Rest],
+        list_list_together(Ls, Bs, Rest).
+    </pre>
+
+    これは、自分自身を参照する述語の例です。
+    このような述語は<i>再帰的</i>と呼ばれます。
+    再帰的定義がどのように自然に発生するかに注目してください。
+
+    <br><br>
+
+    再び、単一化を節の頭部に取り込むだけで済みます：
+
+    <pre>
+list_list_together([L|Ls], Bs, [L|Rest]) :-
+        list_list_together(Ls, Bs, Rest).
+    </pre>
+
+    より良い変数名を見つけることは練習として残します。
+
+    <br><br>
+
+    初心者が最初のPrologプログラムを書くときによくある誤りは、
+    <i>間違った</i>質問をすることです：
+    「この場合、Prologは<i>何をすべきか</i>？」
+    この質問は誤解を招きます。
+    特に初心者の場合、
+    さまざまな呼び出しモードの実際の制御フローを把握することはできません。
+    さらに、この質問は通常、
+    述語の一つの使用モードと特定の実行戦略に制限されることが多いです。
+    したがって、この罠に陥らないでください！
+    代わりに、<i>関係が成立する条件</i>について考え、
+    その条件の明確な宣言的な説明を提供してください。
+    これらの条件を正しく述べることができれば、
+    多くの場合、複数の方向で使用できる非常に一般的な述語を自然に得ることができます。
+    したがって、Prologコードを書くときには、
+    <i>この述語が真になるケースと条件は何か</i>を尋ねると良いでしょう。
+
+    <br><br>
+
+    「それはすべて良いが、このような単純な関係ではうまくいくとしても、
+    実際に「何かをする」、たとえばカウンタを増やす、
+    要素を削除するなどの操作を行いたい場合はどうすればよいか？」
+    と思うかもしれません。答えはまだ同じです：
+    <i>説明しているエンティティ間の関係</i>という観点で考えてください。
+    <i>変更</i>を表現するには、異なる<i>状態</i>間の関係を定義し、
+    この関係が<i>成立する条件</i>を述べるべきです。
+    詳細については、<a href="/tist/"><i>Thinking in States</i></a> を参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_begin')">原文</button>
+    <div id="原文_begin" class="hide_on_start">
     <h2>How to begin</h2>
 
     Consider a relation like <tt>list_list_together/3</tt> that is
@@ -160,7 +320,63 @@ list_list_together([L|Ls], Bs, [L|Rest]) :-
     that make this relation&nbsp;<i>hold</i>.
     See <a href="/tist/"><i>Thinking in&nbsp;States</i></a> for more
     information.
+    </div>
 
+    <h2>述語の命名</h2>
+
+    良い<i>述語名</i>は、述語の引数が何を<i>意味する</i>のかを
+    明確に伝えるものです。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/naming_predicates"><img src="videos/t_naming_predicates.png" alt="Prolog述語の命名"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    理想的には、述語は<i>すべての</i>方向で使用できるべきです。
+    つまり、<i>任意の</i>引数が変数、部分的に具体化されたもの、
+    または完全に具体化されたものである可能性があるということです。
+    この汎用性は述語名に<i>表現される</i>べきであり、
+    通常は引数を説明するために<i>名詞</i>を選びます。
+
+    <br><br>
+
+    <b>良い</b>述語名の例としては以下があります：
+    <ul>
+      <li><tt>list_length/2</tt>:
+        リストとその長さを関連付ける</li>
+      <li><tt>integer_successor/2</tt>:
+        整数とその次の数を関連付ける</li>
+      <li><tt>student_course_grade/3</tt>:
+        学生、コース、成績を関連付ける</li>
+    </ul>
+
+    これらの場合、述語名が非常に明確で、説明がほぼ不要に思えるほどです。
+    また、<tt>using_underscores_makes_also_longer_names_easy_to_read</tt>
+    のようにアンダースコアを使うことで、長い名前でも読みやすくなります。
+    一方、<tt>mixingTheCasesAsInJavaMakesThatALotHarderInGeneral</tt>
+    のようなケースの混合は、一般的に読みづらくなります。
+
+    <br><br>
+
+    したがって、<b>悪い</b>名前の例は以下のようになります：
+    <ul>
+      <li><tt>length/2</tt>:
+        どちらの引数が長さを表しているのか、1つ目か2つ目かが不明確です</li>
+      <li><tt>nextInteger/2</tt>:
+        <tt>next_integer/2</tt>ほど読みやすくなく、
+        <tt>integer_successor/2</tt>ほど意味も明確ではありません</li>
+      <li><tt>fetch_grades/3</tt>:
+        成績がすでに<i>具体化</i>されている場合には意味を成しません</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_naming_predicates')">原文</button>
+    <div id="原文_naming_predicates" class="hide_on_start">
     <h2>Naming predicates</h2>
 
     A good <i>predicate&nbsp;name</i> makes clear what the predicate
@@ -213,8 +429,53 @@ list_list_together([L|Ls], Bs, [L|Rest]) :-
       <li><tt>fetch_grades/3</tt>: Does not make sense for example if
         grades are already <i>instantiated</i>.</li>
     </ul>
+    </div>
 
+    <h2>変数の命名</h2>
 
+    Prologの<b>変数</b>は、大文字の文字
+    <i>または</i>アンダースコアで始まります。
+    特に日本でPrologを教える場合、このルールは便利です。
+
+    <br><br>
+
+    <i>述語</i>名の規則とは対照的に、
+    Prologの<i>変数</i>名には時々<tt>MixedCases</tt>が使われます。
+    しかし、大文字を使った混合はほとんどの場合、<i>2つ</i>の単語に限定されます。
+
+    <br><br>
+
+    一部のProlog述語は、<a href="/tist/"><i>状態遷移</i></a>を記述するために、
+    純粋な方法で状態変化を表現します。
+    そのような場合、次のような命名規則が非常に便利です。
+    初期状態を<tt>State0</tt>、次の状態を<tt>State1</tt>とし、
+    最終状態を<tt>State</tt>と呼びます。
+    したがって、状態遷移の全体的な流れは次のようになります：
+
+    <br><br>
+    <pre>
+State0 &rightarrow; State1 &rightarrow; State2 &rightarrow; ... &rightarrow; State
+    </pre>
+
+    もちろん、<tt>State</tt>という接頭辞は、
+    他のどのエンティティを表すものに置き換えることができます。
+    たとえば、複数の要素が<a href="data#assoc">連想リスト</a>に挿入される場合、
+    次のような流れになります：
+
+    <br><br>
+    <pre>
+Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Assoc
+    </pre>
+
+    <a href="metapredicates">高階述語</a>を書く際には、
+    部分的なゴール<tt>C</tt>に<i>N</i>個の追加引数がある場合、
+    <tt>C_<i>N</i></tt>という形式で表すのが良い習慣です。
+    たとえば、<tt>maplist/2</tt>の最初の引数は、
+    1つの追加引数で呼び出されるため、<tt>Pred_1</tt>と呼ばれます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_naming_variables')">原文</button>
+    <div id="原文_naming_variables" class="hide_on_start">
     <h2>Naming variables</h2>
 
     A Prolog <b>variable</b> starts with an uppercase letter <i>or</i>
@@ -260,7 +521,27 @@ Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Ass
     additional arguments. For example, the first argument
     of <tt>maplist/2</tt> could be called&nbsp;<tt>Pred_1</tt>,
     because it is invoked with <i>one</i> additional argument.
+    </div>
 
+    <h2>Prologコードのインデント</h2>
+
+    Prologは非常にシンプルな言語で、いくつかの言語構造しかありません。
+    そのため、コードのインデント方法にはいくつかの一般的なスタイルがあります。
+
+    <br><br>
+
+    しかし、どのスタイルを選んでも、守るべき重要なルールがあります。
+    それは、<i><tt>(;)/2</tt>を行の最後に置かないこと</i>です。
+    なぜなら、<tt>;</tt>（セミコロン）は
+    <tt>,</tt>（コンマ）に非常に似ており、
+    <tt>(',')/2</tt>（コンマ）はほとんどの場合、行の最後に現れるからです。
+    <tt>;</tt>を行の<i>先頭</i>に置くか、
+    <i>分岐の2つのゴールの間</i>に置くことで、
+    分岐と連結の違いをより明確にするのが良い習慣です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_indenting')">原文</button>
+    <div id="原文_indenting" class="hide_on_start">
     <h2>Indenting Prolog code</h2>
 
     Prolog is a very simple language: Only a few language constructs
@@ -276,7 +557,64 @@ Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Ass
     place <tt>;</tt> either at the <i>beginning</i> of a line
     or <i>between</i> the two goals of a disjunction to more clearly
     distinguish it from a conjunction.
+    </div>
 
+    <h2>コメント</h2>
+
+    コード内で重要な原則や設計上の目的を説明するために、<i>コメント</i>を使用できます。
+
+    <br><br>
+
+    Prologでは、2種類の<i>コメント</i>をサポートしています：
+
+    <ul>
+      <li><i>単一行コメント</i>:
+        <tt>%</tt>で始まり、次の<i>改行</i>文字まで
+        （それを含む）すべてがコメントとして扱われます。
+      </li> <li><i>ブロックコメント</i>:
+        次の形式を持ちます。
+
+        <pre>
+/* comment text */
+        </pre>
+
+        ブロックコメントは、区切り文字の間に改行文字を含めることができます。
+      </li>
+    </ul>
+
+    慣習として、述語のサポートされている<i>モード</i>を
+    コメントで示すことがあります。
+    このようなコメントには述語ヘッダが含まれ、
+    それぞれの引数のサポートされるモードが専用の接頭辞で示されます。
+    たとえば、次のようなコメントがあります：
+
+    <pre>
+list_list_together(?As, ?Bs, ?Cs)
+    </pre>
+
+    ここで、「<tt>?</tt>」は、該当する引数が
+    変数、
+    部分的にインスタンス化されたもの、または
+    完全にインスタンス化されたものとして使用できることを示しています。
+    他の一般的な接頭辞には、
+    入力引数を示す「<tt>+</tt>」および出力引数を示す「<tt>-</tt>」があります。
+
+    <br><br>
+
+    これらのモード注釈は、述語の<i>決定性</i>を示す
+    <tt>semidet</tt>、
+    <tt>det</tt>、
+    <tt>multi</tt>、および
+    <tt>nondet</tt>
+    と組み合わせることができ、
+    述語がそれぞれ1回だけ成功するか、
+    正確に1回成功するか、
+    少なくとも1回成功するか、
+    または任意の回数成功するかを示します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_comments')">原文</button>
+    <div id="原文_comments" class="hide_on_start">
     <h2>Comments</h2>
 
     You can use <i>comments</i> in your code to explain important
@@ -324,13 +662,23 @@ list_list_together(?As, ?Bs, ?Cs)
     and <tt>nondet</tt>, indicating whether the predicate succeeds,
     respectively, at most once, exactly once, at least once, or
     arbitrarily often.
+    </div>
 
+    <h2>さらなる読書</h2>
+
+    Covington et al., <a href="https://arxiv.org/pdf/0911.2899.pdf"><i>Coding Guidelines for Prolog</i></a>
+    は、Prolog プログラミングに関する興味深い観察を含んでいます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <h2>Further reading</h2>
 
     Covington et
     al., <a href="https://arxiv.org/pdf/0911.2899.pdf"><i>Coding
     Guidelines for Prolog</i></a>, contains some interesting
     observations for programming in Prolog.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

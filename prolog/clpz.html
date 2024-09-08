@@ -1,18 +1,47 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>CLP(FD) and CLP(Z): Prolog Integer Arithmetic</title>
+    <meta charset="UTF-8">
+    <title>CLP(FD)とCLP(&#x2124;)：Prolog整数算術 - CLP(FD) and CLP(Z): Prolog Integer Arithmetic</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="CLP(FD): Constraint Logic Programming over Finite Domains">
     <meta name="keywords" content="Prolog,CLPFD,Integer,Arithmetic,Constraints">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>CLP(FD)とCLP(&#x2124;)：Prolog整数算術</h1></center>
+
+    <div style="margin-left: 50%; display: inline-block">
+      まるで専門家のコミュニティが突然別の惑星に運ばれ、
+      そこで馴染みのあるものが異なる光の下で見られ、
+      さらに馴染みのないものも共に現れるかのようだ。
+      (トーマス・S・クーン、『科学革命の構造』) <br><br>
+    </div>
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_clp')">原文</button>
+    <div id="原文_clp" class="hide_on_start">
     <center><h1>CLP(FD) and CLP(&#x2124;): Prolog Integer Arithmetic</h1></center>
     <br>
 
@@ -24,9 +53,123 @@
       Scientific&nbsp;Revolutions</i>)
       <br><br>
     </div>
+    </div>
 
-    <br>
+    <center><h2>導入</h2></center>
 
+    Prologにおける宣言的な<b>整数算術</b>を完全に理解するためには、
+    まず<i>自然数</i>に対する算術を、より簡単な特別なケースとして考えましょう。
+
+    <b>自然数</b>は
+    <a href="https://en.wikipedia.org/wiki/Peano_axioms">ペアノの公理</a>
+    によって定義されます。
+    特に、<b>0</b>は自然数であり、
+    すべての自然数<i>n</i>に対して、その<i>後継</i> <i>S(n)</i>も<i>自然数</i>です。
+    したがって、次のようなPrologプログラムを使用して自然数の集合を定義することができます：
+
+    <pre>
+natnum(0).
+natnum(s(N)) :-
+        natnum(N).
+    </pre>
+
+    この表現では、自然数<b>0</b>はPrologの整数<tt>0</tt>で表され、
+    任意の自然数<tt>N</tt>の<i>後継</i>は
+    複合<a href="data#term">項</a><tt>s(N)</tt>で表されます。
+    例えば、整数2は<tt>s(s(0))</tt>として表されます。
+    これはゼロの後継の後継であるためです。
+    この表現は、<b>後継算術</b>、<b>後継表記</b>、
+    および<b>ペアノ算術</b>と呼ばれます。
+
+    この表現を使えば、次のPrologプログラムを使って
+    <i>加算</i>を定義できます。
+    これは2つの自然数とその<i>合計</i>との<i>関係</i>です：
+
+    <div class="box" style="float: right; width: 50%">
+      <b>演習</b>：
+      ゴール<tt>nat_nat_sum(M, N, Sum)</tt>を
+      <tt>nat_nat_sum(N, M, Sum)</tt>に置き換えた場合、
+      どのような利点や欠点があるか考えなさい
+    </div>
+
+    <pre>
+nat_nat_sum(0, M, M).
+nat_nat_sum(s(N), M, s(Sum)) :-
+        nat_nat_sum(M, N, Sum).
+    </pre>
+
+    これは<a href="purity">純粋</a>な述語であり、
+    いずれかの引数が具体化されていれば<i>停止</i>します。
+    私たちはこの関係が記述するケースを
+    <a href="reading#declarative">宣言的に</a>読み取ることができます。
+    他の基本的な自然数間の関係も同様に定義できます。
+
+    しかし、この自然数の表現にはいくつかの重大な欠点があります：
+    <ul>
+      <li>まず、これは実際に私たちが数を<i>書きたい</i>、
+        または読みたい方法ではありません。
+        1、2、3のようなより馴染みのある表記を使用して自然数を表したいと考えています。</li>
+      <li>後継表記に慣れることはできるかもしれませんが、
+        もっと根本的な問題が残ります。
+        この表現は、私たちが表す必要のある数の
+        <i>大きさ</i>に直接比例するスペースを必要とします。
+        したがって、スペースの要件は、任意の数の10進表現の長さに対して
+        <i>指数関数的に</i>増加します。
+        したがって、この表現で大きな数を扱うことは現実的ではありません。</li>
+      <li><i>乗算</i>や<i>べき乗</i>のようなより複雑な関係は、
+        すべての方向で動作し、良好な停止特性を維持するように定義するのが難しいです。</li>
+      <li>この表現を<i>整数</i>に拡張するには、
+        <i>負の</i>数を表す方法も必要です。</li>
+    </ul>
+
+    したがって、後継表記は、データの<i>表現方法</i>を説明するのには役立ちますが、
+    Prologで通常使用される数値の表現方法ではありません。
+
+    その代わりに、Prologでは<i>数値</i>について
+    <a href="concepts#builtin">組み込みの述語</a>を使用して推論します。
+    整数の場合、これらの述語は<b>CLP(FD) 制約</b>として知られ、
+    より最近のシステムでは<b>CLP(ℤ) 制約</b>としても知られています。
+    CLP(FD)は
+    <i>有限領域における制約論理プログラミング</i>
+    （Constraint Logic Programming over Finite Domains）を意味し、
+    現実には、実際のマシン上では整数の<i>有限</i>な部分集合しか
+    表現できないことを示しています。
+    ℤは<i>整数</i>を表し、これらの制約がすべての整数についての推論に
+    設計されていることを示しています。
+
+    広く使用されているPrologの実装はすべて、CLP(FD) 制約を提供しています。
+    ただし、システムによって細かい部分が異なります。
+    例えば、GNU Prolog、B-Prolog、その他のシステムでは、
+    CLP(FD)制約は最初から便利に利用できます。
+    対照的に、SICStus Prologやその他のシステムでは、
+    これらを使用するために<i>ライブラリ</i>をロードする必要があります。
+
+    あなたのPrologシステムがこれらの制約をライブラリとして提供している場合、
+    すべてのプログラムでこのライブラリを自動的に利用できるように
+    初期化ファイルを調整してください。
+    例えば、Scryer Prologでは、次のディレクティブを
+    <tt>~/.scryerrc</tt>初期化ファイルに記述できます：
+
+    <div>
+      <pre class="box">
+:- use_module(library(clpz)).</pre>
+    </div>
+
+    CLP(FD)またはCLP(ℤ)制約をすべてのプログラムで自動的に
+    利用できるようにすることは非常にお勧めします。
+    ほとんどのPrologプログラムは整数に関する推論も行うためです。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/integer_arithmetic"><img src="videos/t_integer_arithmetic.png" alt="整数算術"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     To fully appreciate declarative <b>integer arithmetic</b>
@@ -169,7 +312,95 @@ nat_nat_sum(s(N), M, s(Sum)) :-
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2 id="constraint">制約</h2></center>
+
+    一般的に、<i>n</i>項の<b>制約</b>は、<i>n</i> 個の変数間の<i>関係</i>です。
+    たとえば、<tt>(=)/2</tt>や<tt>dif/2</tt>はこの定義に当てはまります。
+    これらの述語も<i>制約</i>です！
+    実際、<i>すべての</i>述語は、解集合に対する<i>制約</i>と見なすことができます。
+
+    <br><br>
+
+    ここでは、CLP(FD) 制約について考えます。
+    これらは、<i>整数</i>に関して純粋で宣言的な推論を可能にする組み込みの述語です。
+
+    <br><br>
+
+    最も重要なCLP(FD)制約は、<i>算術</i>制約の
+    <tt>(#=)/2</tt>、
+    <tt>(#<)/2</tt>、
+    <tt>(#>)/2</tt>、および
+    <tt>(#=)/2</tt>です。
+
+    <center>
+      <table style="padding: 10pt">
+        <tr>
+          <td width="20%"><b>制約</b>&nbsp;&nbsp;</td>
+          <td><center><b>意味</b></center></td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #= B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt>は<tt>B</tt>と<i>等しい</i></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #&lt; B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt>は<tt>B</tt>より<i>小さい</i></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #&gt; B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt>は<tt>B</tt>より<i>大きい</i></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #\= B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt>は<tt>B</tt>と<i>等しくない</i></i>
+          </td>
+        </tr>
+
+      </table>
+    </center>
+
+    この表では、<tt>A</tt>と<tt>B</tt>は算術<i>式</i>です。
+    式は<i>帰納的</i>に定義されます：
+
+    <ul>
+      <li><i>変数</i>は式です</li>
+      <li><i>整数</i>は式です</li>
+      <li><tt>X</tt>と<tt>Y</tt>が式である場合、
+        <tt>X+Y</tt>、<tt>X-Y</tt>、および
+        <tt>X*Y</tt>も<i>式</i>です。</li>
+    </ul>
+
+    算術式には他にもいくつかのケースがあり、
+    <i>組み合わせ</i>制約などの他のカテゴリの制約も存在します。
+    詳細については、Prolog システムのマニュアルを参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_constraints')">原文</button>
+    <div id="原文_constraints" class="hide_on_start">
     <center><h2 id="constraint">Constraints</h2></center>
 
     Generally, an <i>n</i>-ary <b>constraint</b> is a <i>relation</i>
@@ -256,8 +487,41 @@ nat_nat_sum(s(N), M, s(Sum)) :-
     other categories of constraints, such as <i>combinatorial</i>
     constraints. See your Prolog&nbsp;system's manual for more
     information.
+    </div>
+
+    <center><h2>整数式の評価</h2></center>
+
+    CLP(FD)制約の最も基本的な使用法は、算術式の<b>評価</b>です。
 
     <br><br>
+
+    整数式を評価するために、述語<tt>(#=)/2</tt>を使用して、
+    整数に対する算術式の<b>等式</b>を示します。
+
+    <br><br>
+
+    以下にいくつかの例を示します：
+
+    <pre>
+?- X #= 5 + 3.
+   X = 8.
+
+?- 2 #= X + 9.
+   X = -7.
+
+?- 1 #= 1 + Y.
+   Y = 0.
+    </pre>
+
+    等式は、整数に関する推論において最も重要な述語の1つです。
+    これらの例が示すように、<tt>(#=)/2</tt>は
+    <a href="purity">純粋</a>な関係であり、
+    引数の一部がまだ変数であっても、
+    すべての方向に使用することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_evaluating_integer')">原文</button>
+    <div id="原文_evaluating_integer" class="hide_on_start">
     <center><h2>Evaluating integer expressions</h2></center>
 
     The most basic use of CLP(FD) constraints is <b>evaluation</b> of
@@ -288,7 +552,90 @@ nat_nat_sum(s(N), M, s(Sum)) :-
     about integers. As these examples illustrate, <tt>(#=)/2</tt> is a
     <a href="purity">pure</a> relation that can be used in all
     directions, also if components of its arguments are still variables.
+    </div>
 
+    <center><h2 id="list_length">例: リストの長さ</h2></center>
+
+    例えば、以下のように、<a href="data#list">リスト</a>と
+    その<i>長さ</i>を簡単に関連付けることができます：
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], Length) :-
+        Length #= Length0 + 1,
+        list_length(Ls, Length0).
+    </pre>
+
+    この述語を<a href="reading#declarative">宣言的に読む</a>と、
+    この関係の意味が明確になります：
+    <ul>
+      <li><i>空のリスト</i>の長さは&nbsp;0です。</li>
+      <li><i>もし</i> <tt>Length0</tt>が<tt>Ls</tt>の長さであり、
+        <tt>Length</tt>が<tt>Length0</tt>に1を加えたものである
+        ならば、<i>その時</i> <tt>[_|Ls]</tt>の長さは<tt>Length</tt>です。</li>
+    </ul>
+
+    クエリの例:
+
+    <pre>
+?- list_length("abcd", Length).
+   <b>Length = 4</b>.
+    </pre>
+
+    これは、より一般的な場合にも機能します。例えば:
+
+    <pre>
+?- list_length(Ls, Length).
+<b>   Ls = [], Length = 0
+;  Ls = [_A], Length = 1
+;  Ls = [_A,_B], Length = 2
+;  Ls = [_A,_B,_C], Length = 3
+;  ... .</b>
+    </pre>
+
+    別の方向でも使用できます。例えば:
+
+    <pre>
+?- list_length(Ls, 3).
+<b>   Ls = [_A,_B,_C]</b>
+;  ... .
+    </pre>
+
+    ただし、以下のクエリは終了しないことに注意してください:
+
+    <pre>
+?- list_length(Ls, 3), <b>false</b>.
+<b>終了しない</b>
+    </pre>
+
+    このクエリを<i>終了</i>させるには、
+    追加のゴールが1つだけ必要です。
+    これは演習として残しておきます。
+
+    <br><br>
+
+    <i>制約</i>の蓄積を避けるために、
+    明示的な<i>アキュムレータ</i>を導入できます。
+    アキュムレータとは、中間状態を表す項のことです。
+    例えば、リストとその長さを関連付ける
+    <i>別の</i>解法は以下の通りです：
+
+    <pre>
+list_length(Ls, L) :-
+        list_length_(Ls, 0, L).
+
+list_length_([], L, L).
+list_length_([_|Ls], L0, L) :-
+        L1 #= L0 + 1,
+        list_length_(Ls, L1, L).
+    </pre>
+
+    ここでも、<tt>list_length(Ls, 3)</tt>というゴールを
+    <i>終了</i>させる方法は演習として残しておきます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_ex_list')">原文</button>
+    <div id="原文_ex_list" class="hide_on_start">
     <center><h2 id="list_length">Example: Length of a list</h2></center>
 
     For example, we can readily relate
@@ -369,6 +716,59 @@ list_length_([_|Ls], L0, L) :-
     </pre>
 
     Again, making the goal <tt>list_length(Ls, 3)</tt> <i>terminate</i> is left as an exercise.
+    </div>
+
+    <center><h2 id="domain">ドメイン</h2></center>
+
+    整数に対してさらに一般的に推論することができます。
+    たとえば、0から2の間の整数のプレースホルダーとして
+    変数<tt>V</tt>を使用したいとします。
+    これを、トップレベルで制約<tt>(in)/2</tt>を使って表現します：
+
+    <pre>
+?- V in 0..2.
+   clpz:(V in 0..2).
+    </pre>
+
+    追加のゴールをトップレベルで設定すると、
+    システムは<tt>V</tt>に指定した許容される整数のセット
+    （これを<tt>V</tt>に関連付けられた<b>ドメイン</b>と呼びます）
+    を自動的に考慮します。
+    特に、システムは<tt>V</tt>を
+    ドメインに含まれない整数と単一化することを防ぎます：
+
+    <pre>
+?- V in 0..2, V #= 3.
+   <b>false.</b>
+    </pre>
+
+    対照的に、次のクエリは成功します：
+
+    <pre>
+?- V in 0..2, V #= 1.
+   <b>V = 1.</b>
+    </pre>
+
+次に、両方とも0から2の範囲に制約された変数<tt>X</tt>と<tt>Y</tt>の例です：
+
+    <pre>
+?- X in 0..2, Y in 0..2.
+   clpz:(X in 0..2), clpz:(Y in 0..2).
+    </pre>
+
+    または、同様に次のようにも書けます：
+
+    <pre>
+?- [X,Y] ins 0..2.
+   clpz:(X in 0..2), clpz:(Y in 0..2).
+    </pre>
+
+    このように、述語<tt>(ins)/2</tt>は
+    <tt>(in)/2</tt>を<i>リスト</i>の変数に適用します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_domains')">原文</button>
+    <div id="原文_domains" class="hide_on_start">
     <center><h2 id="domain">Domains</h2></center>
 
     We can reason even more generally over integers. Consider a
@@ -417,8 +817,71 @@ list_length_([_|Ls], L0, L) :-
 
     Thus, the predicate <tt>(ins)/2</tt> lifts <tt>(in)/2</tt>
     to <i>lists</i> of variables.
+    </div>
 
+    <center><h2 id="labeling">ラベリング</h2></center>
 
+    バックトラッキングを用いて、関連ドメインのすべての整数に
+    変数を順次バインドすることができます。
+    これには、<i>列挙</i>述語<tt>indomain/1</tt>を使用します:
+
+    <pre>
+?- V in 0..2, indomain(V).
+   V = 0
+;  V = 1
+;  V = 2.
+    </pre>
+
+    制約された変数に具体的な値を割り当てることを
+    <b>ラベリング</b>と呼びます。
+    述語<tt>label/1</tt>は
+    <tt>indomain/1</tt>を<i>リスト</i>の変数に適用します:
+
+    <pre>
+?- [X,Y] ins 0..1, label([X,Y]).
+   X = 0, Y = 0
+;  X = 0, Y = 1
+;  X = 1, Y = 0
+;  X = 1, Y = 1.
+    </pre>
+
+    <tt>label/1</tt>が利用できなかった場合、
+    このように定義することができます:
+
+    <pre>
+label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
+    </pre>
+
+    ラベリングは、
+    <a href="sorting#searching">探索</a>の一形態であり、
+    <i>必ず終了</i>します。
+    この特性は、終了の解析にとって非常に重要であり、
+    モデリング部分を実際の探索から明確に分離することができます。
+
+    <br><br>
+
+    実際には、変数をドメインの具体的な値にバインドする順序が重要です。
+    そのため、<tt>label/1</tt>の<i>一般化</i>である
+    述語<tt>labeling/2</tt>を使用して、
+    許容される値を列挙する際にさまざまな<b>戦略</b>を指定できます。
+    単純で効果的なヒューリスティックの1つは、
+    常にドメインに含まれる要素の数が<i>最も少ない</i>変数を
+    次にラベル付けすることです。
+    この戦略は「first-fail」と呼ばれます。
+    この変数はラベリングプロセスが失敗しやすいため、
+    早い段階で試すことで探索ツリーの大部分を剪定できます。
+    この戦略は<tt>labeling([ff], Vars)</tt>で利用可能です。
+
+    <br><br>
+
+    他の問題においては、変数の静的な再配置が十分な場合もあります。
+    例えば、<a href="/queens/">N-Queens問題</a>では、
+    変数をボードの中央から開始し、
+    徐々に端に向かってラベル付けを行うように順序を設定することが効果的です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_labeling')">原文</button>
+    <div id="原文_labeling" class="hide_on_start">
     <center><h2 id="labeling">Labeling</h2></center>
 
     We can successively bind a variable to all integers of its
@@ -478,7 +941,115 @@ label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
     With <a href="/queens/">N-queens</a> for example, it is worth
     trying to order the variables so that labeling starts from the
     board's center and gradually moves to the borders.
+    </div>
 
+    <center><h2 id="propagation">制約伝搬</h2></center>
+
+    上記の内容から、異なる制約を<i>結合</i>し、
+    それらを<i>論理積</i>として表現できることが分かります。
+    例えば、<tt>Z</tt>が<tt>X</tt>と<tt>Y</tt>の和であり、
+    <tt>X</tt>と<tt>Y</tt>が0から2までの整数であることを
+    以下のように記述できます:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y.
+   clpz:(X+Y#=Z), clpz:(X in 0..2), clpz:(Y in 0..2), <b>clpz:(Z in 0..4)</b>.
+    </pre>
+
+    この例では、<tt>Z</tt>のドメインは明示的に指定されていなくても、
+    投稿された制約に基づいて<i>推論</i>されます。
+    投稿された制約に基づいてドメインが絞り込まれることを
+    <b>制約伝搬</b>と呼び、
+    これは制約ソルバーによって自動的に行われます。
+    <tt>Z</tt>を0にバインドすると、
+    システムは<tt>X</tt>と<tt>Y</tt>も0であることを推論します:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y, Z #= 0.
+   X = 0, Y = 0, Z = 0.
+    </pre>
+
+    この場合、伝搬によりすべての変数が
+    具体的な値にバインドされます。
+    別のケースでは、制約伝搬がラベリングなしで制約の不満足性を検出します:
+
+    <pre>
+?- X in 0..1, X #&gt; 2.
+   <b>false.</b>
+    </pre>
+
+    また、ドメインの境界が調整される場合もあります:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y, Z #= 1.
+   <b>Z = 1</b>, clpz:(X+Y#=1), <b>clpz:(Y in 0..1), clpz:(X in 0..1)</b>.
+    </pre>
+
+    変数と関連ドメインを持つ制約のセットは、
+    すべての変数が各自のドメインから
+    少なくとも1つの値に同時にバインドされ、
+    すべての制約が満たされる場合に
+    <b>グローバルに一貫</b>していると呼ばれます。
+    一般に、制約のセットが一貫しているかどうかを確認するには、
+    すべての変数を<i>ラベル付け</i>する必要があります。
+    しかし、ラベリングなしで保証される一貫性の弱い形式も存在します。
+
+    <br><br>
+
+    例えば、<tt>all_different/1</tt>制約は
+    以下の不満足性を検出しません:
+
+    <pre>
+?- [X,Y,Z] ins 0..1, all_different([X,Y,Z]).
+   clpz:all_different([X,Y,Z]), clpz:(X in 0..1), clpz:(Y in 0..1), clpz:(Z in 0..1).
+    </pre>
+
+    一方、<tt>all_distinct/1</tt>制約は
+    変数をラベリングすることなく矛盾を検出します:
+
+    <pre>
+?- [X,Y,Z] ins 0..1, all_distinct([X,Y,Z]).
+   <b>false.</b>
+    </pre>
+
+    より強力な一貫性を保証するために、
+    <tt>all_distinct/1</tt>制約は
+    追加の伝搬処理を行う必要があります。
+    したがって、
+    <tt>all_different/1</tt>を使用するか、
+    <tt>all_distinct/1</tt>を使用するかは、
+    問題の内容に依存します。
+    探索空間全体に多くの解が散在している場合、
+    単純な探索でも容易に解を見つけられるため、
+    追加の剪定がプロセスを遅くするだけかもしれません。
+    一方、解が比較的少ない場合、
+    <tt>all_distinct/1</tt>による追加の剪定が
+    探索空間の不要な部分をより効率的に除去するのに役立ちます。
+    実際には、
+    <tt>all_distinct/1</tt>は<i>十分に高速</i>であり、
+    より強力な伝搬のおかげで推奨されます。
+
+    <br><br>
+
+    この観察を一般化できます:
+    伝搬の<i>強さ</i>と<i>効率</i>にはトレードオフがあります。
+    また、整数に関する推論においては、
+    伝搬の強さには<i>本質的</i>な限界があります。
+    マチヤセビッチの定理
+    （<a href="https://en.wikipedia.org/wiki/Diophantine_set#Matiyasevich's_theorem">Matiyasevich's&nbsp;theorem</a>）
+    によれば、
+    整数に対する制約解法は一般に
+    <i>決定不能</i>であることが示されています。
+    つまり、常に終了し、整数方程式の解が存在するかどうかを
+    常に正しく判定する計算手法は存在しません。
+    したがって、一般的には、具体的な解を見つけるために
+    <i>探索</i>—例えば、<a href="#labeling">ラベリング</a>を
+    使用する必要があります。
+    または、解が存在しないことを検出する必要があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_propagation')">原文</button>
+    <div id="原文_propagation" class="hide_on_start">
     <center><h2 id="propagation">Constraint propagation</h2></center>
 
     From what we have seen above, it follows that we
@@ -576,8 +1147,74 @@ label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
     general, <i>search</i>&mdash;for example
     via <a href="#labeling">labeling</a>&mdash;must be used to find
     concrete solutions, or to detect that none exists.
+    </div>
 
-    <br><br><br>
+    <center><h2>レガシー述語</h2></center>
+    CLP(FD) 制約は数十年ほど前から利用可能になりました。
+    つまり、これはPrologシステムにおいて<i>比較的新しい</i>開発です。
+    多くのPrologに関する教科書は、まだこのような革新を
+    考慮に入れる機会がなかったりします。
+    多くのPrologの講師は、制約が広く利用されるようになる前に
+    正式な教育を受けており、その結果、
+    多くのPrologプログラマは制約について聞いたことがないことが
+    少なくありません。
+
+    <br><br>
+
+    <tt>(#=)/2</tt>や<tt>(#>)/2</tt>のような算術制約の代わりに、
+    <tt>(is)/2</tt>や<tt>(>)/2</tt>といった
+    低レベルの算術述語を使用して整数を扱うこともできます。
+    しかし、これにはいくつかの大きな欠点があります。例えば:
+    <ul>
+      <li><tt>(is)/2</tt>やその他の低レベルの述語は
+        <i>モード化されている</i>ため、
+        限られた方向でしか使用できず、
+        より一般的な関係には適していません。
+        この厳しい制約により、
+        <a href="debugging"><i>宣言的デバッグ</i></a>が困難になります。
+      </li> <li><tt>(is)/2</tt>やその他の低レベル述語は、
+        整数に関する推論と浮動小数点数、
+        時には<i>有理数</i>に関する推論を混在させます。
+        そのため、コードを読む際には、浮動小数点数が
+        どこかで登場するのではないかと懸念されます。
+        それに対し、<tt>(#=)/2</tt>や
+        その他のCLP(FD)制約を使用すれば、
+        整数に関する推論を意図していることが明確であり、
+        コード内の特定の種類のエラーを発見しやすくなります。
+        これらの制約は、タイプエラーを投げることで、
+        問題を沈黙したまま通り過ぎることを防ぎます。</li>
+      <li><tt>(is)/2</tt>やその他の低レベル述語を使用すると、
+        初心者はPrologプログラムの手続き的な実行に加え、
+        宣言的意味論も理解する必要があります。
+        これはほとんどの場合、非常に困難です。</li>
+      <li><tt>(is)/2</tt>だけでは不十分で、
+        <tt>(=:=)/2</tt>も必要です。
+        一方で、CLP(FD)制約の<tt>(#=)/2</tt>は、
+        整数を扱う場合には
+        <tt>(is)/2</tt>と
+        <tt>(=:=)/2</tt>の両方を包含しており、
+        Prologを教えやすくします。</li>
+    </ul>
+
+    これらの理由から、私は
+    <tt>(is)/2</tt>、
+    <tt>(>)/2</tt>および
+    他の低レベル述語を
+    <i>レガシー述語</i>と見なしています。
+    Prologの教育者が次世代に代わり、
+    より一般的な技法が教えられるようになると、
+    これらの述語は徐々にアプリケーションコードから姿を消すと予想しています。
+
+    <br><br>
+
+    ちなみに、<tt>(=&lt;)/2</tt>は<tt>(&lt;=)/2</tt>と記述されません。
+    なぜなら、後者は<i>矢印</i>のように見えてしまい、
+    Prologにおける<a href="theoremproving">定理証明</a>の際に
+    よく使用される記号だからです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_legacy')">原文</button>
+    <div id="原文_legacy" class="hide_on_start">
     <center><h2>Legacy predicates</h2></center>
 
     CLP(FD) constraints have been available only for a
@@ -644,8 +1281,27 @@ label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
     an <i>arrow</i> which is often used
     for <a href="theoremproving">theorem&nbsp;proving</a>
     in&nbsp;Prolog.
+    </div>
 
-    <br><br><br>
+    <center><h2>さらなる学び</h2></center>
+
+    CLP(FD) 制約を使用すると、
+    多様な<a href="optimization"><b>組合せ最適化タスク</b></a>や
+    <a href="puzzles#cryptoarithmetic">パズル</a>を解くことができます。
+
+    <br><br>
+
+    <a href="/drt.pdf"><i>CLP(FD)システムにおける正確性の考慮事項</i></a>
+    では、CLP(FD) の紹介とさらなる文献への多くの参照が含まれています。
+
+    <br><br>
+
+    複数のCLP(FD)の例は、以下のリンクで入手できます:
+    <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
     CLP(FD) constraints let you solve a large variety
@@ -663,6 +1319,7 @@ label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
 
     Several CLP(FD) examples are available
     from: <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a>
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

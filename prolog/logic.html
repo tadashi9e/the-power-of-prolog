@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Logical Foundations of Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Logical Foundations of Prolog">
@@ -9,11 +10,154 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologの論理的基盤</h1></center>
+
+    <b>論理</b>は非常に広範囲で、興味深く、また美しいトピックです。
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/logic"><img src="videos/t_logic.png" alt="Logic"></a></td>
+      </tr>
+    </table>
+
+    論理に関する普遍的に受け入れられている定義は存在しません。
+    しかし、少なくとも次の点に関する性質や関係を扱うといえます：
+
+    <ul>
+
+      <li><b>構文（syntax）</b><br>
+
+        言語を規則に従って形式化するものです。
+        たとえば、式や文の見た目がどのようになるかを定義します。
+      </li>
+      <li><b>意味（semantics）</b><br>
+
+        言語の構文構造に<i>意味</i>を割り当てることです。
+        文がどのように解釈され、どの条件下でそれらが真であるかを定義します。
+      </li>
+
+      <li><b>推論（inferences）</b><br>
+
+        ラテン語の動詞<i>inferre</i>に由来し、「前進させる」という意味です。
+        推論規則は前提から論理的な帰結を導くことを可能にし、
+        つまり前提から結論へと導くものです。
+      </li>
+    </ul>
+
+    これらの構成要素を変えることで、さまざまな論理フレームワークが生まれます。
+
+    <br><br>
+
+    論理と計算は密接に関連しています。
+    たとえば、計算に関する論理的な命題を定式化し、
+    それに基づいて論理的な帰結を導き出すことで
+    計算の<i>結果</i>に対応させることができます。
+
+    <br><br>
+
+    プログラミングは一種の<i>理論構築</i>だとも言えます。
+    たとえば、Peter Naurの
+    <a href="http://pages.cs.wisc.edu/~remzi/Naur.pdf"><i>Programming as Theory Building</i></a>
+    を参照してください。
+
+    <br><br>
+
+    Prologは古典的な<b>一階述語論理</b>に基づいています。
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/predicate_logic"><img src="videos/t_predicate_logic.png" alt="Predicate Logic"></a></td>
+      </tr>
+    </table>
+
+    実際、Prologの核は、一階述語論理のチューリング完全な<i>部分集合</i>である
+    <a href="https://ja.wikipedia.org/wiki/%E3%83%9B%E3%83%BC%E3%83%B3%E7%AF%80"><b>ホーン節</b></a>
+    （<a href="https://en.wikipedia.org/wiki/Horn_clause"><b>Horn&nbsp;clauses</b></a>）
+    に制限されています。
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/horn_clauses"><img src="videos/t_horn_clauses.png" alt="Horn Clauses"></a></td>
+      </tr>
+    </table>
+
+    Prologプログラムは、何が真であるか、そして何から何が導かれるかを定義する
+    ホーン節の連なりです。
+
+    <br><br>
+
+    Prologは
+    <a href="https://ja.wikipedia.org/wiki/%E5%B0%8E%E5%87%BA%E5%8E%9F%E7%90%86"><b>導出</b></a>
+    （<a href="https://en.wikipedia.org/wiki/Resolution_(logic)"><b>resolution</b></a>）
+    と呼ばれる証明方法を内部で使用しています。
+    導出は反証による証明に基づいています。
+    すなわち、証明したいことの反対を仮定し、それが矛盾することを示す方法です。
+
+    <br><br>
+
+    論理的には、Prologがクエリに答えるとき、
+    それは否定されたクエリとプログラムを構成する一連の節の解決反証を探そうとします。
+    反証が見つかると、そのクエリ（適切なバインディングを持つ）は
+    プログラムの論理的な<i>帰結</i>であることを意味します。
+
+    <br><br>
+
+    ホーン節に対して、導出は非常に効率的に実装できます。
+
+    <br><br>
+
+    導出法は、矛盾を探す方法に多くの自由を残します。
+    したがって、Prologプログラムは異なる評価戦略で解釈されることがあります。
+    デフォルトの実行戦略はSLDNF解決法（有限失敗としての否定を伴うSLD解決法）と呼ばれます。
+    Prologプログラムのもう一つの人気のある実行戦略はSLG解決法で、
+    これは<a href="memoization#tabling"><i>タブリング</i></a>としても知られています。
+    その他のバリエーションには、反復深化やさまざまなヒューリスティックスがあります。
+
+    <br><br>
+
+    Prologのデフォルトの実行戦略では、理論の<i>すべて</i>の
+    論理的帰結を見つけるわけではないため、<i>不完全</i>であるといえます。
+    無限分岐が探索木の中にある場合、それが原因で見つからないことがあるからです。
+
+    <br><br>
+
+    Prolog自体は一般に不完全ですが、
+    完全な<a href="theoremproving">定理証明</a>を実装するために使用できます。
+    これはPrologがプログラミング言語であり、既知のすべての計算を表現できるためです。
+
+    <br><br>
+
+    Prologは、<i>論理記述</i>（ホーン節）と、
+    論理的帰結をどのように探索するかを切り離すことができるため、
+    次のような命題を書くことができます:
+    <a href="https://www.doc.ic.ac.uk/~rak/papers/algorithm%20=%20logic%20+%20control.pdf"><i>アルゴリズム = 論理 + 制御</i></a>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文')">原文</button>
+    <div id="原文" class="hide_on_start">
     <center><h1>Logical Foundations of Prolog</h1></center>
     <br><br>
 
@@ -177,6 +321,7 @@
     search for logical consequences is performed, we can
     write
     <a href="https://www.doc.ic.ac.uk/~rak/papers/algorithm%20=%20logic%20+%20control.pdf"><i>Algorithm&nbsp;=&nbsp;Logic&nbsp;+&nbsp;Control</i></a>.
+    </div>
 
 
     <br><br><br>

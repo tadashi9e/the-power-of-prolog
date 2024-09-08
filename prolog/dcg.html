@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog DCG Primer</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Introduction to Prolog Definite Clause Grammars (DCGs)">
@@ -8,13 +9,188 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
 
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
     <br><br>
+
+    <center><h1>Prolog DCG入門</h1></center>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_dcg')">原文</button>
+    <div id="原文_dcg" class="hide_on_start">
     <center><h1>Prolog DCG Primer</h1></center>
     <br><br>
+    </div>
+    
+    <center><h2>導入</h2></center>
 
+    Prologの<b>確定節文法</b>（<b>definite clause grammar</b>、DCG）は、
+    <i>シーケンス</i>を記述します。
+    操作的には、DCGを使用して、リストの形式で現れるシーケンスを
+    <i>解析</i>、<i>生成</i>、<i>補完</i>、および<i>検証</i>
+    することができます。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/dcgs"><img src="videos/t_dcgs.png" alt="Definite Clause Grammars (DCGs)"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    DCGはPrologにとって非常に重要です。
+    歴史的には、Prologは自然言語処理のために
+    設計されたシステムから生まれ、効率的な解析を行いつつ、
+    Prologの論理的特性を保つためのメカニズムが
+    開発の重要なマイルストーンとなりました。
+    実用的には、DCGはリストを記述するためによく使われ、
+    その利便性が高く評価されています。
+
+    <br><br>
+    DCGは<i>ルール</i>で定義されます。<b>DCGルール</b>は以下の形式を持ちます:
+
+    <pre>
+Head --&gt; Body.
+    </pre>
+
+    ルールの<i>本体</i>は、ターミナル、非ターミナル、そして
+    文法ゴールで構成されます。
+    <b>ターミナル</b>とはリストのことで、その中に含まれる要素、
+    すなわち文法の<i>終端記号</i>を表します。
+    <b>非ターミナル</b>はDCGまたは他の文法構造を指し、
+    記述する要素を表し、終端記号のシーケンスを意味します。
+    <b>文法ゴール</b>は中括弧で囲まれた<tt>{ Goal }</tt>の形式で書かれ、
+    文法内でPrologゴールを呼び出すために使用されます。
+
+    非ターミナル指標<i><tt>A//N</tt></i>は、
+    引数が<tt>N</tt>個の非ターミナル<tt>A</tt>を指し、
+    これはPrologの
+    <a href="concepts#predicate"><i>述語指標</i></a>
+    とは<tt>//</tt>で区別されます。
+
+    <br><br>
+
+    例えば、すべての要素がアトム<tt>a</tt>である
+    シーケンスを記述しましょう。
+    これを表すために、非ターミナル<tt>as//0</tt>を使用します:
+
+    <pre>
+as --&gt; [].
+as --&gt; [a], as.
+    </pre>
+
+    最初のルールは、空のシーケンスがこの条件を満たすことを意味します。
+    2つ目のルールは非ターミナル<tt>(',')//2</tt>を使っており、
+    これは「<i>そして</i>」と読まれます。
+    つまり、このルールは
+    「最初の要素がアトム<tt>a</tt>であり、
+    <i>そして</i>残りの要素もすべてアトム<tt>a</tt>である
+    シーケンスもこの条件を満たす」
+    と述べています。
+
+    <br><br>
+
+    文法ルールを呼び出すためには、Prologの組み込み述語
+    <tt>phrase/2</tt>を使用します。
+    最初の引数は文法の<i>ボディ</i>を記述します。
+    <tt>phrase(Body, Ls)</tt>は、<tt>Body</tt>が
+    リスト<tt>Ls</tt>を記述している場合に真となります。
+
+    <br><br>
+
+    例えば、単一の非ターミナル<tt>as//0</tt>を使用して、
+    すべての解を求める最も一般的なクエリを投稿すると、
+    次のようになります:
+
+    <pre>
+?- phrase(as, Ls).
+<b>   Ls = []
+;  Ls = [a]
+;  Ls = [a,a]
+;  Ls = [a,a,a]
+;  Ls = [a,a,a,a]
+;  ... .</b>
+    </pre>
+
+    Prologでは、<tt>double_quotes</tt>フラグを<tt>chars</tt>に設定すると、
+    <i>文字</i>のリスト、すなわち<a href="data#string">文字列</a>を
+    より便利に表現できます。これを行うには、以下のクエリを投稿します:
+
+    <pre>
+?- set_prolog_flag(double_quotes, chars).
+<b>   true.</b>
+    </pre>
+
+    または、次のディレクティブを初期化ファイルやプログラムに追加します:
+
+    <div>
+      <pre class="box">:- set_prolog_flag(double_quotes, chars).</pre>
+    </div>
+
+    プログラム、クエリ、および解答の可読性を向上させるために、
+    この設定を使用することを強くお勧めします。
+    Scryer PrologやTau Prologでは、この設定が既定値になっています。
+
+    <br><br>
+
+    <tt>double_quotes</tt>を<tt>chars</tt>に設定すると、
+    リスト<tt>[a,a,a]</tt>は<tt>"aaa"</tt>と等価に記述でき、
+    Prologシステムは次のようによりコンパクトな形で解を報告する場合もあります:
+
+    <pre>
+?- phrase(as, Ls).
+<b>   Ls = []
+;  Ls = "a"
+;  Ls = "aa"
+;  Ls = "aaa"
+;  Ls = "aaaa"
+;  ... .</b>
+    </pre>
+
+    このテキストでは、
+    <tt>double_quotes</tt> フラグが <tt>chars</tt> に設定されていると仮定します。
+
+    <br><br>
+
+    より具体的なクエリの例とシステムの回答:
+
+    <pre>
+?- phrase(as, "aaa").
+<b>   true</b>
+;  false.
+
+?- phrase(as, "bcd").
+<b>   false.</b>
+
+?- phrase(as, [a,X,a]).
+<b>   X = a</b>
+;  false.
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     A Prolog <b>definite clause grammar</b> (DCG) describes
@@ -163,7 +339,146 @@ as --&gt; [a], as.
 <b>   X = a</b>
 ;  false.
     </pre>
+    </div>
 
+    <center><h2><tt>seq//1</tt>、<tt>seqq//1</tt>、および <tt>...//0</tt> を使ったシーケンスの記述</h2></center>
+
+    ノンターミナル <tt>seq//1</tt> を定義して、
+    要素のシーケンスを記述しましょう。
+    引数として渡すリストが記述するシーケンスになります:
+
+    <div>
+      <pre class="box">
+seq([])     --&gt; [].
+seq([E|Es]) --&gt; [E], seq(Es).</pre>
+    </div>
+
+    使用例:
+
+    <pre>
+?- phrase(("Hello, ",seq(Cs),"!"), "Hello, all!").
+<b>   Cs = "all"</b>
+;  false.
+    </pre>
+
+    DCGをリストの<i>生成</i>のみに使用する場合、
+    <tt>seq//1</tt> を次のように定義したくなるかもしれません:
+
+    <pre>
+badseq(Ls) --&gt; Ls.
+    </pre>
+
+    これは次のようなケースでは問題なく動作します:
+
+    <pre>
+?- phrase(badseq("abc"), Ls).
+<b>   Ls = "abc".</b>
+    </pre>
+
+    しかし、以下の二つの理由から、この定義は推奨されません。
+    まず第一に、これは他の方向で使用できず、したがって純粋な関係ではありません:
+
+    <pre>
+?- phrase(badseq(Ls), "abc").
+<b>   error(instantiation_error,phrase/3).</b>
+    </pre>
+
+    第二に、このような単純な定義は、
+    引数として <tt>{Goal}</tt> を指定することで
+    任意のコードを実行することができます。
+    例えば:
+
+    <pre>
+?- phrase(badseq({halt}), _).
+    </pre>
+
+    これら２つの理由から、DCGを使って任意のリストを参照するには、
+    上記のような <tt>seq//1</tt> の定義を使用する方が良いです。
+
+    <br><br>
+
+    <tt>seq//1</tt> を使って、<tt>seqq//1</tt> を定義して
+    シーケンスのシーケンスを記述することができます:
+
+    <div>
+      <pre class="box">
+seqq([]) --&gt; [].
+seqq([Es|Ess]) --&gt;
+        seq(Es),
+        seqq(Ess).</pre>
+    </div>
+
+    使用例:
+
+    <pre>
+?- phrase(seqq(["ab","cd","ef"]), Ls).
+<b>   Ls = "abcdef".</b>
+    </pre>
+
+    これは、任意の数のリストの<i>連結</i>を記述する優れた方法です。
+
+    <br><br>
+
+    「任意のシーケンス」を記述するのが便利な場合があり、
+    これをノンターミナル <tt>...//0</tt> を使って行うことができます。
+    これは <tt>seq(_)</tt> と同等です:
+
+    <div>
+      <pre class="box">... --&gt; [] | [_], ... .</pre>
+    </div>
+
+    文法構造 <tt>('|')//2</tt> およびその同等の
+    <tt>(;)//2</tt> は、Prolog の制御構造 <tt>(;)/2</tt> に対応し、
+    「または」として読みます。
+    DCG で解析する際は、<tt>('|')/2</tt> の使用が、
+    文法を書く際の既存の慣習により推奨されます。
+
+    <br><br>
+
+    <tt>seq//1</tt>、<tt>seqq//1</tt>、および <tt>...//0</tt> は
+    非常に多用途なノンターミナルで、
+    リストに関する多くのタスクを優雅に解決するために使用できます。
+    例えば、リストの最後の要素を以下のように記述できます:
+
+    <pre>
+?- phrase((...,[Last]), "hello").
+<b>   Last = o</b>
+;  false.
+    </pre>
+
+    もう一つの例として、リスト内で連続して繰り返される要素を
+    以下のように記述できます:
+
+    <pre>
+?- phrase((...,[E,E],...), Ls).
+<b>   Ls = [E,E]
+;  Ls = [E,E,_A]
+;  Ls = [E,E,_A,_B]
+;  Ls = [E,E,_A,_B,_C]
+;  ... .</b>
+    </pre>
+
+    反復深化を使うことで、<i>公平な</i>な解の列挙を得ることができます:
+
+    <pre>
+?- length(Ls, _), phrase((...,[E,E],...), Ls).
+<b>   Ls = [E,E]
+;  Ls = [E,E,_A]
+;  Ls = [_A,E,E]
+;  Ls = [E,E,_A,_B]
+;  Ls = [_A,E,E,_B]
+;  Ls = [_A,_B,E,E]
+;  ... .</b>
+    </pre>
+
+    Scryer Prolog では、
+    <tt>seq//1</tt>、<tt>seqq//1</tt> および <tt>...//0</tt> が
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/dcgs.pl"><tt>library(dcgs)</tt></a>
+    によって提供されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_seq')">原文</button>
+    <div id="原文_seq" class="hide_on_start">
     <center><h2>Describing sequences with <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...&nbsp;//0</tt></h2></center>
 
     Let us define the nonterminal <tt>seq//1</tt> to describe a
@@ -299,7 +614,72 @@ seqq([Es|Ess]) --&gt;
     In Scryer Prolog, <tt>seq//1</tt>, <tt>seqq//1</tt>
     and <tt>...&nbsp;//0</tt> are provided
     by <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/dcgs.pl"><tt>library(dcgs)</tt></a>.
+    </div>
 
+    <center><h2>リストの反転、回文、その他の練習問題</h2></center>
+
+    リストについて推論する場合や、リストを扱う問題を解く際に、
+    DCGを使用すると便利です。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/dragon_curve"><img src="videos/t_dragon_curve.png" alt="Dragon Curve"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    例えば、リストの<i>反転</i>は以下のように記述できます:
+
+    <pre>
+reversal([]) --&gt; [].
+reversal([L|Ls]) --&gt; reversal(Ls), [L].
+    </pre>
+
+    クエリの例とその回答:
+
+    <pre>
+?- phrase(reversal("abcd"), Ls).
+<b>   Ls = "dcba".</b>
+    </pre>
+
+    もう一つの例として、<i>回文</i>を以下のように記述できます:
+
+    <pre>
+palindrome --&gt; [].
+palindrome --&gt; [_].
+palindrome --&gt; [E], palindrome, [E].
+    </pre>
+
+    この定義は、回文を<i>生成</i>、<i>補完</i>、<i>検証</i>するために
+    使用できます。
+    例:
+
+    <pre>
+?- phrase(palindrome, "hellolleh").
+<b>   true</b>
+;  false.
+
+
+?- phrase(palindrome, Ls).
+<b>   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_A]
+;  Ls = [_A,_B,_A]
+;  Ls = [_A,_B,_B,_A]
+;  ... .</b>
+    </pre>
+
+    <b>チャレンジ</b>:
+    <tt>reversal//1</tt>を使用して
+    <tt>palindrome//0</tt>を定義しなさい。
+    2つの異なる定義を示してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_list')">原文</button>
+    <div id="原文_list" class="hide_on_start">
     <center><h2>List reversal, palindromes and other exercises</h2></center>
 
     When reasoning about lists or solving exercises involving lists,
@@ -359,7 +739,42 @@ palindrome --&gt; [E], palindrome, [E].
 
     <b>Challenge</b>: Define <tt>palindrome//0</tt>
     using <tt>reversal//1</tt>. Provide two different definitions.
+    </div>
 
+    <center><h2>ツリーとリストの関連付け</h2></center>
+
+    DCGを使用して、二分木とそのノード名の
+    中置順序シーケンスとの関連付けを行いましょう。
+    二分木は、葉がアトム <tt>nil</tt> で表され、
+    内部ノードが <tt>node(Name, Left, Right)</tt> の形で
+    構成されているとします。
+    ここで、<tt>Left</tt> と <tt>Right</tt> はそれぞれ二分木です。
+    ノード名の中置順序シーケンスを取得するには、次のように考えます:
+
+    <pre>
+tree_nodes(nil) --&gt; [].
+tree_nodes(node(Name, Left, Right)) --&gt;
+        tree_nodes(Left),
+        [Name],
+        tree_nodes(Right).
+    </pre>
+
+    使用例:
+
+    <pre>
+?- phrase(tree_nodes(node(a, node(b, nil,
+                                     node(c, nil, nil)),
+                             node(d, nil, nil))), Ns).
+   <b>Ns = "bcad".</b>
+    </pre>
+
+    中置順序を取得するためには、DCG本体内で
+    ターミナル <tt>[Name]</tt> の位置を移動することで、
+    他の順序を取得することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tree')">原文</button>
+    <div id="原文_tree" class="hide_on_start">
     <center><h2>Relating trees to lists</h2></center>
 
     Let us now use a DCG to relate a binary tree to the in-order
@@ -388,8 +803,122 @@ tree_nodes(node(Name, Left, Right)) --&gt;
 
     You can obtain other orders by moving the
     terminal&nbsp;<tt>[Name]</tt> in the DCG body.
+    </div>
+    
+    <center><h2 id="leftrecursion">左再帰</h2></center>
+
+    逆に、ノード名のシーケンスが与えられたときに、
+    どのツリーがこのシーケンスを生成するかを考えてみましょう:
+
+    <pre>
+?- phrase(tree_nodes(Tree), "abcd").
+<b>   Tree = node(a,nil,node(b,nil,node(c,nil,node(d,nil,nil))))</b>
+;  % <i>(nontermination)</i>
+    </pre>
+
+    このシステムは1つの（正しい）解を返し、その後ループします。
+    これは、文法が左再帰的であるためです：
+    最初に他の何もせずに非終端記号（<tt>tree_nodes//1</tt>）を
+    再帰的に参照しています。
+    この文法を使用してすべての一致するツリーを見つけるには、
+    2つ目のルールが適用されるためには、リストに少なくとも
+    1つの要素が必要であり、そのチェックを事前に行って
+    無限再帰を避ける必要があります。
+    これを行うには、2つの追加引数を導入して、
+    ルールの適用回数を指定されたリストの長さに制限します:
+
+    <pre>
+tree_nodes(nil, Ls, Ls) --&gt; [].
+tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
+        tree_nodes(Left, Ls0, Ls1),
+        [Name],
+        tree_nodes(Right, Ls1, Ls).
+    </pre>
+
+    各追加引数のペアは、いわゆる
+    <b>リストの差分</b>（<b>list&nbsp;difference</b>） を説明します。
+    この方法と関連する用語を理解するには、例えば
+    ペア <tt>Ls0</tt> と <tt>Ls1</tt> を考えてみましょう。
+    これらのリストの <i>差分</i> は、この例では
+    最初の再帰的呼び出しで消費されるリストの要素を説明していると
+    解釈できます。
+    同様に、リスト <tt>Ls1</tt> と <tt>Ls</tt> の <i>差分</i> は、
+    2回目の呼び出しで消費されるリストの要素を示します。
+    そして、ヘッドで発生するリストの <i>差分</i>、
+    すなわち <tt>[_|Ls0]</tt> と <tt>Ls</tt> の差分は、
+    2番目のルール全体で消費されるリストの要素を示しています。
 
     <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/list_differences"><img src="videos/t_list_differences.png" alt="リストの差分"></a> </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    もちろん、ここでの <i>差分</i> は、算術的な意味ではなく
+    <i>シンボリック</i> な意味で理解されるべきです。
+    例えば、リスト <tt>[A,B,C]</tt> と <tt>[C]</tt> の
+    <i>差分</i> は <tt>[A,B]</tt> であり、
+    リスト <tt>[X,Y|Ls]</tt> と <tt>Ls</tt> の
+    <i>差分</i> は <tt>[X,Y]</tt> であり、
+    リスト <tt>Ls</tt> と <tt>Ls</tt> の
+    <i>差分</i> は <tt>[]</tt> です。
+    このような <i>リストの差分</i> を引数ペアを使って考えることで、
+    リスト全体をサブリストについて考えることができます。
+    この強力な方法は、実際には DCG を Prolog の述語に変換する
+    一般的な <a href="#implementation">変換</a> の
+    基礎となっています。
+    これを使用している場合は、DCG を <i>代わりに</i> 使用することを
+    考えてください。
+    現在のケースでは、DCG の内部で <i>リストの差分</i> を
+    明示的に使用しています。
+
+    <br><br>
+
+    文献では、<i>"差分リスト"</i>（<i>difference&nbsp;list</i>） という
+    用語も見かけるでしょう。
+    しかし、この用語は誤解を招く可能性があります：
+    これは、名前が示唆するような
+    特別な <i>種類</i> のリストを指しているわけではありません。
+    追加の引数は、完全に普通の <a href="data#list">リスト</a> または
+    部分リストです。重要なのは、それらの <i>差分</i> です。
+
+    <br><br>
+
+    リストの差分を扱う際には、各ペアを
+    <i>単一の</i> 引数として渡したくなるかもしれません。
+    例えば、<tt>Ls0-Ls1</tt> や <tt>Ls0/Ls1</tt> のように。
+    しかし、これは推奨されません。
+    主な理由は、他の述語や DCG の展開と衝突する可能性が高く、
+    さらに、これらの複合タームを構築、分解、管理するための
+    パフォーマンスオーバーヘッドが発生するためです。
+
+    <br><br>
+
+    使用例:
+
+    <pre>
+?- Ns = "abcd", phrase(tree_nodes(Tree, Ns, _), Ns).
+<b>   Ns = "abcd", Tree = node(a,nil,node(b,nil,node(c,nil,node(d,nil,nil))))
+;  Ns = "abcd", Tree = node(a,nil,node(b,nil,node(d,node(c,nil,nil),nil)))
+;  Ns = "abcd", Tree = node(a,nil,node(c,node(b,nil,nil),node(d,nil,nil)))
+;  ... .</b>
+    </pre>
+
+    左再帰的な文法で解析するもう一つのオプションは、
+    Prolog システムの <a href="memoization#tabling">テーブル化</a>
+    機能を使用することです。
+    テーブル化と DCG を組み合わせると、 <i>パックラット解析</i> が実現します。
+    このトピックについての興味深い論文は、Ralph Becket と Zoltan Somogyi による
+    <a href="https://mercurylang.org/documentation/papers/packrat.pdf"><i>DCGs + Memoing = Packrat Parsing, But is it worth it?</i></a>
+    です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_left_recursion')">原文</button>
+    <div id="原文_left_recursion" class="hide_on_start">
     <center><h2 id="leftrecursion">Left recursion</h2></center>
 
     Conversely, given a sequence of node names, what are the trees
@@ -502,8 +1031,88 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
     is <a href="https://mercurylang.org/documentation/papers/packrat.pdf"><i>DCGs
     + Memoing = Packrat Parsing, But is it worth it?</i></a> by Ralph
     Becket and Zoltan Somogyi.
+    </div>
+    
+    <center><h2 id="semicontext">セミコンテキスト表記法</h2></center>
 
+    <b>セミコンテキスト表記法</b>
+    （古い用語で、<i>プッシュバックリスト</i> や
+    <i>右側コンテキスト</i> とも呼ばれます）を使用すると、
+    <i>残り</i> の要素について記述できます。
+    操作的には、解析中のリストに最初は存在しなかった
+    リスト要素を挿入することができます。
+    次のような DCG ルールは:
 
+    <pre>
+Head, <b>[T<sub>1</sub>,...,T<sub>n</sub>]</b> --&gt; Body.
+    </pre>
+
+    操作的には、リストを <tt>Body</tt> を使って解析し、その後
+    残りのリストに <tt>T<sub>1</sub>, ..., T<sub>n</sub></tt> を
+    先頭に追加する、という意味になります。例えば:
+
+    <pre>
+nt1, <b>[b]</b> --&gt; [a].
+nt2      --&gt; [b].
+    </pre>
+
+    <tt>nt1//0</tt> のボディは、単一の要素が atom <tt>a</tt> である
+    リストを記述しています。
+    操作的には、<tt>nt1//0</tt> が解析中のリストで
+    atom <tt>a</tt> を消費した後、残りのリストの先頭に
+    atom <tt>b</tt> を挿入します。
+    <tt>nt2//0</tt> は、単一の要素が atom <tt>b</tt> である
+    リストを記述しています。
+    したがって、以下のクエリは成功します。
+    なぜなら、<tt>nt2//0</tt> が atom <tt>b</tt> を消費し、
+    それが <tt>nt1//0</tt> の成功後に残るリストに存在するからです:
+
+    <pre>
+?- phrase((nt1,nt2), "a").
+<b>   true.</b>
+    </pre>
+
+    また、<tt>nt1//0</tt> を単独で使用することもできます。
+    しかし、以下のクエリは <i>失敗</i> します。
+    なぜなら、<tt>phrase/2</tt> は
+    すべてのリスト要素が与えられた DCG ボディによって
+    消費されるときのみ成功するからです:
+
+    <pre>
+?- phrase(nt1, "a").
+<b>   false.</b>
+    </pre>
+
+    リスト差分バージョンの <tt>phrase/3</tt> は、
+    <tt>nt1//0</tt> が成功した後に残る要素を示します:
+
+    <pre>
+?- phrase(nt1, "a", Rest).
+<b>   Rest = "b".</b>
+    </pre>
+
+    予想通り、atom <tt>b</tt> がリストに残ります。
+
+    <br><br>
+
+    セミコンテキスト表記法を使用すると、<i>先読み</i> を実装できます。
+    これは、次のリスト要素を取り除くことなく調べることができます。
+    操作的には、まずそれを取り除き、その後プッシュバックします:
+
+    <pre>
+look_ahead(T), [T] --&gt; [T].
+    </pre>
+
+    例:
+
+    <pre>
+?- phrase(look_ahead(T), "a", Rest).
+<b>   Rest = "a", T = a.</b>
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_semicontext')">原文</button>
+    <div id="原文_semicontext" class="hide_on_start">
     <center><h2 id="semicontext">Semicontext notation</h2></center>
 
     Using <b>semicontext notation</b>, in now outdated terminology
@@ -576,7 +1185,112 @@ look_ahead(T), [T] --&gt; [T].
 ?- phrase(look_ahead(T), "a", Rest).
 <b>   Rest = "a", T = a.</b>
     </pre>
+    </div>
+    
+    <center><h2>状態を暗黙的に渡す</h2></center>
 
+    <a href="#semicontext">セミコンテキスト表記法</a>は、
+    状態表現を暗黙的に渡すためにも便利です。
+    これは、状態が特定のルールのサブセットによってのみアクセスされ、
+    変更される場合に役立ちます。
+    例えば、バイナリツリーの葉の数を数える場合を考えてみましょう。
+    DCGを使用せずに、ツリーをその葉の数に関連付ける方法は次の通りです:
+
+    <pre>
+num_leaves(Tree, N) :-
+        num_leaves_(Tree, 0, N).
+
+num_leaves_(nil, N0, N) :- N #= N0 + 1.
+num_leaves_(node(_,Left,Right), N0, N) :-
+        num_leaves_(Left, N0, N1),
+        num_leaves_(Right, N1, N).
+    </pre>
+
+    ここで、<tt>num_leaves_/3</tt> の第二の節では、アキュムレーターが
+    <tt>N0</tt>、<tt>N1</tt>、<tt>...</tt>、<tt>N</tt> として渡され、
+    直接変更されることはありません。
+    このようなパターンに遭遇した場合は、DCG表記法を使用して
+    引数を<i>暗黙的に</i>渡すことを検討してみてください。
+
+    この具体的なケースでは、渡す状態は
+    これまでに遭遇した葉の数を示す単一の整数です。
+    状態をインクリメントするために、上記のように Prolog の
+    <a href="/prolog/clpfd"><b>宣言型整数算術</b></a> を使用します。
+    Prologの述語をDCGボディ内から呼び出すには、
+    DCG言語構造 <tt>{}//1</tt> を使用します。
+    操作的には、DCGボディ内で <tt>{Goal}</tt> に遭遇すると、
+    <tt>Goal</tt> が Prolog の目標として呼び出されます。
+    DCG は常にリストを記述する必要があるため、
+    状態をリストにラップし、単一の要素を含むリストを記述します。
+    初期状態は再び 0 として指定され、
+    葉の数は <tt>num_leaves_//1</tt> が成功した後の残りのリスト要素で示されます:
+
+    <pre>
+num_leaves(Tree, N) :-
+        phrase(num_leaves_(Tree), [0], [N]).
+
+num_leaves_(nil), [N] --&gt; [N0], { N #= N0 + 1 }.
+num_leaves_(node(_,Left,Right)) --&gt;
+        num_leaves_(Left),
+        num_leaves_(Right).
+    </pre>
+
+    ここで、<tt>num_leaves_//1</tt> の第二のルールは
+    状態には全く言及していません。
+    なぜなら、内部ノードを処理するときに葉の数が変更されないからです。
+
+    <br><br>
+
+    例:
+
+    <pre>
+?- num_leaves(node(a,node(b,nil,nil),
+                     node(c,nil,
+                            node(d,nil,nil))), N).
+<b>N = 5.</b>
+    </pre>
+
+    DCGで状態を記述する際に役立つ非終端記号は以下の通りです:
+
+    <div id="state">
+      <pre class="box">
+state(S), [S] --&gt; [S].
+
+state(S0, S), [S] --&gt; [S0].</pre>
+    </div>
+
+    <b>注:</b>
+    グレーのボックス内のコードは、
+    あなたのプロジェクトで再利用するのに役立つかもしれません。
+
+    <br><br>
+
+    非終端記号 <tt>state(S)</tt> は、
+    「現在の状態は <tt>S</tt> である」と読み取れます。
+    非終端記号 <tt>state(S0, S)</tt> は、
+    「現在の状態は <tt>S0</tt> であり、
+    それ以降は <tt>S</tt> である」と読み取れます。
+
+    <br><br>
+
+    <tt>state//2</tt> を使用すると、
+    <tt>num_leaves_//1</tt> を次のように書き換えることができます:
+
+    <pre>
+num_leaves_(nil) --&gt; state(N0, N), { N #= N0 + 1 }.
+num_leaves_(node(_,Left,Right)) --&gt;
+        num_leaves_(Left),
+        num_leaves_(Right).
+    </pre>
+
+    このアプローチは、複数の状態を通じて
+    スレッド処理する場合にも容易に一般化できます。
+    例えば、このようなケースでは
+    <tt>s(S1,S2,...,Sn)</tt> のような項を使用することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_passing_states')">原文</button>
+    <div id="原文_passing_states" class="hide_on_start">
     <center><h2>Implicitly passing states around</h2></center>
 
     <a href="#semicontext">Semicontext notation</a> is also useful to
@@ -674,9 +1388,91 @@ num_leaves_(node(_,Left,Right)) --&gt;
     This approach is readily generalized to multiple states that are
     threaded through: You can for example use a
     term&nbsp;<tt>s(S1,S2,...,Sn)</tt> in such cases.
+    </div>
+
+    <center><h2>ファイルからの読み込み</h2></center>
+
+    Scryer Prolog、SICStus Prolog、SWI-Prologでは、
+    ウルリッヒ・ノイメルケルの
+    <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/pio.pl"><b><tt>library(pio)</tt></b></a>
+    を使用して、DCGをファイルに適用することができます。
+    ファイルからの入力を処理する必要がある場合、
+    まず入力を記述するDCGを作成します。
+    これにより、<tt>phrase/2</tt>を使用してDCGを純粋にテストでき、
+    ファイルに対しては<tt>phrase/2</tt>の代わりに
+    <tt>phrase_from_file/2</tt>を使用するだけでDCGを適用できます。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/reading_from_files"><img src="videos/t_reading_from_files.png" alt="ファイルからの読み込み"></a>
+        </td>
+      </tr>
+    </table>
 
     <br><br>
 
+    最初の例では、ファイル全体を<i>文字のリスト</i>として読み込みます。
+    これは、上で定義した<tt>seq//1</tt>を使用すると非常に簡単にできます。
+    例えば、ファイル<tt>dcg.html</tt>の内容を文字のリストに読み込むには、
+    次のようにします:
+
+    <pre>
+?- phrase_from_file(seq(Chars), "dcg.html").
+<b>   Chars = "&lt;!DOCTYPE html&gt;\n&lt;ht ..."</b>
+;  false.
+    </pre>
+
+    次の例では、<tt>seq//1</tt>を使用して文字の部分列を参照するDCGを考えます:
+
+    <pre>
+like(What) --&gt; "I like ", seq(What), ".", ... .
+    </pre>
+
+    前述のように、このDCGを使って与えられた文字のリストを解析できます:
+
+    <pre>
+?- phrase(like(What), "I like it. Anything can follow!").
+<b>   What = "it"</b>
+;  false.
+    </pre>
+
+    期待通り、<tt>What</tt>は文字<tt>i</tt>と<tt>t</tt>と一致します。
+
+    <br><br>
+
+    さらに、<tt>library(pio</tt>と<tt>phrase_from_file/2</tt>を使用して、
+    同じDCGでファイルから解析を行うこともできます。
+    ファイル<tt>like.txt</tt>の最初の文字列が「I like it.」であると仮定します。
+
+    <pre>
+?- phrase_from_file(like(What), "like.txt").
+<b>   What = "it"</b>
+;  false.
+    </pre>
+
+    この場合も、<tt>What</tt>は<tt>i</tt>と<tt>t</tt>と一致します。
+
+    <br><br>
+
+    <tt>library(pio)</tt>による純粋な入力は、
+    ファイルの解析時にメモリ効率が良い方法で実装できます。
+    まず、ファイルは<i>遅延読み込み</i>で処理され、必要な分だけが読み込まれます。
+    次に、Prologシステムが文字のリストを効率的に表現できる場合、
+    ファイルの内容は非常にコンパクトにメモリ上に表現できます。
+    さらに、解析に不要になったファイルの内容は、Prologシステムが
+    <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/2008-ciclops.pdf"><i>Prologにおける正確なガベージコレクション</i></a>
+    で概説された特性を満たしている場合、自動的に解放されます。
+
+    <br><br>
+
+    これらの理由により、<tt>library(pio)</tt>は
+    大規模なファイルを解析する場合にも適しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_reading_from_files')">原文</button>
+    <div id="原文_reading_from_files" class="hide_on_start">
     <center><h2>Reading from files</h2></center>
 
     In Scryer Prolog, SICStus Prolog and SWI-Prolog, DCGs can be
@@ -763,9 +1559,75 @@ like(What) --&gt; "I like ", seq(What), ".", ... .
 
     For these reasons, <tt>library(pio)</tt> is well-suited
     also for parsing large files.
+    </div>
+    
+    <center><h2>解析のトリックとテクニック</h2></center>
+
+    解析時に、トークンを<i>貪欲に</i>消費したいことがよくあります。
+    つまり、<i>最も長い</i>一致が優先されるべきです。
+    これを実現するには、DCGのルールを適切に並べ替えます。
+    たとえば、次のDCGは、空白文字のリストを最も長い一致が
+    最初の解になるように記述しています。
+    この例では、文字分類には
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/charsio.pl"><tt>library(charsio)</tt></a>
+    の<tt>char_type/2</tt>を使用します:
+
+    <pre>
+ws --&gt; [W], { char_type(W, whitespace) }, ws.
+ws --&gt; [].
+    </pre>
+
+    識別子は、文字で始まり、文字または数字を含むことができる必要があります。
+    このテクニックを応用すると、次のように解析できます:
+
+    <pre>
+identifier([A|As]) --&gt; [A], { char_type(A, alpha) }, symbol_r(As).
+
+symbol_r([A|As]) --&gt; [A], { char_type(A, alnum) }, symbol_r(As).
+symbol_r([])     --&gt; [].
+    </pre>
+
+    次に、解析に役立つことがある別のテクニックを紹介します。
+    以下のDCGルールは、改行またはファイルの終端で終了する
+    <i>行のリスト</i>を記述しています:
+
+    <div>
+      <pre class="box">
+lines([])     --&gt; call(eos), !.
+lines([L|Ls]) --&gt; line(L), lines(Ls).
+
+line([])     --&gt; ( "\n" | call(eos) ), !.
+line([C|Cs]) --&gt; [C], line(Cs).
+
+eos([], []).</pre>
+    </div>
+
+    非終端記号<tt>call//1</tt>は、
+    暗黙のDCG引数が明示的な引数として利用できるように、
+    Prologの述語を呼び出すために使用されます。
+    これは、文字列の終端条件を記述するために必要です。
+    また、文法構造<tt>!//0</tt>は、対応するPrologの制御構造のように使用されます。
 
     <br><br>
 
+    これらの定義を使用して、ファイルの内容を行のリストとして取得し、
+    さらなる推論に利用できます:
+
+    <pre>
+?- phrase_from_file(lines(Ls), "like.txt").
+<b>   Ls = ["I like it. Anythi ..."].</b>
+    </pre>
+
+    <b>注</b>: <tt>eos/2</tt>は比較的使用頻度が低いです。
+    上記のケースでは、「新しい行の始まり」であることを示すために使用していますが、
+    通常は、記述したいことをもっと直接的に表現できます。
+    <tt>phrase/2</tt>や<tt>phrase_from_file/2</tt>は、
+    <i>完全な</i>リストやファイルが記述と一致した場合にのみ成功するため、
+    明示的に「文字列の終わり」に言及する必要は通常ありません。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_parsing_tricks_and_techniques')">原文</button>
+    <div id="原文_parsing_tricks_and_techniques" class="hide_on_start">
     <center><h2>Parsing tricks and techniques</h2></center>
 
     When parsing, we often want to consume tokens <i>greedily</i>,
@@ -831,9 +1693,65 @@ eos([], []).</pre>
     the <i>complete</i> list or file matches the description.
     Therefore, it is typically not necessary to explicitly refer to
     "end of the string".
+    </div>
+    
+    <center><h2 id="output">出力の記述</h2></center>
+
+    DCGsは、<i>出力</i>を記述するのにも役立ちます。
+    出力は文字のリストであるためです。
+    Scryer Prologは、
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/format.pl"><tt>library(format)</tt></a>
+    を使って、指定された引数のレイアウトを定義する
+    <i>フォーマット文字列</i>に基づいて、
+    出力を宣言的に記述するための非終端記号<tt>format_//2</tt>を提供しています。
 
     <br><br>
-    
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td> <td><a href="videos/formatting_output"><img src="videos/t_formatting_output.png" alt="出力のフォーマット"></a>
+        </td>
+      </tr>
+    </table>
+    <br><br>
+
+    たとえば、<tt>format_//2</tt>を使って<i>テーブル</i>を記述できます:
+
+    <pre>
+table --&gt;
+    row([this,is,a]),
+    row([very,nice,table]).
+
+row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
+    </pre>
+
+
+    次のようにクエリを実行し、その結果を得ることができます:
+
+    <pre>
+?- phrase(table, Ts).
+<b>   Ts = "   this     is      ..."</b>.
+    </pre>
+
+    この宣言的な方法で出力を記述する大きな利点は、
+    <i>テストケース</i>を作成し、論理的に推論できることです。
+    システム端末にのみ表示される出力について推論するのは難しいですが、
+    文字のリストについて保持すべき特性を記述するのは容易です。
+
+    <br><br>
+
+    必要に応じて、<tt>format/2</tt>を1回呼び出すだけで
+    端末にテーブルを表示することも可能です:
+
+    <pre>
+?- phrase(table, Ts), format("~s", [Ts]).
+<b>   this     is      a
+   very   nice  table</b>
+   Ts = "   this     is      ...".
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_output')">原文</button>
+    <div id="原文_output" class="hide_on_start">
     <center><h2 id="output">Describing output</h2></center>
 
     DCGs are also useful for describing <i>output</i>, because output
@@ -888,7 +1806,45 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
    very   nice  table</b>
    Ts = "   this     is      ...".
     </pre>
+    </div>
+    
+    <center><h2 id="implementation">実装</h2></center>
 
+    Scryer PrologでDCG（文法記述）を内部的にどのように実装しているかを見るために、
+    <tt>library(format)</tt>の<tt>listing/1</tt>を使用できます。
+    たとえば、<tt>num_leaves_//1</tt>の実際のソースコードを確認するには、
+    <tt>dynamic/1</tt>ディレクティブを使って非終端記号を動的に宣言し、次のようにします:
+
+    <pre>
+?- listing(num_leaves_//1).
+<b>num_leaves_(nil,A,B) :-
+   state(C,D,A,E),
+   D#=C+1,
+   E=B.
+num_leaves_(node(A,B,C),D,E) :-
+   num_leaves_(B,D,F),
+   num_leaves_(C,F,E).</b>
+    </pre>
+
+    ここでは、<tt>num_leaves_//1</tt>の2つのDCGルールが、
+    2つの追加引数を持つPrologルールに機械的に書き換えられたことがわかります。
+    DCGのPrologコードへの変換は、他の言語における
+    <a href="macros"><b>マクロ</b></a>に類似したメカニズムである
+    <tt>term_expansion/2</tt>によって行われます。
+
+    <br><br>
+
+    移植性を考慮すると、特定の展開手法に依存しないほうがよいでしょう。
+    代わりに、状態を参照する際にはセミコンテキスト表記を使用し、
+    常に<tt>phrase/[2,3]</tt>インターフェースを使ってDCGを呼び出すようにしましょう。
+    この方法では、Prologシステムが
+    より効率的な展開方法を適用する自由を持つことができます。
+    たとえば、最後の2つの引数を入れ替えることで、
+    特定の仮想マシンの特性に基づいてより効率的な述語呼び出しが可能になるかもしれません。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_implementation')">原文</button>
+    <div id="原文_implementation" class="hide_on_start">
     <center><h2 id="implementation">Implementation</h2></center>
 
     To see how DCGs are internally implemented in Scryer Prolog, we
@@ -925,8 +1881,103 @@ num_leaves_(node(A,B,C),D,E) :-
     arguments may as well be swapped and allow more efficient
     predicate calls this way due to specifics of a particular virtual
     machine.
+    </div>
+
+    <center><h2>DCGの使用</h2></center>
+
+    次のような場合にDCG（文法記述器）を使用することを検討してください：
+    <ul>
+      <li>リストを記述しているとき</li>
+      <li>ファイルから読み取るとき</li>
+      <li>状態表現をやり取りし、その状態を実際に使用または変更する述語が限られているとき</li>
+    </ul>
+
+    本格的なPrologプログラムでは、上記のいずれかの理由により、
+    DCGを使用する機会が多く見つかるでしょう。
 
     <br><br>
+
+    次に、通常のProlog述語と同等のDCG非終端記号を並べて比較し、
+    DCGの使用における重要な側面をいくつか思い出し、新たな観察をしてみましょう。
+    よく知られているProlog述語<tt>include/3</tt>を例に取ります：
+
+    <center>
+      <table style="border: 1px dotted; margin-top: 1em; margin-bottom: 1em">
+        <tr><td style="padding-top: 1em; padding-bottom: 1em; padding-right: 1em"><center><b>通常の Prolog</b></center></td>
+          <td><center><b>Prolog DCG</b></center></td></tr>
+        <tr>
+          <td style="padding-right: 1em">
+            <pre>
+include(Goal, List, Included) :-
+        include_(List, Goal, Included).
+
+include_([], _, []).
+include_([L|Ls], Goal, Included0) :-
+        (   call(Goal, L) -&gt;
+            Included0 = [L|Included]
+        ;   Included0 = Included
+        ),
+        include_(Ls, Goal, Included).
+            </pre>
+          </td>
+          <td style="padding-right: 1em">
+            <pre>
+include(Goal, List, Included) :-
+        <b>phrase</b>(include_(List, Goal), Included).
+
+include_([], _) --&gt; [].
+include_([L|Ls], Goal) --&gt;
+        (   { call(Goal, L) } -&gt;
+            [L]
+        ;   []
+        ),
+        include_(Ls, Goal).
+            </pre>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+
+    両方のバージョンの使用例：
+
+    <pre>
+?- include(integer, [a,b,c,1,2,e], Is).
+<b>Is = [1, 2]</b>.
+    </pre>
+
+    ここで特に注目すべき点は次の通りです：
+    <ul>
+      <li>DCG非終端記号を通常のProlog述語内で参照するには
+        、<tt>phrase/2</tt>を使用する必要がある</li>
+      <li>逆に、DCG内で通常のPrologゴールを呼び出すには、
+        <tt>{}//1</tt>を使用する</li>
+      <li>DCGバージョンは明示的な引数が少なく、読みやすく理解しやすい</li>
+      <li>これは前述の点に強く関連していますが、
+        DCGバージョンは参照する<i>変数</i>が少ないことも注目に値します</li>
+      <li>DCGを使用することで、
+        <i>リスト</i>が記述されていることがすぐに明確になる</li>
+    </ul>
+
+    どちらのバージョンが読みやすく理解しやすいか、じっくりと確認してみてください。
+
+    <br><br>
+
+    以下は、このサイトからダウンロードして学習できるDCGの応用例です：
+    <ul>
+      <li><a href="/misc/markov.pl">markov.pl</a>は、
+        マルコフ連鎖の出力を記述するためにDCGを使用しています</li>
+      <li><a href="/lisprolog/">Lisprolog</a>は、
+        Lisp式を解析し、環境の状態を暗黙的に伝播させるためにDCGを使用しています</li>
+      <li><a href="/tist/">Tist</a>は、
+        文書全体にわたって上記のすべての理由でDCGを使用しています</li>
+      <li><a href="/prolog/faq/">comp.lang.prolog FAQ</a>は
+        DCGで記述されています。</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_using')">原文</button>
+    <div id="原文_using" class="hide_on_start">
     <center><h2>Using DCGs</h2></center>
 
     Consider using DCGs if you are:
@@ -1021,7 +2072,27 @@ include_([L|Ls], Goal) --&gt;
         reasons throughout the document</li>
       <li>The <a href="/prolog/faq/">comp.lang.prolog FAQ</a> are described with a DCG.</li>
     </ul>
+    </div>
 
+    <center><h2>現在の進展</h2></center>
+
+    DCG（文法規則）は現在、Prolog ISO規格への導入が検討されています。
+
+    <br><br>
+
+    詳細については、Ulrich Neumerkelによる
+    <a href="http://www.complang.tuwien.ac.at/ulrich/iso-prolog/"><b>ISO Prolog Works</b></a>
+    をご覧ください。
+
+    <br><br>
+
+    DCGの記法は、Haskellのような関数型プログラミング言語で
+    最も汎用的な形式の一つとして採用されている<i>モナド</i>に似ています。
+    他のプログラミング言語もこのような構文から恩恵を受ける可能性があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_current_developments')">原文</button>
+    <div id="原文_current_developments" class="hide_on_start">
     <center><h2>Current developments</h2></center>
 
     DCGs are currently being considered for inclusion in the Prolog
@@ -1039,7 +2110,7 @@ include_([L|Ls], Goal) --&gt;
     one of the most versatile among several competing formalisms in
     functional programming languages like&nbsp;Haskell. Other
     programming languages may also benefit from such constructs.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

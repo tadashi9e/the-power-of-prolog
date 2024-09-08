@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Introduction</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Introduction">
@@ -8,12 +9,29 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
-    <center><h1>Introduction</h1></center>
+    <center><h1>はじめに</h1></center>
     <br>
 
     <div style="margin-left: 70%; display: inline-block">
@@ -27,6 +45,60 @@
     </div>
     <br>
 
+    <center><h2>Prolog について</h2></center>
+
+    Prologは古典<a href="logic"><b>論理</b></a>に根ざした<b>プログラミング言語</b>です。
+    探索と単一化を組み込み機能としてサポートしています。
+    Prologを用いることで、多くのタスクを短く汎用的なプログラムで
+    優雅に解決することができます。
+
+    <br><br>
+
+    Prologには<a href="purity"><b>純粋</b></a>なモノトニックコアがあります。
+    以下のドキュメントはPrologのこの重要な側面に焦点を当てており、
+    宣言的デバッグや、他のプログラミング言語では不可能もしくは未発達な
+    多くのアプローチを可能にします。
+
+    <br><br>
+
+    Prolog<b>プログラム</b>は<b>述語</b>から構成されます。
+    各Prolog述語はその引数間の<b>関係</b>を定義します。
+    関係とは<i>関数</i>の一般化です。
+    Prolog述語は他のプログラミング言語の関数よりも多用途であり、
+    通常は複数の方向で使用することができます。
+
+    <br><br>
+
+    Prologには多くの他のプログラミング言語と区別する
+    いくつかの<a href="facets"><b>側面</b></a>があります。
+    さらに、言語は過去数十年で大きな発展を遂げています。
+    より宣言的な機能の利用可能性が高まったことで、
+    言語をより統一された方法で提示することが可能となり、
+    理解しやすくなっただけでなく、
+    初期のPrologバージョンに比べて少ない労力で
+    より汎用的なプログラムを作成できるようになりました。
+
+    <br><br>
+
+    この資料の目的は、過去の優れた伝統的なProlog教科書と、
+    これらの書籍が書かれてから数十年経った<i>現在の言語</i>との
+    <i>ギャップを埋める</i>ことです。
+    過去の多くの制限がもはや関係なくなっている一方で、
+    いくつかの新しい構文が非常に重要になっていることがわかるでしょう。
+    これらの新しい構文は、まだ利用可能なProlog書籍には含まれていません。
+    Prologが初めての場合は、多くの重要な言語機能を自己完結的に説明している章を
+    順番に読んでください。
+    既にPrologの経験があり、より最近の側面について学びたい場合は、
+    <a href="clpz">整数演算に関する章</a>から始め、
+    それにリンクされている章へと進むことをお勧めします。
+
+    <br><br>
+    <a href="/pceprolog/">PceProlog</a>を使用して、
+    Prologプログラミング用にEmacsを設定することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文1')">原文</button>
+    <div id="原文1" class="hide_on_start">
     <center><h2>About Prolog</h2></center>
 
     Prolog is a <b>programming language</b> that is rooted in
@@ -83,9 +155,35 @@
 
     You can use <a href="/pceprolog/">PceProlog</a> to configure Emacs
     for Prolog&nbsp;programming.
+    </div>
+    <br><br>
+
+    <center><h2>あなたについて</h2></center>
+
+    あなたは現在、Prologを学んでいるか、教えている途中で、
+    既存の文献に多少の不満を感じています。
+    Prologは数十年前と同じ言語なのでしょうか？
+    既存の書籍はまだ適用できるのでしょうか？
+    もしそうでないなら、現代のPrologコードはどのようなものなのでしょうか？
 
     <br><br>
 
+    あなたはPrologが強力な言語であると感じていますが、
+    現時点ではその潜在能力を十分に引き出せていないようです。
+    実際、時にはPrologが本当の問題を解決するには制約が多すぎると感じることさえあります。
+    その一方で、Prologが最も広く使われている論理プログラミング言語であることも知っています。
+    これは一体どういうことでしょうか？
+
+    <br><br>
+
+    提示された資料の一部は、あなたにとって新しく奇妙に感じられ、
+    他の人が語るPrologと矛盾しているように見えるかもしれません。
+    そのような場合、その資料の正当性に疑問を持つのは当然のことです。
+    著者の言っていることを信頼できるのでしょうか？
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_about_you')">原文</button>
+    <div id="原文_about_you" class="hide_on_start">
     <center><h2>About you</h2></center>
 
     You are currently learning or teaching Prolog and find the
@@ -110,6 +208,8 @@
     about&nbsp;Prolog. In such cases, it is only natural to ask how
     legitimate the material&nbsp;is. Can you rely on what the author
     is saying?
+    </div>
+    <br><br>
 
     <center><h2>About me</h2></center>
 

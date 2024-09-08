@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Cryptography with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Cryptography with Prolog">
@@ -21,16 +22,106 @@
     .secret { color: red; }
 -->
     </style>
-
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologでの暗号技術</h1></center>
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_cryptography_with_prolog')">原文</button>
+    <div id="原文_cryptography_with_prolog" class="hide_on_start">
     <center><h1>Cryptography with Prolog</h1></center>
+    </div>
+
+    <center><h2>イントロダクション</h2></center>
+
+    Prologには、<b>暗号技術</b>のアプリケーションに
+    非常に適している特徴がいくつかあります。
+    たとえば、組み込みの<a href="clpfd">整数演算</a>が
+    任意に大きな数に対して動作するため、
+    暗号技術の文脈で頻繁に登場する大きな素数や、
+    それに関するさまざまな操作を簡単に扱うことができます。
+    また、Prologの組み込みの
+    <a href="sorting#searching">探索メカニズム</a>
+    を使用すると、鍵の全探索のようなブルートフォース攻撃を
+    簡単に実験でき、教育的にも非常に役立ちます。
+    Prologの<a href="concepts#toplevel">トップレベル</a>は、
+    さまざまな述語やそのパラメータを
+    対話的に試すことができるなどの利点もあります。
+
     <br><br>
 
+    暗号アルゴリズムのサポートはPrologシステムごとに異なります。
+    ここでは、Scryer Prologを使用します。
+    これは
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/crypto.pl"><tt>library(crypto)</tt></a>
+    があるためです。
 
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/cryptography"><img src="videos/t_cryptography.png" alt="Prologでの暗号技術"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    このテキストでは、実務で非常に重要な暗号技術の
+    3つの側面について考察します：
+    <ul>
+      <li><a href="#hash"><b>ハッシュ関数</b></a> –
+        データの<a href="https://en.wikipedia.org/wiki/Data_integrity">整合性</a>
+        を評価するためのもの</li>
+      <li><a href="#signatures"><b>デジタル署名</b></a> –
+        データの<a href="https://en.wikipedia.org/wiki/Authentication">真正性</a>
+        を確認するためのもの</li>
+      <li><a href="#symmetric-encryption"><b>対称暗号化</b></a> –
+        データの<a href="https://en.wikipedia.org/wiki/Confidentiality">機密性</a>
+        を確保するためのもの</li>
+    </ul>
+
+    ここでは、これらの方法の<i>実際的な</i>応用に焦点を当て、
+    試したり使用したりできるサンプルコードを提供します。
+    この文書で使用している方法は、2024年1月時点で少なくとも
+    <i>合理的に安全</i>と考えられています。
+
+    ただし、<b>注意</b>が必要です：
+    これらの方法を自分のアプリケーションで使用する際は、
+    必ず最新のベストプラクティスに従うようにしてください。
+    追加の参考資料やこの分野に関する入門的な教科書を少なくとも
+    1冊は学ぶことが推奨されます。
+    たとえば、Jonathan KatzとYehuda Lindellによる
+    <a href="https://www.crcpress.com/Introduction-to-Modern-Cryptography-Second-Edition/Katz-Lindell/p/book/9781466570269"><i>Introduction to Modern Cryptography</i></a>
+    を読むことを検討してください。
+    また、そこに含まれている参考文献も参照することが重要です。
+
+    <br><br>
+
+    この文書では、<i>秘密</i>にすべき情報は
+    <span class="secret">赤字</span>で表示されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     Prolog has several features that make it extremely well-suited
@@ -92,7 +183,119 @@
     The convention I use in this document is that information that
     ought to be kept <span class="secret"><i>secret</i></span> is
     written in&nbsp;<span class="secret">red</span>.
+    </div>
+    
+    <center><h2>データの表現: 文字、コード、バイトなど</h2></center>
 
+    Prologでは、<i>文字リスト</i>がテキストやバイナリデータを
+    表現するために推奨されています。
+    その理由は、文字リストが非常に効率的に表現でき、
+    DCG（文法）やリストに対する組み込みの述語で推論することが
+    できるためです。
+    また、文字リストの処理はシステムの<i>アトムテーブル</i>に
+    ほとんど痕跡を残しません。
+    これらの特性により、文字リストは暗号技術のアプリケーションにおいて
+    理想的な表現となります。
+
+    <br><br>
+
+    文字は長さ1の<i>アトム</i>です。
+    文字リストは<i>文字列</i>とも呼ばれます。
+    各文字には対応する<i>コード</i>（整数）があり、
+    標準の述語<tt>char_code/2</tt>は、文字とそのコードを関連付けます。
+
+    <br><br>
+
+    以下では、Prologのフラグ<tt>double_quotes</tt>が
+    <tt>chars</tt>に設定されていることを前提としています。
+    これは、Scryer Prologでのデフォルトであり推奨される設定です。
+    この設定により、
+    文字列を二重引用符で囲むことで非常にコンパクトに記述できます。
+    たとえば、文字列<tt>[a,b,c]</tt>は、
+    よりコンパクトに<tt>"abc"</tt>と書くことができます。
+
+    <br><br>
+
+    16進数のエスケープシーケンスを使用して、
+    任意の文字をそのコードで文字列に埋め込むことができます。
+    たとえば、文字列<tt>"\x0\x12\x2124"</tt>は、
+    リスト<tt>['\x0','\x12','\x2124']</tt>と同じ項であり、
+    それぞれコードが0、18、8484の3つの文字で構成されています。
+
+    <br><br>
+
+    暗号技術では通常、<i>バイト</i>が使用され、
+    255を超えるコードポイントは1バイトに収まりません。
+    そのため、<tt>library(crypto)</tt>内の多くの述語は、
+    文字列を扱う2つの異なる方法を提供しています。
+    これらは<tt>encoding/1</tt>オプションで指定されます：
+
+    <ul>
+      <li><tt>encoding(<b>utf8</b>)</tt>は、
+        UTF-8エンコーディングを使用して文字列をバイト列として扱います。
+        これがデフォルト設定です。</li>
+
+      <li><tt>encoding(<b>octet</b>)</tt>は、
+        リスト内の各文字の<i>コード</i>で指定されたバイト列を使用します。
+        もちろん、すべての文字のコードが
+        0から255の範囲内である場合にのみ機能します。</li>
+    </ul>
+
+    <br><br>
+
+    Prologのすべての項を、<tt>library(crypto)</tt>で処理できる文字や
+    バイトのリストに変換するための変換述語があります。
+    たとえば、標準の述語<tt>atom_chars/2</tt>は
+    アトムを文字リストに変換し、
+    <tt>library(charsio)</tt>に含まれる<tt>chars_utf8bytes/2</tt>は、
+    文字リストをUTF-8エンコーディングに変換し、バイトリストとして指定します。
+
+    <pre>
+?- atom_chars(<b>κρυπτός</b>, Cs).
+<b>   Cs = "κρυπτός".</b>
+
+?- chars_utf8bytes("κρυπτός", UTF8).
+<b>   UTF8 = [206,186,207,129,207,133,207,128,207,132|...]</b>.
+    </pre>
+
+    暗号技術のアプリケーションでは、<i>バイト</i>の短いリストを
+    他のプログラムや参加者に伝達する必要があることが多く、
+    これらの用途ではバイトリストを<i>16進数</i>表記で表すことが一般的です。
+    これは、各バイトが正確に2つの16進数桁（<tt>0</tt>から<tt>F</tt>まで）で
+    表され、それらが連続してつながるという意味です。
+    <tt><b>hex_bytes/2</b></tt>を使用して、
+    これらのエンコーディング間を簡単に変換できます。
+
+    <pre>
+?- hex_bytes(<b>"501ACE"</b>, Bs).
+   Bs = [80,26,206].
+
+?- hex_bytes(Hex, <b>[80,26,206]</b>).
+   Hex = "501ace".
+    </pre>
+
+    <i>暗号的に強い</i>疑似乱数のバイト列を生成するには、
+    <tt><b>crypto_n_random_bytes/2</b></tt>を使用できます。
+    たとえば、ここに256ビット（つまり32バイト）のシーケンスがありますが、
+    これはおそらく他の誰も生成したことがないものです。
+
+    <pre>
+?- crypto_n_random_bytes(32, Bs),
+   hex_bytes(Key, Bs).
+   Bs = [135,227,97,217,131,152,108,154,145,104|...],
+   Key = <b>"87e361d983986c9a91686ef90ccdedc22b852370612543ab99563ba92bd902b5"</b>
+    </pre>
+
+    このように、必要なときに強力な鍵やユニークなトークンを簡単に生成できます。
+
+    <br><br>
+
+    バイナリデータをよりコンパクトに保存し、
+    アプリケーションに埋め込むには、Base64エンコーディングも検討してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_data_representation')">原文</button>
+    <div id="原文_data_representation" class="hide_on_start">
     <center><h2>Data representation: characters, codes, bytes etc.</h2></center>
 
     In Prolog, <i>lists of characters</i> are the preferred
@@ -201,7 +404,84 @@
 
     To more compactly store and embed binary data in your
     applications, also consider Base64&nbsp;encoding.
+    </div>
+    
+    <center><h2 id="hash">暗号学的ハッシュ関数</h2></center>
 
+    <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">暗号学的ハッシュ関数</a>
+    は、<i>任意</i>のサイズのデータを<i>固定</i>サイズのビット列に
+    効率よくマッピングする機能を提供します。
+    このマッピングは逆算することが難しく、
+    衝突（異なるデータが同じハッシュ値を持つこと）が
+    非常に起こりにくいものです。
+
+    <br><br>
+
+    ハッシュ関数は、現代の暗号技術の
+    ほぼすべてのアプリケーションで必要とされています。
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/crypto.pl"><tt>library(crypto)</tt></a>
+    では、暗号学的ハッシュを計算するための
+    最も重要な述語の1つが<tt>crypto_data_hash/3</tt>です。
+
+    <br><br>
+
+    以下はその例です（ハッシュをクリックして展開してください）:
+
+    <pre>
+?- crypto_data_hash("Hello world!", Hash, [algorithm(blake2s256)]).
+<b>   Hash = "<span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span>".</b>
+    </pre>
+
+    <tt>hex_bytes/2</tt>を使って、
+    このような16進数でエンコードされた値を
+    <i>バイト</i>（0から255の整数のリスト）に
+    変換することができます。
+    たとえば：
+
+    <pre>
+?- hex_bytes("<span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span>", Bytes).
+<b>   Bytes = [198,56,19,168,248,4,171,236,224,98|...]</b>.
+    </pre>
+
+    <i>デフォルトアルゴリズムのセキュリティ</i>は
+    <tt>library(crypto)</tt>の重要な設計原則です。
+    このため、ハッシュ述語が保証する唯一の点は、
+    「<i>デフォルトアルゴリズムは暗号学的に安全である</i>」
+    ということです。
+    デフォルトは将来変更される可能性があります。
+    実際に使用されたアルゴリズムを確認するには、
+    <tt>algorithm/1</tt>オプションを指定し、
+    引数として<i>変数</i>を使用できます。
+    たとえば：
+
+    <pre>
+?- crypto_data_hash("Hello world!", Hash, [algorithm(A)]).
+   Hash = "<span class="hex">c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a</span>",
+   <b>A = sha256</b>.
+    </pre>
+
+    これにより、<tt>sha256</tt>が
+    <i>現在の</i>デフォルトアルゴリズムであることが示されました。
+    この方法を使えば、将来より安全なデフォルトが使用される場合でも
+    互換性を確保することができます。
+
+    <br><br>
+
+    ハッシュはデータの<b>完全性</b>を評価するために使用されます。
+    ハッシュを計算し、それを参照値と比較することで、
+    データの損傷や改ざんを検出できます。
+
+    <br><br>
+
+    ここで疑問が生じます：そのような<i>参照</i>値が実際に
+    <i>本物</i>である、つまり、真に元の発信者から来たものである
+    ことをどうやって確認できるのでしょうか？
+    データの<i>真正性</i>を確保する1つの方法は、
+    <a href="#signatures">デジタル署名</a>を使用することです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_hash')">原文</button>
+    <div id="原文_hash" class="hide_on_start">
     <center><h2 id="hash">Cryptographic hash functions</h2></center>
 
     A <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
@@ -269,7 +549,85 @@
     truly stemming from the purported originator? One way to ensure
     the <i>authenticity</i> of data is to
     use <a href="#signatures">digital&nbsp;signatures</a>.
+    </div>
+    
+    <center><h3 id="passwords">パスワードを安全に保存する方法</h3></center>
 
+    ハッシュはユーザーの<i>パスワード</i>を認証の目的で
+    安全に保存するためにも使用できます。
+    実際に、パスワードを安全に保存するための基本的な考え方は、
+    パスワードそのものを<i>保存しない</i>ことです。
+    代わりに、パスワードの<i>ハッシュ値</i>のみを保存します。
+    後でユーザーがパスワードを入力すると、そのハッシュ値を計算し、
+    保存された値と比較します。
+
+    <br><br>
+
+    このプロセスをさらに安全にする2つの追加機能があります：
+    <ol>
+      <li>まず、ハッシュの計算を<i>できるだけ遅くする</i>ことです。
+        これにより、多くの異なるパスワードを試して保存されたハッシュと
+        一致するものを見つけようとする総当たり攻撃に対抗できます。
+        これを行う1つの方法は、ハッシュ関数を<i>N</i>回繰り返して
+        適用することです。
+        たとえば、<i>N</i>&nbsp;=&nbsp;2<sup>17</sup>の場合、
+        総当たり攻撃はハッシュを1回だけ適用する場合と比べて
+        100,000倍以上遅くなります。 </li>
+      <li>次に、いわゆる<i>ソルト</i>を生成します。
+        これはランダムなバイト列で、ハッシュを計算する前に
+        パスワードと組み合わせます。
+        これにより、<i>同じ</i>パスワードでも
+        <i>異なる</i>ハッシュが生成されるようにします。
+        計算されたハッシュと一緒にソルトを保存し、
+        後で参照できるようにします。 </li>
+    </ol>
+
+    これらすべては、<b><tt>crypto_password_hash/2</tt></b>を
+    使用することで完全に<i>自動的に</i>行われます。
+
+    <br><br>
+
+    たとえば：
+
+    <pre>
+?- crypto_password_hash(<span class="secret">"test"</span>, Hash).
+Hash = "<span class="hex">$pbkdf2-sha512$t=131072$Xj6ZIfB4U+QOeZr3ymE/AA$2KYXsPFI2zJVMb9PHVtN+pVwQ6f7LleXF8ehbyqgOmkINcIYjO8IFhz8LelwMjzidEtojRHmC0B5RQJDEB2/tw</span>".
+
+?- crypto_password_hash(<span class="secret">"test"</span>, Hash).
+Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>".
+    </pre>
+
+    この場合、同じ<i>パスワード</i>を使用したにもかかわらず、
+    ハッシュは異なっています。
+
+    <br><br>
+
+    生成されたハッシュには、後でパスワードを<i>確認</i>し、
+    ユーザーを認証するために必要なすべての情報が含まれています：
+
+    <pre>
+?- crypto_password_hash(<span class="secret">"test"</span>, "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>").
+<b>true.</b>
+
+?- crypto_password_hash(<span class="secret">"password"</span>, "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>").
+<b>false</b>.
+    </pre>
+
+    経験的に、多くのユーザーが非常に予測しやすいパスワードを選び、
+    さらに異なるアプリケーションで
+    同じパスワードを再利用することがわかっています。
+    <tt>crypto_password_hash/2</tt>を使用することで、
+    攻撃者が保存されたすべてのハッシュを入手したとしても、
+    どのパスワードが使用されたかを見つけるのが難しくなります。
+
+    <br><br>
+
+    必要に応じて、<tt>crypto_password_hash/3</tt></a>を使用して、
+    適用するアルゴリズム、カスタムソルト、および反復回数を指定できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_passwords')">原文</button>
+    <div id="原文_passwords" class="hide_on_start">
     <center><h3 id="passwords">Storing passwords safely</h3></center>
 
     Hashes can also be used to securely store
@@ -348,7 +706,103 @@ Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sL
     If necessary, we can use <tt>crypto_password_hash/3</tt></a> to
     specify the applied algorithm, a custom&nbsp;salt, and the number
     of iterations.
+    </div>
+    
+    <center><h2 id="signatures">デジタル署名</h2></center>
 
+    データの<i>真正性</i>を確立するためには、
+    さまざまな署名アルゴリズムがあり、それぞれに長所と短所があります。
+    すべての方式に共通する要素は次のとおりです：
+
+    <ol>
+      <li><span class="secret"><i>鍵ペア</i></span>が
+        データの発信者によって生成されます。
+        このペアは、<span class="secret"><i>秘密鍵</i></span>と
+        対応する<i>公開鍵</i>で構成されています。</li>
+      <li>データは<span class="secret">秘密鍵</span>で
+        <i>署名</i>されます。
+        これは、データと秘密鍵を使った計算によって
+        <i>署名</i>が生成されることを意味します。</li>
+      <li>署名は、データと公開鍵を使った計算で<i>検証</i>できます。</li>
+    </ol>
+
+    署名アルゴリズムの重要な特性は、現実的には
+    <span class="secret">秘密鍵</span>を持っている者だけが、
+    対応する公開鍵で検証可能な署名を生成できるということです。
+
+    <br><br>
+
+    名前が示すように、公開鍵は誰にでも自由に共有できますが、
+    <span class="secret">秘密鍵</span>は絶対に秘密にしておく必要があります。
+
+    <br><br>
+
+    <tt>library(crypto)</tt>にはEd25519が用意されており、
+    これはツイストエドワーズ曲線に基づくデジタル署名方式の具体例です。
+    Ed25519は非常に望ましい暗号学的特性を持ち、簡単に安全に使用できます。
+
+    <br><br>
+
+    たとえば、<tt>ed25519_new_keypair/1</tt>を使って、
+    新しい暗号的に強力な<span class="secret"><i>鍵ペア</i></span>を
+    簡単に作成できます：
+
+    <pre>
+<b>?- ed25519_new_keypair(Pair).</b>
+<span class="secret">   Pair = "[<i>非公開</i>]".</span>
+    </pre>
+
+    この<span class="secret">ペア</span>は
+    文字列として表現されており、
+    <span class="secret"><i>秘密鍵</i></span>も含まれているため、
+    完全に秘密にしておく必要があります。
+    <tt>ed25519_keypair_public_key/2</tt>を使って、
+    この<span class="secret">ペア</span>を
+    その<i>公開鍵</i>に関連付けることができます。
+    私の場合、Base64エンコードされた公開鍵は
+    <tt>"D/dkIG7mp6a0kbUeqjzxAitTIMthnKo+W6BCCMyGWyg="</tt>
+    というPrologの文字列として得られました。
+
+    <br><br>
+
+    次に、<tt>"Hello!"</tt>というメッセージを
+    <tt>ed25519_sign/4</tt>を使って<i>署名</i>します：
+
+    <pre>
+    ed25519_sign(<span class="secret">Pair</span>, "Hello!", Signature, [])
+    </pre>
+
+    ここで<span class="secret">Pair</span>は、
+    私だけが知っている上記の<span class="secret">鍵ペア</span>です。
+    <span class="secret">ペアの秘密成分</span>は決してあなたには見せませんし、
+    対応する<i>公開鍵</i>（上記参照）や計算された<i>署名</i>、
+    つまり
+    <tt>"<span class="hex">480895ab0202dd9de5e967b4ea9f12757efdfb81043dbbb8d7edf065f24ff01def8095f93bda78db91f8a34a4eff814f7dbe55ee974c92f232b74563536c3f09</span>"</tt>
+    を教えたとしても、現実的にあなたが秘密鍵を計算することは不可能です。
+
+    <br><br>
+
+    しかし、私が<span class="secret">秘密鍵</span>を
+    完全に秘密にしていると信じており、
+    あなたが私の<span class="secret">秘密鍵</span>に
+    対応する正しい<i>公開鍵</i>を持っていると確信しているなら、
+    <tt>ed25519_verify/4</tt>を使って
+    メッセージ<tt>"Hello!"</tt>を<i>認証</i>し、
+    私が署名したことを合理的に疑いなく確認できます：
+
+    <pre>
+?- PublicKeyB64 = "D/dkIG7mp6a0kbUeqjzxAitTIMthnKo+W6BCCMyGWyg=",
+   Message = "Hello!",
+   Signature = "<span class="hex">480895ab0202dd9de5e967b4ea9f12757efdfb81043dbbb8d7edf065f24ff01def8095f93bda78db91f8a34a4eff814f7dbe55ee974c92f232b74563536c3f09</span>",
+   chars_base64(PublicKey, PublicKeyB64, []),
+   ed25519_verify(PublicKey, Message, Signature, []).
+    </pre>
+
+    これが<i>成功</i>したので、署名は<i>有効</i>です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_signatures')">原文</button>
+    <div id="原文_signatures" class="hide_on_start">
     <center><h2 id="signatures">Digital signatures</h2></center>
 
     To establish the <i>authenticity</i> of data, there are different
@@ -447,7 +901,73 @@ Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sL
     </pre>
 
    Since this <i>succeeds</i>, the signature is <i>valid</i>.
+    </div>
+    
+    <center><h2 id="symmetric-encryption">対称暗号</h2></center>
 
+    ここで、恐らくあなたが最も関心を持っている話題、
+    <i>対称</i>暗号に移ります。
+    これは、<i>同じ</i>鍵を使ってデータの暗号化と復号化を行うこと
+    を意味します。
+    例えば、重要な使用例として、ファイルを<i>パスワード</i>で暗号化し、
+    <i>同じ</i>パスワードを使ってそれらを復号化することが挙げられます。
+
+    <br><br>
+
+    Scryer Prologでは、述語<b><tt>crypto_data_encrypt/6</tt></b>を使って、
+    任意のデータを安全に暗号化することが非常に簡単にできます。
+
+    <br><br>
+
+    暗号化したいデータに加えて、次のものを指定する必要があります：
+
+    <ol>
+      <li>使用したい<b>アルゴリズム</b></li>
+      <li>暗号化に使用する<b>鍵</b></li>
+      <li><b>初期化ベクトル</b>&nbsp;(IV)</li>
+    </ol>
+
+    ここで、それぞれのパラメータについて説明します。
+
+    <br><br>
+
+    対称暗号の<i>アルゴリズム</i>の例として、
+    <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard"><b>AES</b></a>
+    があります。
+    AESは、Vincent RijmenとJoan Daemenによって開発されたRijndael暗号の一部です。
+    AESは、NSA（米国国家安全保障局）によって<i>極秘</i>情報に対して
+    唯一公開された暗号です。
+    AESは<i>ブロック暗号</i>であり、さまざまな<i>モード</i>で使用でき、
+    異なる特性を保証します。
+
+    理想的には、<b>鍵</b>と<b>IV</b>は<i>ランダムに</i>選ばれ、
+    各鍵とIVが同じ確率で発生することが望ましいです。
+    同じ<i>鍵とIVの組み合わせ</i>を再利用すると、
+    通常は平文に関する<i>一部</i>の情報が漏れることがあります。
+    例えば、同じ平文が同じ暗号文に対応することがあります。
+    いくつかのアルゴリズムでは、同じ鍵でIVを再利用すると、
+    すべての暗号の特性が失われることがあり、重大な結果を引き起こします。
+    特にそのような場合、IVは<b>ナンス</b>とも呼ばれます。
+    これは「一度だけ使用される番号（number used once）」の略であり、
+    固定された鍵に対してIVは<i>一度だけ</i>使用されるべきであることを
+    強調しています。
+
+    <br><br>
+
+    鍵やIVは、<i>バイト</i>のリストとして指定できます。
+    <tt>crypto_n_random_bytes/2</tt>を使用して、
+    <i>暗号的に強力な</i>疑似乱数のバイトを生成できます。
+    非常に高い確率で、各呼び出しで完全に異なる鍵とナンスが生成されます。
+
+    <br><br>
+
+    <i>鍵</i>は暗号化されたテキストの機密性を維持するために、
+    完全に<span class="secret"><i>秘密</i></span>にしておく必要があります。
+    それに対して、IVは安全に平文で保存したり送信したりできます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_symmetric_encyription')">原文</button>
+    <div id="原文_symmetric_encyription" class="hide_on_start">
     <center><h2 id="symmetric-encryption">Symmetric encryption</h2></center>
 
     We now come to the topic you are probably most interested
@@ -512,7 +1032,145 @@ Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sL
     absolutely <span class="secret"><i>secret</i></span> to retain the
     confidentiality of the encrypted&nbsp;text. In contrast, the IV
     can be safely stored and transmitted in plain&nbsp;text.
+    </div>
+    
+    <center><h3 id="authenticated-encryption">認証付き暗号</h3></center>
 
+    鍵とIVが（十分に）ランダムに選ばれている限り、
+    AESのCBCモードは平文の<i>機密性</i>を保証します。
+    しかし、この暗号は他の点で重大な欠点があります。
+    それは、暗号文の<i>完全性</i>を保証せず、
+    したがって暗号文の<i>真正性</i>も保証しないということです。
+    つまり、攻撃者が暗号文を伝送中やストレージ上で<i>変更</i>することができ、
+    もしこの暗号だけに依存している場合、
+    私たちはその変更に<i>気づかない</i>ということです。
+    これにより、非常に重大な結果を引き起こす可能性があります。
+    例えば、平文が「<i>君にキスを送る！</i>」であり、
+    悪意ある暗号文の改ざんにより復号されたテキストが
+    「<i>彼にキスを送る！</i>」となる場合です。
+
+    <br><br>
+
+    これを解決する方法はいくつかあります。
+    最初に、そして最後に、<i>最良</i>の方法を示します。
+    それは、平文の機密性に加え、
+    暗号文の完全性と真正性も保証する暗号を使用することです。
+
+    <br><br>
+
+    この考えを示すために、強力で効率的なアルゴリズムである
+    <tt><b>'chacha20-poly1305'</b></tt>を使用します。
+    これは、Daniel J. Bernsteinによって導入された
+    <a href="https://cr.yp.to/chacha.html">ChaCha20</a>
+    ストリーム暗号と、同じくDaniel J. Bernsteinによって導入された
+    <a href="https://cr.yp.to/mac.html">Poly1305</a>認証器を組み合わせたものです。
+
+    <br><br>
+
+    この暗号は256ビットの<i>鍵</i>と96ビットの<i>ナンス（nonce）</i>、
+    すなわちそれぞれ32バイトと12バイトを使用します。
+    認証付き暗号は、暗号化時に<b>タグ</b>を計算し、
+    このタグは復号時に提供する必要があります。
+    タグは暗号化時に取得し、復号時には<tt>tag/1</tt>オプションを通じて指定します。
+
+    <br><br>
+
+    例えば、ChaCha20-Poly1305を使用してランダムな鍵とナンスで
+    暗号化を行う具体例です：
+
+    <pre>
+?- crypto_n_random_bytes(32, <span class="secret">Ks</span>),
+   crypto_n_random_bytes(12, IV),
+   crypto_data_encrypt(<span class="secret"><b>"test"</b></span>, 'chacha20-poly1305', <span class="secret">Ks</span>, IV, CipherText, [<b>tag(Ts)</b>]).
+    </pre>
+
+    これに対して、暗号化されたテキストと、16バイトのリストとして指定された
+    128ビットの<i>タグ</i>を取得します：
+
+    <pre>
+<span class="secret">Ks = [84,148,85,236,235,183,51,68,144|...]</span>,
+IV = [182,70,102,111,6,170,45,76,148|...],
+<b>CipherText = "Pç,õ"</b>,
+<b>Ts = [119,23,173,207,167,255,29,135,101|...]</b>.
+    </pre>
+
+    再度、鍵は完全に秘密にしておく必要があります。
+    それに対して、タグとナンス（IV）は安全に平文で保存および共有できます。
+
+    <br><br>
+
+    復号は正しい<i>タグ</i>が提供されて初めて動作します。例えば：
+
+    <pre>
+?- crypto_data_decrypt($CipherText, 'chacha20-poly1305', <span class="secret">$Ks</span>, $IV, <span class="secret">PlainText</span>, [<b>tag($Ts)</b>]).
+<span class="secret">PlainText = "test"</span>,
+CipherText = "Pç,õ",
+<span class="secret">Ks = [84,148,85,236,235,183,51,68,144|...]</span>,
+IV = [182,70,102,111,6,170,45,76,148|...],
+Ts = [119,23,173,207,167,255,29,135,101|...].
+    </pre>
+
+    対照的に、暗号文、ナンス、またはタグを少しでも
+    短縮、拡張、または変更すると、復号は<i>失敗</i>します。
+
+    <br><br>
+
+    したがって、攻撃者が暗号文を変更する場合、
+    その変更が気づかれないようにするためには
+    タグにも<i>適合する</i>変更を加えなければなりません。
+    しかし、秘密鍵を知らなければ、そのような変更は極めて不可能に近いです。
+
+    <br><br>
+
+    Prologは、このようなアルゴリズムが
+    どのように機能するかをプロトタイプ実装で学ぶのに適しています。
+    例えば、こちらはPoly1305認証器のProlog実装です：
+    <a href="poly1305aes.pl"><tt>poly1305aes.pl</tt></a>。
+    そしてこちらはChaCha20コアです：<a href="chacha20.pl"><tt>chacha20.pl</tt></a>。
+
+    <br><br>
+
+    続ける前に、いくつかのテストを行うことは非常に有益です。
+    例えば、<tt><b>crypto_data_decrypt/6</b></tt>に
+    同じアルゴリズム、鍵、IVを提供して
+    暗号文を<i>復号できるかどうか</i>確認してみましょう。
+    さらに、これを<i>一度だけ</i>でなく、<i>繰り返し</i>実行し、
+    各実行で新たに生成された鍵とIVを使用して試してみましょう：
+
+    <pre>
+?- <b>repeat</b>,
+      <span class="secret">PlainText = <b>"test"</b></span>,
+      Algorithm = 'chacha20-poly1305',
+      crypto_n_random_bytes(32, <span class="secret">Ks</span>),
+      crypto_n_random_bytes(12, IV),
+      portray_clause(<b>verifying</b>),
+      crypto_data_encrypt(<span class="secret">PlainText</span>, Algorithm, <span class="secret">Ks</span>, IV, CipherText, [tag(Ts)]),
+      crypto_data_decrypt(CipherText, Algorithm, <span class="secret">Ks</span>, IV, <span class="secret">PlainText</span>, [tag(Ts)]),
+      portray_clause(<b>ok</b>),
+      <b>false</b>.
+    </pre>
+
+    その結果は次のようになります：
+
+    <pre>
+verifying.
+<b>ok.</b>
+verifying.
+<b>ok.</b>
+verifying.
+<b>ok.</b>
+etc.
+    </pre>
+
+    数十万回の繰り返し後、暗号化されたものが復号できるという
+    合理的な自信を持てるようになります。
+    異なるアルゴリズムを試す際には、指定する鍵やIVが選んだ
+    アルゴリズムの要件より短い場合がよくありますが、
+    このようなテストケースはそのようなミスを発見する助けとなります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_authenticated_encryption')">原文</button>
+    <div id="原文_authenticated_encryption" class="hide_on_start">
     <center><h3 id="authenticated-encryption">Authenticated encryption</h3></center>
 
     As long as the key and IV are chosen (sufficiently) randomly, AES
@@ -658,8 +1316,186 @@ etc.
     to specify keys or IVs that are shorter than what the chosen
     algorithm requires, and such test cases help us to detect these
     mistakes.
+    </div>
+    
+    <center><h3>鍵と初期化ベクトルの導出</h3></center>
 
+    ほとんどの実際のアプリケーションでは、単に<i>ランダム</i>な鍵を
+    生成するだけでは不十分です。
+    通常、他の情報から鍵と初期化ベクトル（IV）を<i>導出</i>する方法を
+    見つける必要があります。この情報は、<i>入力鍵素材</i>（IKM）と呼ばれます。
 
+    <br><br>
+
+    たとえば、
+    <a href="https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange">ディフィー・ヘルマン・マークリ鍵交換</a>
+    では、まず他の参加者と<i>共有秘密</i>を交渉し、
+    その秘密から適切な鍵を導出する必要があります。
+    このような秘密の例としては、整数や楕円曲線上の点があります。
+
+    <br><br>
+
+    任意の入力データから鍵とIVを導出するための標準的なアルゴリズムが存在します。
+    これは<b>HKDF</b>（HMACベースの鍵導出関数）と呼ばれ、
+    <a href="https://tools.ietf.org/html/rfc5869">RFC 5869</a>
+    で説明されています。
+    Scryer Prologでは、<tt><b>crypto_data_hkdf/4</b></tt>として利用できます。
+
+    <br><br>
+
+    たとえば、同じパスワードを入力するたびに同じ鍵とIVが得られるように、
+    <i>パスワード</i>から鍵とIVを導出してみましょう。
+
+    <br><br>
+
+    HKDFを使用すると、もちろん与えられたパスワードから
+    <i>直接</i>鍵を導出することができます。
+    しかし、<a href="#passwords">パスワードの保存</a>について
+    述べたことを考慮してください。
+    第一に、パスワードを推測しようとする攻撃者を遅らせるべきです。
+    第二に、同じパスワードが他の場所でも使用されていたとしても、
+    その情報を漏らさないようにすべきです。
+
+    <br><br>
+
+    したがって、<span class="secret"><i>パスワード</i></span>から
+    直接鍵を得るのではなく、以下の手順を行います：
+
+    <br><br>
+
+    <span style="padding-left: 30pt"><i><span class="secret">パスワード</span>とソルト</i> → 意図的に遅い<span class="secret"><i>ハッシュ</i></span> → <span class="secret"><i>鍵</i></span>。</span>
+
+    <br><br>
+
+    つまり、パスワードベースのハッシュ導出と
+    HMACベースの鍵導出を<i>組み合わせて</i>使用し、
+    <tt>crypto_password_hash/3</tt>を使用してから
+    <i>次に</i><tt>crypto_data_hkdf/4</tt>を使用します。
+
+    <br><br>
+
+    後で同じパスワードを入力したときに
+    <i>同じ</i>鍵が生成されるようにするには、
+    <tt>crypto_password_hash/3</tt>の
+    すべてのパラメータを<i>固定</i>する必要があります。
+    たとえば、デフォルトでは<i>ランダム</i>なソルトが使用されますが、
+    ここでは自分でソルトを提供し、それを後で参照できるように保存します。
+    ソルトは<tt>crypto_n_random_bytes/2</tt>で簡単に生成できます。
+    たとえば、128ビット（16バイト）のソルトを使用します。
+    さらに、使用するアルゴリズム
+    （現在は<tt>'pbkdf2-sha512'</tt>のみがサポートされています）や、
+    反復回数も明示的に指定します。たとえば、2<sup>19</sup>回の反復を使用します。
+
+    <br><br>
+
+    生成された<i>ハッシュ</i>からは、鍵<i>と</i>IVを簡単に導出できます。
+    <tt>crypto_data_hkdf/4</tt>の<tt>info/1</tt>オプションを使用して、
+    同じIKMから複数の異なる鍵やIVを導出することができます。
+    <tt>crypto_data_hkdf/4</tt>で使用する<i>アルゴリズム</i>も固定します。
+
+    <br><br>
+
+    これらの考慮事項をすべて考慮して、
+    次のような述語でパスワードとソルトから128ビット（16バイト）の鍵とIVを導出します。
+
+    <pre>
+<b>password_salt_key_iv</b>(<span class="secret">Password</span>, Salt, <span class="secret">Ks</span>, IV) :-
+        crypto_password_hash(<span class="secret">Password</span>, <span class="secret">Hash</span>, [algorithm('pbkdf2-sha512'),
+                                              cost(19),
+                                              salt(Salt)]),
+        crypto_data_hkdf(<span class="secret">Hash</span>, 16, <span class="secret">Ks</span>, [info("key"),algorithm(sha256)]),
+        crypto_data_hkdf(<span class="secret">Hash</span>, 16, IV, [info("iv"),algorithm(sha256)]).
+    </pre>
+
+    新しい128ビットソルトを使ったサンプル使用例：
+
+    <pre>
+?- crypto_n_random_bytes(16, Salt),
+   password_salt_key_iv(<span class="secret"><b>"test"</b></span>, <b>Salt</b>, <span class="secret">Ks</span>, IV).
+    </pre>
+
+    これにより以下の結果が得られます：
+
+    <pre>
+Salt = [203,81,172,46,86,244,37,2,215|...],
+<span class="secret"><b>Ks</b> = [38,141,86,95,83,22,243,31,38|...]</span>,
+<b>IV</b> = [36,149,175,179,48,192,213,175,71|...].
+    </pre>
+
+    後で同じパスワードとソルトを使用すると、正確に同じ結果が導出されます。
+
+    <br><br>
+
+    したがって、使用した<i>ソルト</i>を保存しておけば、
+    パスワードが入力された際に、HKDFを再び使用して
+    すべての必要な値を導出できます。
+    ソルトは暗号化された値とは現実的に計算可能な関連性がないため、
+    ソルト自体を平文で保存することは安全です。
+    ただし、<i>パスワード</i>は完全に秘密にしておく必要があります。
+
+    <br><br>
+
+    楕円曲線ディフィー・ヘルマン（ECDH）を使用して、
+    楕円曲線機能を利用して安全でないチャネル上で
+    共有秘密を確立することができます。
+    Curve25519はこれに特に適しており、
+    <tt>library(crypto)</tt>では、Curve25519上の点は
+    <i>文字のリスト</i>として表され、
+    モンゴメリ曲線の<u>座標</u>を示します。
+    X25519を実装するための2つの述語があります：
+
+    <ul>
+      <li><tt>curve25519_generator(-Gs)</tt><br>
+        <i>Gs</i>はCurve25519の生成点です。 </li>
+      <li><tt>curve25519_scalar_mult(+Scalar, +Ps, -Rs)</tt><br>
+        <i>Scalar</i>は0から2<sup>256</sup>-1までの整数、
+        または32バイトのリストである必要があります。
+        <i>Ps</i>は曲線上の点です。
+        <i>Rs = Scalar&middot;Ps</i>を計算します。 </li>
+    </ul>
+
+    AliceとBobは、Curve25519の生成点<i>Gs</i>を使用して、
+    次のようにして安全でないチャネル上で共有秘密を確立できます：
+    <ol>
+      <li> Aliceはランダムな整数<i>a</i>を作成し、
+        <i>As = a&middot;Gs</i>を計算してBobに送ります。
+        Aliceは整数<i>a</i>の代わりに、
+        <tt>crypto_n_random_bytes/2</tt>を使用して
+        32バイトのランダムな値を生成することもできます。 </li>
+      <li> Bobはランダムな整数<i>b</i>を作成し、
+        <i>Bs = b&middot;Gs</i>を計算してAliceに送ります。
+        Bobも<tt>crypto_n_random_bytes/2</tt>を使用して<b>b</b>を生成できます。</li>
+      <li> Alice は <i>Rs = a&middot;Bs</i> を計算します。</li>
+      <li> Bob は <i>Rs = b&middot;As</i> を計算します。</li>
+      <li> Alice と Bob は
+        （同じ）適切なパラメータと <i>Rs</i> とを <tt>crypto_data_hkdf/4</tt> に使い
+        対称暗号化のキーと初期化ベクトルとして使用できるバイトのリストを取得します。
+      </li>
+    </ul>
+
+    <i>a</i> と <i>b</i> の秘密が保たれているならば、
+    この方法は非常に安全だと考えられます。
+
+    <br><br>
+
+    キーがキーから派生している場合もあります。
+    例えば、<i>マスターキー</i> を持っていて、暗号化するファイルごとに
+    一つのキーを、そこからさらにキーを派生する場合があります。
+    このような場合、たとえば <tt>crypto_data_hkdf/4</tt> の
+    <tt>info/1</tt> オプションでファイル名を指定できます。
+    攻撃者がこれらのキーの一つを見つけたとしても、
+    マスターキーは安全なままです。
+    別の例として、暗号化されたデータとIV に対して
+    <a href="https://en.wikipedia.org/wiki/Hash-based_message_authentication_code">HMAC</a>
+    を計算するために追加のキーを派生させることで、暗号テキストの信頼性を証明できます。
+    ただし、この構造では派生したキーが破られてもマスターキーが漏洩することはありません。
+    エラーの発生を抑えるため、このようなユースケースでは
+    <a href="#authenticated-encryption">認証暗号化</a>
+    が組み込まれた暗号を使用する方が安全です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_deriving_keys')">原文</button>
+    <div id="原文_deriving_keys" class="hide_on_start">
     <center><h3>Deriving keys and initialization vectors</h3></center>
 
     In most actual applications, it is not enough to generate a
@@ -859,8 +1695,46 @@ Salt = [203,81,172,46,86,244,37,2,215|...],
     cipher with built-in support for
     <a href="#authenticated-encryption">authenticated&nbsp;encryption</a>
     for such use&nbsp;cases.
+    </div>
+    
+    <center><h2>さらに読む</h2></center>
 
+    私たちは、Prologを暗号化の文脈でどのように活用すべきかについて、
+    ほんの触りだけを紹介しました。
+    たとえば、Bruno Blanchetによる
+    <a href="http://web.cs.wpi.edu/~cs564/f12/papers/blanchet_csfw01.pdf"><i>An Efficient Cryptographic Protocol Verifier Based on Prolog Rules</i></a>
+    （「Prologルールに基づく効率的な暗号プロトコル検証器」）では、
+    Prologを使用して暗号プロトコルの特性を検証する方法が詳しく説明されています。
 
+    <br><br>
+
+    多くの場合、内部的な仕組みを知らなくても、
+    暗号機能の恩恵を受けることができます。
+    たとえば、ウェブアプリケーションに暗号化された通信を簡単に有効にしたい場合は、
+    SWI-Prologを使ってHTTPSサーバーを設定する
+    <a href="/letswicrypt/"><b>LetSWICrypt</b></a>をご覧ください。
+
+    <br><br>
+
+    また、別のケースでは、利用可能な機能を使って
+    独自に特定のアプリケーションを実装することもできます。
+    たとえば、Prologを使って<i>Bitcoin</i>アドレスについて
+    推論することができます。
+    詳細については<a href="/bitcoinolog/"><b>Bitcoinolog</b></a>をご覧ください。
+    上記の方法を使用して、Bitcoinウォレットや他の機密データを
+    <i>暗号化</i>することができます。
+    ファイルの暗号化や復号化には
+    <a href="/enscryerypt/"><b>Enscryerypt</b></a>をご利用ください。
+
+    <br><br>
+
+    Scryer Prologの暗号機能は、継続的に改良されています。
+    特定の機能に興味がある場合は、プロジェクトにイシューを提出するか、
+    パッチを提供してください！
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
     We have barely scratched the surface of what you can and should do
@@ -894,8 +1768,7 @@ Salt = [203,81,172,46,86,244,37,2,215|...],
     The cryptographic functionality of Scryer Prolog is subject to
     continuous improvements. If you are interested in specific
     features, file an issue with the project, or contribute a patch!
-
-    <br><br>
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

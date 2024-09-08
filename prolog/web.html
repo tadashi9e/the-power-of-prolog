@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog Web Applications</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Web Applications">
@@ -8,11 +9,77 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>PrologによるWebアプリケーション</h1></center>
+    <br>
+
+    Prologは、<b>Webアプリケーション</b>の開発に非常に適しています。
+    Webページは自然に<a href="data">Prologの項</a>として表現され、
+    簡単に作成、検査、再帰的に処理することができます。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/web_scraping"><img src="videos/t_web_scraping.png" alt="Web Scraping"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    クライアントとサーバーのアプリケーションを区別します。
+    このページでは、これらのタスクにPrologをどのように使用するか
+    について詳しく説明します。
+
+    <br><br>
+
+    Web開発のサポートはPrologシステムによって異なります。
+    最も基本的なレベルでは、ネットワークストリームに
+    アクセスするためのいくつかの単純な述語、
+    たとえばSICStus PrologやScryer Prologの
+    <a href="https://sicstus.sics.se/sicstus/docs/4.3.2/html/sicstus/lib_002dsockets.html"><tt>library(sockets)</tt></a>
+    があれば、基本的なWebアプリケーションを構築するのに十分です。
+
+    <br><br>
+
+    もちろん、最も広く使用されているPrologシステムは通常これを超え、
+    より包括的で高レベルのサポートを提供します。
+    たとえば、SICStus Prologやその他のいくつかのシステムには、
+    WWWプログラミングのための
+    <a href="http://cliplab.org/Software/pillow/pillow.html">PiLLoWライブラリ</a>
+    が付属しています。SICStusでは、これは
+    <a href="https://sicstus.sics.se/sicstus/docs/latest4/html/sicstus.html/lib_002dpillow.html#lib_002dpillow"><tt>library(pillow)</tt></a>
+    として利用可能です。
+
+    <br><br>
+    <a href="http://tau-prolog.org/">Tau Prolog</a>は、
+    JavaScriptで書かれたPrologインタープリターで、
+    Webアプリケーションにシームレスに組み込むことができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_web_applications')">原文</button>
+    <div id="原文_prolog_web_applications" class="hide_on_start">
     <center><h1>Prolog Web Applications</h1></center>
     <br>
 
@@ -60,10 +127,50 @@
     <a href="http://tau-prolog.org/">Tau&nbsp;Prolog</a> is a Prolog
     interpreter written in JavaScript and can be seamlessly embedded
     in web&nbsp;applications.
+    </div>
 
+    <center><h2 id="client">HTTP クライアント</h2></center>
 
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_http_clients')">原文</button>
+    <div id="原文_http_clients" class="hide_on_start">
     <center><h2 id="client">HTTP Clients</h2></center>
+    </div>
 
+    <center><h3>ページの取得</h3></center>
+
+    <b>クライアント</b>は、<i>サーバー</i>からページを取得します。
+    Scryer Prologを使用すると、
+    <a href="https://www.scryer.pl/http/http_open.html"><tt><b>http_open/3</b></tt></a>
+    を使って、HTTPやHTTPSを介して簡単にページを取得できます。
+
+    <br><br>
+
+    例：
+
+    <pre>
+?- use_module(library(http/http_open)).
+   true.
+
+?- <b>http_open</b>("https://www.metalevel.at/prolog", Stream, []).
+   Stream = '$stream'(0x7faed0412400)
+    </pre>
+
+    これにより、ページを読み取るための<tt>Stream</tt>が開かれます。
+    <tt>http_open/3</tt>の第三引数は、ヘッダーフィールドを取得したり、
+    接続のさまざまな側面を制御したりするために使用できる<i>オプション</i>のリストです。
+
+    <br><br>
+
+    上記の例では<tt>https</tt>スキームが指定されているため、
+    自動的に<i>セキュア</i>な接続が確立されて使用されます。
+    セキュアな接続を明示的に確立するには、
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/tls.pl"><tt>library(tls)</tt></a>
+    を使用できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_fetching_pages')">原文</button>
+    <div id="原文_fetching_pages" class="hide_on_start">
     <center><h3>Fetching pages</h3></center>
 
     A <b>client</b> fetches pages from a <i>server</i>. Using
@@ -95,7 +202,36 @@
     and&nbsp;used. You can
     use <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/tls.pl"><tt>library(tls)</tt></a>
     to establish secure connections explicitly.
+    </div>
 
+    <center><h3>HTMLの解析</h3></center>
+
+    ウェブページのストリームハンドルを取得すると、
+    ページをいくつかの方法で読み取ることができます。
+    例えば、一度に1文字ずつ読み取ったり、
+    <a href="dcg">DCG</a>を使用してストリームを
+    <a href="purity">純粋な</a>方法で処理したりすることができます。
+
+    <br><br>
+
+    非常に多くの場合、HTMLページをページ構造を均一に反映する
+    <a href="data">Prolog用の項</a>に変換するのが最も便利です。
+    述語<tt><b>load_html/3</b></tt>は、この変換を行います：
+
+    <pre>
+?- http_open("https://www.metalevel.at/prolog", Stream, []),
+   <b>load_html</b>(stream(Stream), DOM, []).
+   Stream = ...,
+   <b>DOM = [element(html, [], [element(head, [], [element(title, ...)])])]</b>.
+    </pre>
+
+    詳細については、
+    <a href="https://www.scryer.pl/sgml.html"><tt><b>library(sgml)</b></tt></a>
+    を参照し、XMLなどのマークアップ言語の解析に関連する述語も確認してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_parsing_html')">原文</button>
+    <div id="原文_parsing_html" class="hide_on_start">
     <center><h3>Parsing HTML</h3></center>
 
     Once we obtain a stream handle for a web page, we can read the
@@ -122,7 +258,50 @@
     <a href="https://www.scryer.pl/sgml.html"><tt><b>library(sgml)</b></tt></a>
     for more information, and related predicates for parsing markup
     languages like&nbsp;XML.
+    </div>
+    
+    <center><h3>HTMLの処理</h3></center>
 
+    通常のPrologでも、各要素が<tt>element(Name, Attributes, Content)</tt>
+    として表現されるSGML要素のネストされたリストを処理するのは非常に便利です。
+    こうした構造を再帰的に処理するには、
+    Prologの<a href="concepts#builtin">組み込み機能</a>を使用するだけで済みます。
+
+    <br><br>
+
+    驚くべきことに、さらに良い方法があります。
+    Scryer Prologでは、
+    <a href="https://www.scryer.pl/xpath.html"><tt><b>library(xpath)</b></tt></a>
+    を使用することで、
+    <a href="https://en.wikipedia.org/wiki/XPath">XPath</a>クエリ言語に
+    習った項を使って、HTML要素に簡単にアクセスできます。
+
+    <br><br>
+
+    例えば、前の例の続きとして、ページ上のすべての<i>リスト項目</i>の
+    テキストを取得してみましょう：
+
+    <pre>
+?- use_module(library(sgml)),
+   use_module(library(xpath)).
+   true.
+      
+?- http_open("https://www.metalevel.at/prolog", Stream, []),
+   load_html(stream(Stream), DOM, []),
+   <b>xpath(DOM, //li(text), Item)</b>.
+   Stream = ..., DOM = ..., <b>Item = "<a href="introduction">Introduction</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="facets">Facets of Prolog</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="logic">Logical Foundations</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="concepts">Basic Concepts</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="data">Data Structures</a>"</b>
+;  ... .
+    </pre>
+
+    バックトラッキングにより、すべての解が報告されます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_processing_html')">原文</button>
+    <div id="原文_processing_html" class="hide_on_start">
     <center><h3>Processing HTML</h3></center>
 
     Plain Prolog already makes it extremely convenient to process such
@@ -162,9 +341,70 @@
     </pre>
 
     On backtracking, all solutions are reported.
+    </div>
 
-    
+    <center><h2 id="server">HTTPサーバー</h2></center>
 
+    <b>サーバー</b>アプリケーションの場合、たとえばScryer Prologの
+    <a href="https://www.scryer.pl/http/http_server.html">HTTPサーバー</a>
+    ライブラリを使用することができます。
+
+    <br><br>
+
+    最初に、非常に基本的なHTTPサーバーを考えてみましょう：
+
+    <pre>
+:- use_module(library(http/http_server)).
+
+run(Port) :-
+        http_listen(Port, [get(/, request_response)]).
+
+request_response(_, Response) :-
+        http_status_code(Response, 200),
+        http_body(Response, text("Hello!")).
+    </pre>
+
+    このスニペットは、単に<i>Hello!</i>と応答するサーバーを実装しています。
+
+    <br><br>
+
+    サーバーを実行するには、このスニペットを<tt>server.pl</tt>にコピーし、
+    例えばポート3040で以下のコマンドを使用してサーバーを起動します：
+
+    <pre>
+$ scryer-prolog <b>-g "run(3040)"</b> server.pl
+    </pre>
+
+    サーバーが動作している間は、ブラウザで
+    <tt><a href="http://127.0.0.1:3040">http://127.0.0.1:3040</a></tt>
+    にアクセスしてテストできます。
+
+    <br><br>
+
+    より現実的なHTTPサーバーでは、応答はもちろんクライアントの
+    <i>リクエスト</i>に依存します。
+    異なるハンドラーや追加のハンドラーを使用して、
+    サーバーの動作を変更することができます。
+
+    <br><br>
+
+    HTTPサーバーアプリケーションには、
+    強力で効率的なマルチスレッド対応のSWI-Prologも検討してください。
+    詳細については、その
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=httpserver"><b>HTTPサーバーライブラリ</b></a>
+    を参照してください。
+    SWI-Prologを使用してPrologベースのHTTPSサーバーを実行するには、
+    <a href="/letswicrypt/"><b>LetSWICrypt</b></a>をご覧ください。
+
+    <br><br>
+
+    <a href="/proloxy/"><b>Proloxy</b></a>は、
+    柔軟な構成を可能にする拡張可能なPrologの節を使用した、
+    Prologベースの<b>プロキシ</b>です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_server')">原文</button>
+    <div id="原文_server" class="hide_on_start">
     <center><h2 id="server">HTTP Servers</h2></center>
 
     For <b>server</b> applications, we can use for example
@@ -223,7 +463,49 @@ $ scryer-prolog <b>-g "run(3040)"</b> server.pl
     <a href="/proloxy/"><b>Proloxy</b></a> is a
     Prolog-based <b>proxy</b> that uses extensible Prolog&nbsp;clauses
     for flexible configurations.
+    </div>
+    
+    <center><h2>クライアント/サーバーアプリケーション</h2></center>
 
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/pengines.html%27%29"><b>Pengines</b></a>
+    を使用すると、Prologで強力なクライアント/サーバーアプリケーションを
+    実装することができます。
+
+    <br><br>
+
+    Penginesを使うことで、リモートのPrologサーバーに
+    <i>ローカルと同じように</i>クエリを投げることができ、
+    その結果をクライアントのPrologプログラムやJavaScriptを使ったウェブページで利用できます。
+
+    <br><br>
+
+    たとえば、<a href="expertsystems"><b>エキスパートシステム</b></a>で
+    説明した動物識別タスクを再度考えてみましょう。
+    これをクライアント/サーバーアプリケーションとして以下のように実装することができます：
+
+    <ul>
+      <li><a href="animal_server.pl">animal_server.pl</a></li>
+      <li><a href="animal_client.pl">animal_client.pl</a></li>
+    </ul>
+
+    重要なのは、アプリケーションロジックが完全にサーバー上に存在する点です。
+
+    <br><br>
+
+    より複雑なアプリケーションの例としては、
+    <a href="/rits/"><b>RITS</b></a>をご覧ください。
+
+    <br><br>
+
+    また、Pengineの後継である
+    <a href="https://github.com/Web-Prolog"><b>Web Prolog</b></a>と、
+    Torbjörn Lagerによる新しい本
+    <a href="https://github.com/Web-Prolog/swi-web-prolog/blob/master/book/web-prolog.pdf"><i>Web Prolog and the programmable Prolog Web</i></a>
+    も参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_client_server_application')">原文</button>
+    <div id="原文_client_server_application" class="hide_on_start">
     <center><h2>Client/Server Applications</h2></center>
 
     <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/pengines.html%27%29"><b>Pengines</b></a>
@@ -261,7 +543,7 @@ $ scryer-prolog <b>-g "run(3040)"</b> server.pl
     Prolog</b></a>, and the upcoming
     book <a href="https://github.com/Web-Prolog/swi-web-prolog/blob/master/book/web-prolog.pdf"><i>Web&nbsp;Prolog
         and the programmable Prolog&nbsp;Web</i></a> by Torbj&ouml;rn Lager.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

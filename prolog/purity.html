@@ -1,18 +1,59 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Logical Purity</title>
+    <meta charset="UTF-8">
+    <title>論理的純粋性 - Logical Purity</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Logical Purity">
     <meta name="keywords" content="Prolog,Purity">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>論理的純粋性</h1></center> <br>
+
+    すべての優れたPrologプログラムの中心には、
+    私たちが
+    <b>論理的純粋性</b>、または単に
+    <b>純粋性</b>と呼ぶ特性があります。
+    非公式には、これはプログラムが
+    <b>関係</b>に期待される特性を持っていることを意味します。
 
     <br><br>
+
+    Prologプログラムの純粋性を特徴付ける方法には、
+    以下の2つの同等に正当な方法があります：
+    <ol>
+      <li><i>内的定義</i>：純粋性を構築によって保証する基本要素を指します。</li>
+      <li><i>外的定義</i>：コードの詳細を知らずにテストできる特性を指します。</li>
+    </ol>
+
+    以下に、これらのバリエーションについて詳しく説明し、
+    なぜこの特性が重要なのかを説明します。
+
     <br><br>
+    <button onclick="toggleOriginalContent('原文_purity')">原文</button>
+    <div id="原文_purity" class="hide_on_start">
     <center><h1>Logical Purity</h1></center>
     <br>
 
@@ -35,7 +76,41 @@
 
     In the following, we discuss these variants in more detail and
     give reasons why we care about this property.
+    </div>
 
+    <center><h2>内的定義</h2></center>
+
+    論理的純粋性を特徴付ける一つの方法は、
+    プログラムの<i>内的</i>特性を参照することです。
+    特に、<i>帰納的</i>な定義で純粋な述語を定義することができます。
+
+    <br><br>
+
+    例えば：
+    <ul>
+      <li><tt>true/0</tt> と <tt>false/0</tt> は純粋です</li>
+      <li><tt>(=)/2</tt> と <tt>dif/2</tt> は純粋です</li>
+      <li><a href="clpfd">算術制約</a>のような
+        <tt>(#=)/2</tt> と
+        <tt>(#\=)/2</tt> は純粋です</li>
+      <li><tt><a href="metapredicates#call">call</a>(Goal)</tt> は
+        <tt>Goal</tt> が純粋である<i>場合に限り</i> 純粋です</li>
+      <li><tt><a href="metapredicates#maplist">maplist</a>(Goal, Ls)</tt> は
+        <tt>Goal</tt> が純粋である<i>場合に限り</i> 純粋です</li>
+      <li><tt>(A,B)</tt> と <tt>(A;B)</tt> は
+        <tt>A</tt> と <tt>B</tt> が純粋である<i>場合に限り</i> 純粋です</li>
+      <li><i>他のケースは省略</i></li>
+    </ul>
+
+    多くのPrologプログラムに対して、
+    このアプローチは特定のプログラムが純粋かどうかを非常に簡単に判断できます。
+    これはアプローチの明確な利点です。
+    一方で、このアプローチの欠点は、なぜこれらの述語が純粋であるのか、また、
+    他にどの述語が純粋であるかをどのように判断できるかを説明していないことです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_intrinsic')">原文</button>
+    <div id="原文_intrinsic" class="hide_on_start">
     <center><h2>Intrinsic definition</h2></center>
 
     One way to characterize logical purity is to refer
@@ -64,7 +139,56 @@
     this approach is that it does not explain <i>why</i> these
     predicates are pure, and how we can decide which other predicates,
     if any, are also pure.
+    </div>
 
+    <center><h2>外的定義</h2></center>
+
+    論理的純粋性を特徴付ける別のアプローチは、
+    プログラムの実装の詳細を知らずに
+    外部から観察できるプログラムの特性だけを考慮します。
+
+    <br><br>
+
+    例えば：
+    <ul>
+      <li>目標が端末に<b>出力</b>を生成する場合、
+        それは<i>純粋ではありません</i>
+      </li> <li>目標が<a href="global"><b>グローバル状態</b></a>を変更する場合、
+        それは<i>純粋ではありません</i></li>
+      <li>目標 <tt>G</tt> にサブ項 <tt>S</tt> が含まれている場合、
+        ある項 <tt>T</tt> が存在して、
+        <tt>(G,S=T)</tt> が<i>条件に関係なく成功する</i>が、
+        <tt>(S=T,G)</tt> が<i>失敗する</i>場合、
+        <tt>G</tt> は<b>単調ではない</b>ため、
+        <i>純粋ではありません</i></li>
+      <li>同様に、目標 <tt>G</tt> にサブ項 <tt>S</tt> が含まれている場合、
+        ある項 <tt>T</tt> が存在して、
+        <tt>(G,S=T)</tt> が<i>失敗する</i>が、
+        <tt>(S=T,G)</tt> が<i>条件に関係なく成功する</i>場合、
+        <tt>G</tt> は<i>堅牢ではない</i>ため、
+        <b>純粋ではありません</b></li>
+      <li><i>他のケースは省略</i></li>
+    </ul>
+
+    このアプローチの利点は、論理的純粋性の背後にある
+    <i>意図</i>についてより明確な理解が得られることです。
+    この用語で、私たちは古典的な一階論理から知っている法則や
+    不変量を満たすプログラムを示したいと考えています。
+    例えば、結合の可換性や結果関係の単調性などがその法則の例です。
+    さらに、出力を生成したり、ファイルを削除したり、
+    ソケットを開いたりすることによって論理の範疇を超えるプログラムを
+    排除したいと考えています。
+    このアプローチの欠点は、
+    望ましい特性の完全なリストを作成することは難しいことです。
+    しかし、非常に顕著で重要な例を挙げることはできます。
+    一般的にこれらの特性を<i>破る</i>述語の主な例には、
+    <tt>!/0</tt>、
+    <tt>(->)/2</tt>、および
+    <tt>assertz/1</tt> があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_extrinsic')">原文</button>
+    <div id="原文_extrinsic" class="hide_on_start">
     <center><h2>Extrinsic definition</h2></center>
 
     A different approach to characterize logical purity only takes
@@ -107,7 +231,95 @@
     and important ones though. Primary examples of predicates
     that <i>break</i> these properties in general
     are <tt>!/0</tt>, <tt>(->)/2</tt> and&nbsp;<tt>assertz/1</tt>.
+    </div>
 
+    <center><h2>実用的な重要性</h2></center>
+
+    Prologでプログラミングを行う際に、
+    論理的純粋性をできるだけ保持することには、
+    非常に大きな実用的な利点があります。
+
+    <br><br>
+
+    論理的に純粋なコードのみが適用できる利点をいくつか挙げます。
+
+    <br><br>
+
+    <b>純粋なコード</b>は…
+
+    <ul>
+      <li>... <b>すべての方向で</b>使用できます。
+        これにより、プログラムを短く保ちながら、
+        非常に簡潔で一般的な仕様を提供できます。
+        <a href="concepts#toplevel"><i>最も一般的なクエリ</i></a>
+        を試すことで、
+        解決策がどのようなものかを確認できます。</li>
+      <li>... より<b>柔軟に変更</b>できます。
+        純粋な目標や節を自由に順序を入れ替えても、
+        プログラムの意味が変わることはありません。
+        目標や節の順序を入れ替えることで、
+        はるかに効率的なプログラムを得ることができます。</li>
+      <li>... より<b>広範に研究</b>できます。
+        目標や節の順序を入れ替えることで、
+        純粋でないコードでは観察できない
+        操作的効果を研究することができます。</li>
+      <li>... <i>宣言的に</i>推論できます。
+        制約を追加することで、解の集合が<i>減少する</i>ことはあっても、
+        <a href="debugging">デバッグ</a>や
+        予期しない失敗や成功の原因を特定する際に非常に役立ちます。
+        制約を削除することで、解の集合が<i>拡張する</i>ことはあります。</li>
+      <li>... <b>柔軟に解釈</b>できます。
+        深さ優先探索や幅優先探索、ボトムアップ評価、反復深化など、
+        あらゆる戦略を使用して
+        純粋なコードから論理的な結論を導き出すことができます。
+        推論方法が<i>正確であれば</i>、導き出されるものは
+        すべてプログラムの意味的な結論です。</li>
+      <li>... 純粋な機能を使用して<b>テスト</b>できます。
+        純粋なコードのテストケースは、
+        単に成功または失敗する必要があるPrologクエリです。
+        他に何も必要ありません。
+        特に、端末にのみ出力される内容について推論する必要はありません。</li>
+      <li>... 純粋でないコードよりも<b>説明</b>や理解が容易です。
+        これは、節を単独で読んで、その宣言的な読み方として
+        論理的な含意が許容されるためです。</li>
+      <li>... 自動的に<b>スレッドセーフ</b>です。
+        純粋なコードには<i>破壊的な</i>変更がないため、
+        異なるスレッドが同時にデータを変更するデータ競合が発生することはありません。
+        この特性は、複数のクライアントを異なるスレッドで処理する
+        単一のサーバーにとってますます重要になっています。</li>
+    </ul>
+
+    特に以下の点に注目してください:
+    実際に興味深いアプリケーションでは、
+    計算の結果を<i>事前に</i>知ることはできません。
+    このような領域でPrologを使用する目的は、
+    例えば仕様が曖昧であるかどうか、
+    または特定の結果が得られるかどうかを検出することです。
+    プログラムを実行する前に結果を知らないため、
+    複数の可能性のうちの1つに<i>コミットする</i>ような制約を
+    課してはなりません。
+    このようなアプリケーションの一例として、
+    David C. Norrisの
+    <a href="https://github.com/dcnorris/precautionary"><tt>precautionary</tt></a>
+    パッケージが、臨床腫瘍学における
+    フェーズ1用量増加試験の患者中心の安全性分析のためにあります。
+    例えば、
+    <a href="https://github.com/dcnorris/precautionary/blob/main/exec/prolog/ccd.pl"><tt>ccd.pl</tt></a>
+    が試験仕様そのものについての興味深い記述を導き出すために、
+    可能な限り純粋な構造を使用している様子を確認してください。
+    これは、すべての可能な結果を慎重に考慮することが
+    特に重要なアプリケーション領域の例です。
+    プログラムが実際に発生し得る<i>すべて</i>の可能性を考慮しないと、
+    導き出された結果は無効であり、
+    これらの結果に基づく医療決定が壊滅的な影響を及ぼす可能性があります。
+    論理的純粋性は、<i>すべての</i>可能なケースが考慮されることを保証します。
+    詳細については、
+    <a href="https://arxiv.org/abs/2402.08334"><i>An Executable Specification of Oncology Dose-Escalation Protocols with Prolog</i></a>
+    をご覧ください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_practical')">原文</button>
+    <div id="原文_practical" class="hide_on_start">
     <center><h2>Practical importance</h2></center>
 
     When programming in Prolog, retaining logical purity as far as
@@ -198,7 +410,233 @@
     <i>all</i> possible cases are considered. See <a href="https://arxiv.org/abs/2402.08334"><i>An
     Executable Specification of Oncology Dose-Escalation Protocols
     with Prolog</i></a> for more information.
+    </div>
 
+    <center><h2>Prolog教育への応用</h2></center>
+
+    Prologの教育や学習において、目標や節を自由に順序を入れ替えて
+    変更の操作的効果を研究できることは非常に有用です。
+    前述の通り、これは純粋なコードで可能です。
+    Prologの純粋な単調部分を超えると、
+    手続き的にしか説明できない現象が現れます。
+    以下は、いくつかのPrologクエリと対応する回答の宣言的な読み方の例です。
+
+    <br><br>
+
+    <center>
+      <table width="80%">
+        <tr>
+          <td width="20%"><b>クエリと回答</b>&nbsp;&nbsp;</td>
+          <td><center><b>宣言的読み方</b></center>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- integer(I).
+   <b>false.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>整数は存在しない。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- integer(3).
+   <b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>しかし、3は整数である。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X \= Y.
+   <b>false.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i><tt>X = Y</tt> が成り立つ項は存在しない。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- a \= b.
+   <b>true.</b>
+              </pre>
+            </div>
+          </td>
+
+          <td>
+            <i>システムが言ったこととは対照的に、例えば <tt>X = a</tt> と <tt>Y = b</tt> の場合に <tt>X = Y</tt> が成り立つ。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X =:= Y.
+   <b>error(...,...).</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>十分な初期化がされていない。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 =:= X,
+   X =:= Y.
+   <b>error(...,...).</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>十分な初期化がされていない。</i>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+    <br><br>
+
+    純粋な論理プログラムから期待されるいくつかの特性が、
+    こうした古い形式の述語を使用すると違反されることが明らかです。
+    比較のために、純粋な述語を使用した場合のクエリの例も考えてみましょう。
+
+    <br><br>
+
+    <center>
+      <table width="80%">
+        <tr>
+          <td width="20%"><b>クエリと回答</b>&nbsp;&nbsp;</td>
+          <td><center><b>宣言的読み方</b></center></td>
+        </tr>
+
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- I in inf..sup.
+   <b>clpz:(I in inf..sup).</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i><tt>I</tt> が整数である場合にのみ真。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 in inf..sup.
+   <b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>特に、3は整数である。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- dif(X, Y).
+   <b>dif:dif(X, Y).</b>
+              </pre>
+            </div>
+          </td>
+
+          <td>
+            <i>クエリが成り立つのは、<tt>X</tt> と <tt>Y</tt> が異なる項である場合。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- dif(a, b).
+   <b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>特に、<tt>dif(X, Y)</tt> は
+              <tt>X = a</tt> と <tt>Y = b</tt> の場合に成り立つ。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X #= Y.
+<b>   X = Y,
+   clpz:(X in inf..sup).</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>クエリが成り立つのは、<tt>X</tt> と <tt>Y</tt> が同じ整数である場合。</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 #= X,
+   X #= Y.
+<b>   X = Y, Y = 3.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>特に、<tt>X</tt> と <tt>Y</tt> が 3 である場合に成り立つ。</i>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+    こうした例からわかるように、純粋な述語を使用することで、
+    論理プログラムの重要かつ望ましい特性を一貫して論理的な方法で教え、
+    推論することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_teaching')">原文</button>
+    <div id="原文_teaching" class="hide_on_start">
     <center><h2>Applications to teaching Prolog</h2></center>
 
     When teaching and learning Prolog, it is very helpful when goals
@@ -426,7 +864,60 @@
     From such examples, we see that using pure predicates allows us to
     teach and reason about important and desirable properties of logic
     programs in a uniform and logical&nbsp;way.
+    </div>
 
+    <center><h2>どこまで純粋なコードを使えるか？</h2></center>
+
+    私たちが表現したいタスクを純粋なコードのみで、
+    できるだけ優雅で一般的に、
+    かつ許容範囲のパフォーマンスを保ちながら
+    解決できるのはどの程度までか？
+    これはオープンな<b>研究問題</b>であり、
+    宣言型言語研究において最も重要な問いといえるでしょう。
+
+    <br><br>
+
+    時には、パフォーマンスを確保するためにはピュアでない言語構造が
+    <i>必要</i>だと主張されることもありますが、
+    このことを証明する証拠はありません。
+    実際、むしろ逆の結論を支持する兆候がいくつかあります。
+    たとえば、重要な最適化の多くは、
+    十分に大きなプログラムの断片が純粋である場合にのみ
+    実現可能であるかもしれません。
+    たとえば、宣言型言語
+    <a href="https://mercurylang.org/"><b>Mercury</b></a>
+    は、Prologで時折使用される多くの純粋でない構造を完全に排除していますが、
+    それでも実用的であり、ほとんどのProlog実装よりもはるかに効率的です。
+    <a href="https://www.haskell.org/"><b>Haskell</b></a>もまた、
+    その純粋性によってアグレッシブな
+    <a href="https://wiki.haskell.org/Performance">コンパイラ最適化</a>
+    を可能にするプログラミング言語の一例です。
+
+    <br><br>
+
+    最近の多くのProlog実装は、
+    プログラムのより大きな部分を
+    純粋な方法で記述できるように設計されています。
+    現代のPrologシステムでは、
+    ファイルからの読み込みさえもかなり一般的な前提の下で
+    純粋に記述することができます。
+    詳細については、Ulrich Neumerkelの
+    <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/pio.pl"><b>library(pio)</b></a>
+    をご覧ください。
+
+    <br><br>
+
+    論理的純粋性を保ちながら、
+    多くの高い実用的関連性を持つ状況で
+    許容可能なパフォーマンスを維持する方法を示した
+    重要な最近の出版物として、
+    Ulrich NeumerkelとStefan Kralによる
+    <a href="https://arxiv.org/abs/1607.01590"><b><i>Indexing dif/2</i></b></a>
+    があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_how_far')">原文</button>
+    <div id="原文_how_far" class="hide_on_start">
     <center><h2>How far can we take this?</h2></center>
 
     To what extent and how can we solve the tasks we want to express
@@ -468,7 +959,7 @@
     of high practical relevance
     is <a href="https://arxiv.org/abs/1607.01590"><b><i>Indexing
           dif/2</i></b></a> by Ulrich&nbsp;Neumerkel and Stefan&nbsp;Kral.
-        
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

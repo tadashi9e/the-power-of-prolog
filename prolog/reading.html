@@ -1,16 +1,60 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Reading Prolog Programs</title>
+    <meta charset="UTF-8">
+    <title>Prologプログラムの読み方 - Reading Prolog Programs</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Reading Prolog Programs">
     <meta name="keywords" content="Prolog,Reading,Semantics,Meaning">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
+    <center><h1>Prologプログラムの読み方</h1></center> <br><br>
+
+    Prologの<a href="writing"><i>プログラム</i></a>は
+    一度だけ<a href="concepts#program">作成</a>され、
+    何度も<q>書き直し</q>されるかもしれませんが、
+    あなた自身や他の人々は通常、それを何度も何度も<q>読みます</q>。
+
+    そのため、Prologプログラムを<q>どうやって最も良く読むか</q>を知ることが重要です。
+    具体的にそれらが何を意味するのかを理解する必要があります。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/reading"><img src="videos/t_reading.png" alt="Prologコードの読み方"></a> </td>
+      </tr>
+    </table>
+    <br><br>
+
+    <a href="purity"><b>純粋な</a>Prologプログラムを読む方法はいくつかあり、
+    このテキストではそれらの一部を説明します。
+
+    <br><br>
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_reading')">原文</button>
+    <div id="原文_reading" class="hide_on_start">
     <br><br>
     <br><br>
     <center><h1>Reading Prolog Programs</h1></center>
@@ -37,9 +81,82 @@
     There are several ways to
     read <a href="purity"><b>pure</b></a> Prolog programs, and we
     explain some of them in this text.
+    </div>
+
+    <center><h2 id="declarative">宣言的読み方</h2></center>
+
+    宣言的には、Prologプログラムは<i>何が成立するか</i>を述べています。
+    Prologプログラムは<b>節</b>で構成されており、
+    各節は<b>ファクト</b>または<b>ルール</b>のいずれかです。
+    <i>ファクト</i>は常に<i>真</i>であることを述べ、
+    <i>ルール</i>は特定の<i>条件</i>の下で真であることを述べます。
 
     <br><br>
-    
+
+    宣言的には、以下の形式のルールは：
+    <pre>
+Head :- Body.
+    </pre>
+
+    「<i>もし</i> <tt>Body</tt> が真であれば、
+    <i>それならば</i> <tt>Head</tt> が真である」
+    と読むことができます。
+    論理的には、<tt>Body</tt> は <tt>Head</tt> を<i>含意</i>する、と書きます：
+    <tt>Body</tt> → <tt>Head</tt>、または同等に：
+    <pre>
+Head &leftarrow; Body.
+    </pre>
+
+    ここで、<tt>:-</tt> は実際には矢印 ← を表すことに注意してください。
+    <tt>Body</tt> は <tt>Head</tt> が成立する条件を定義しているので、
+    それは解の集合に対する<i>制約</i>とみなすこともできます。
+
+    <br><br>
+
+    この方法でPrologプログラムを読むことは、<i>結論的な</i>読み方とも呼ばれます。
+
+    <br><br>
+
+    このアプローチの大きな利点は、
+    説明しやすく、理解しやすく、使いやすいことです。
+    条件に基づいて何が成立するかを述べ、Prologエンジンが解を見つけてくれます。
+    このアプローチの欠点は、論理的に同等であるはずのプログラムが
+    異なるパフォーマンスや終了特性を示す理由を説明できないことです。
+
+    <br><br>
+    <div class="example" id="list_list_together3">
+      <b>例:</b> <tt>list_list_together/3</tt> は、
+      2つのリストの<i>連結</i>を説明します：
+      <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+      </pre>
+
+      この定義を<i>宣言的に</i>、
+      すなわち引数間の<i>関係</i>の観点から読むと、
+      次の2つの節によって説明されます：
+      <ol>
+        <li><i>空のリスト</i> <tt>[]</tt> と
+          <i>任意の</i> リスト <tt>Bs</tt> の連結は、
+          そのリスト <tt>Bs</tt> です。</li>
+
+        <li><i>もし</i> <tt>As</tt> と <tt>Bs</tt> の連結が
+          <tt>Cs</tt> であるならば、
+          <i>それならば</i> <tt>[A|As]</tt> と <tt>Bs</tt> の連結は
+          <tt>[A|Cs]</tt> です。
+          ここで <i>任意の</i> 要素 <tt>A</tt> についてです。</li>
+      </ol>
+
+      この読み方がどれほど<i>一般的</i>であるかに注目してください：
+      これは引数が<i>具現化</i>されている場合でも、そうでない場合でも適用可能です。
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_declarative')">原文</button>
+    <div id="原文_declarative" class="hide_on_start">
+    <br><br>
+    <br><br>
     <center><h2 id="declarative">Declarative reading</h2></center>
 
     Declaratively, Prolog programs state <i>what holds</i>. A Prolog
@@ -117,7 +234,126 @@ list_list_together([A|As], Bs, [A|Cs]) :-
       arguments are <i>instantiated</i>, and <i>also</i> if they
       are&nbsp;not.
     </div>
+    </div>
 
+    <center><h2 id="procedural">手続き的読み方</h2></center>
+
+    Prologプログラムの宣言的な読み方に補完して、
+    プログラムを<i>手続き的に</i>読むこともできます。
+    これは、Prologエンジンの実際の<i>計算戦略</i>を考慮することを意味します。
+
+    <br><br>
+
+    操作的には、Prologの述語を呼び出すことは、
+    他の言語での<i>手続き</i>や<i>関数</i>の呼び出しに似ています。
+    ただし、2つの重要な違いがあります。
+    第一に、Prologの<i>変数</i>は真に<b>変数</b>であり、
+    <i>未束縛</i>であったり、部分的に<i>具現化</i>されていたりすることがあります。
+    これは、他の多くの言語での変数では発生しません。
+    第二に、Prologは<b>バックトラッキング</b>をビルトイン機能として提供し、
+    徹底的に代替手段を試みます。
+
+    <br><br>
+
+    これらの理由により、Prologプログラムを<i>手続き的に</i>理解するのは、
+    他の多くのプログラミング言語の制御フローを理解するよりも大幅に<i>困難</i>です。
+    特に、Prologをトレースする際には、次の点に注意する必要があります：
+    <ul>
+      <li><b>変数の具現化</b></li>
+      <li><b>変数間のエイリアシング</b></li>
+      <li><b>バックトラッキングで見つかった代替手段</b></li>
+    </ul>
+
+    これらの複雑さとその相互作用を追跡する必要があることが、
+    このアプローチの大きな欠点です。
+    一方、このアプローチの利点は、プログラムの異なる
+    <a href="efficiency">性能特性</a>や
+    <a href="termination">終了特性</a>を
+    説明する可能性があることです。
+
+    <br><br>
+
+    また、手続き的な読み方はほぼ必然的に特定の<i>使用方向</i>を暗示し、
+    したがって論理的な関係の完全な一般性を正当に評価しないことに注意してください。
+
+    <br><br>
+    <div class="example">
+      <b>例:</b> 上述の
+      <a href="#list_list_together3"><tt>list_list_together/3</tt></a> を
+      <i>手続き的に</i>読み取って、
+      クエリ <tt>?- list_list_together([x,y], [z], Cs).</tt> を考えます。
+      <ol>
+        <li><i>最初の</i>節は適用されますか？
+          <b>いいえ</b>、なぜなら <tt>[x,y]</tt> は <tt>[]</tt> とは単一化しません。
+        </li>
+        <li><i>第二の</i>節は適用されますか？
+          解決の仕方により、節を考慮する際に
+          <i>新しい変数</i>を導入する必要があります。
+          したがって、節頭部に現れる変数
+          <tt>A</tt>、<tt>As</tt>、<tt>Bs</tt>、<tt>Cs</tt> のために、
+          <tt>A'</tt>、<tt>As'</tt>、<tt>Bs'</tt>、<tt>Cs'</tt> を使用します。
+          答えは：
+          <b>はい</b>、
+          第二の節は
+          <tt>A'=x</tt>、<tt>As'=[y]</tt>、<tt>Bs'=[z]</tt>、<tt>Cs=[A'|Cs']</tt>
+          の束縛で適用されます。
+          これはすでにかなり面倒でエラーが発生しやすく、
+          進むにつれてすべての束縛を追跡するのがさらに難しくなります。</li>
+
+        <li>
+          進めると、目標 <tt>list_list_together([y], [z], Cs')</tt> を考慮し、
+          この目標に対して同じ質問を繰り返します。
+        </li>
+
+        <li>
+          <i>最初の</i>節は適用されますか？
+          <b>いいえ</b>、なぜなら <tt>[y]</tt> は <tt>[]</tt> とは単一化しません。</li>
+
+        <li><i>第二の</i>節は適用されますか？
+          変数を再び名前を付け直す必要があります。
+          <tt>A''</tt>、<tt>As''</tt>、<tt>Bs''</tt>、<tt>Cs''</tt> を使用しましょう。
+          <b>はい</b>、
+          節は
+          <tt>A''=y</tt>、<tt>As''=[]</tt>、<tt>Bs''=[z]</tt>、<tt>Cs'=[A''|Cs'']</tt>
+          で適用されます。</li>
+
+        <li>次に、目標 <tt>list_list_together([], [z], Cs'')</tt> を考えます。</li>
+
+        <li><i>最初の</i>節は適用されますか？
+          <b>はい</b>、ようやく！ ここでもやはり新しい変数を導入する必要があります。
+          <tt>Bs'''</tt> をこの計算のステップでの
+          第一の節の単一変数を示すために使用します。
+          したがって、第一の節は <tt>Bs'''=[z]</tt> および
+          <tt>Cs''=Bs'''</tt> で適用されます。
+          これにより、ついに解が見つかり、
+          クエリに現れる唯一の変数 <tt>Cs</tt> の束縛として報告されます。
+          もしあなたがこのトレースを慎重に追跡しているなら
+          （それは非常に楽しいので、きっとそうしているでしょう）、
+          <tt>Cs</tt> は <tt>[A'|Cs']</tt> と単一化されていました。
+          <tt>A'</tt> は <tt>x</tt> と単一化され、
+          <tt>Cs'</tt> は <tt>[A''|Cs'']</tt> と単一化され、
+          さらに <tt>A''</tt> は <tt>y</tt> と単一化されました。
+          これにより、<tt>Cs</tt> は <tt>[x,y|Cs'']</tt> と一致します。
+          <tt>Cs''</tt> は <tt>Bs'''</tt> と単一化され、
+          <tt>Bs'''</tt> は <tt>[z]</tt> です。
+          したがって、見つけた解は <tt>Cs=[x,y,z]</tt> であり、
+          これはトップレベルによって報告されます。</li>
+
+        <li>しかし、<i>第二の</i>節も考慮する必要があります：
+          <b>いいえ</b>、適用されません。
+          なぜなら、<tt>[]</tt> は <tt>[_|_]</tt> とは単一化しません。</li>
+      </ol>
+
+      そして、これは<i>一つの特定のケース</i>に過ぎません！
+      手続き的な読み方で全ての可能な呼び出しモードを正確にカバーするのは
+      非常に複雑で、通常は非常に詳細な説明が必要です。
+      一般的には、このアプローチを完全に実行することはできません。
+      なぜなら、考慮すべきケースが多すぎるからです。
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_procedural')">原文</button>
+    <div id="原文_procedural" class="hide_on_start">
     <center><h2 id="procedural">Procedural reading</h2></center>
 
     To complement the declarative approach of reading Prolog programs,
@@ -244,7 +480,92 @@ list_list_together([A|As], Bs, [A|Cs]) :-
       able to carry this approach through, because there are too many
       cases to consider.
     </div>
+    </div>
 
+    <center><h2 id="slicing">プログラムスライシング</h2></center>
+
+    プログラム<b>スライシング</b>は、純粋なPrologの非常に一般的な特性を利用して、
+    プログラムの<b>一般化</b>や<b>特殊化</b>の影響を調べるためのシンプルで強力な技法です。
+
+    <br><br>
+
+    このような特性の例は次の通りです：
+
+    <ul>
+      <li><i>目標</i>を<b>削除</b>すると、
+        プログラムはせいぜい<i>一般的になる</i>だけで、
+        決して<i>特定的にはならない</i></li>
+      <li><i>節</i>を<b>削除</b>すると、
+        プログラムはせいぜい<i>特定的になる</i>だけで、
+        決して<i>一般的にはならない</i></li>
+      <li><i>任意の2つの目標の間に</i> <tt>false/0</tt> を挿入することで、
+        そのポイント以降の<i>すべての</i>目標の
+        手続き的な効果を無視することができます。</li>
+    </ul>
+
+    <br><br>
+
+    非常に正確な意味で、プログラムスライスは<b>説明</b>であり、
+    なぜ特定の現象を観察するのかを答えるものです。
+
+    <br><br>
+
+    これを簡単な例で説明します。
+    プログラマーがリストとその長さを関連付ける
+    <tt>list_length/2</tt> を次のように書いたとしましょう：
+
+    <pre>
+list_length([_|Ls], N) :-
+        list_length(Ls, N0),
+        N #&gt; 0,
+        N #= N0 + 1.
+list_length([], 0).
+    </pre>
+
+    この述語は、リストが十分に具現化されている場合に正確に機能します。例えば：
+
+    <pre>
+?- list_length([], L).
+<b>L = 0.</b>
+
+?- list_length([_,_,_], L).
+<b>L = 3.</b>
+    </pre>
+
+    しかし、述語は最も一般的なクエリには単一の答えを生成しません：
+
+    <pre>
+?- list_length(Ls, L).
+    </pre>
+
+    プログラムスライシングは、理由を明らかにするのに役立ちます。
+    <s>打ち消し線</s> は、観察する振る舞いに関連しない部分を示しています：
+
+    <pre>
+list_length([_|Ls], N) :-
+        list_length(Ls, N0),
+        <b>false</b>,
+        <s>N #&gt; 0</s>,
+        <s>N #= N0 + 1</s>.
+<s>list_length([], 0) :- <b>false</b>.</s>
+    </pre>
+
+    残りの断片は<i>それ自体で</i>、
+    <a href="nontermination"><b>非終了</b></a>の原因です。
+    <s>打ち消し線</s> 部分の変更ではこれを防ぐことはできません。
+
+    <br><br>
+
+    プログラムスライスは<i>自動的に</i>生成され、
+    Prologプログラムにおける非終了やその他の意図しない特性の原因を
+    特定するための強力な方法です。
+    たとえば、
+     Stefan Kral et&nbsp;al., <i>Slicing zur
+    Fehlersuche in Logikprogrammen</i>, WLP&nbsp;2000
+    を参照してください。
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_program_slicing')">原文</button>
+    <div id="原文_program_slicing" class="hide_on_start">
     <center><h2 id="slicing">Program slicing</h2></center>
 
     Program <b>slicing</b> is a simple and powerful technique that
@@ -325,6 +646,7 @@ list_length([_|Ls], N) :-
     nontermination and other unintended properties in Prolog programs.
     See for example Stefan Kral et&nbsp;al., <i>Slicing zur
     Fehlersuche in Logikprogrammen</i>, WLP&nbsp;2000.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

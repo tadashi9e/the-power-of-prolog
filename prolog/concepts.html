@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Basic Concepts</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Basic Concepts">
@@ -8,22 +9,74 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
+    <br><br>
+    <br><br>
+    <center><h1>基本概念</h1></center>
+
+    Prologの最も基本的な<b>概念</b>を紹介し、定義します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_basic_concepts')">原文</button>
+    <div id="原文_basic_concepts" class="hide_on_start">
     <br><br>
     <br><br>
     <center><h1>Basic Concepts</h1></center>
     <br>
 
     We introduce and define the most basic <b>concepts</b> of Prolog.
+    </div>
+    <center><h2>項（Terms）</h2></center>
 
+    Prologでは、<i>すべてのデータ</i>—Prolog<i>プログラム</i>を含めて
+    —がPrologの<a href="data#term"><b>項（terms）</b></a>で表されます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_terms')">原文</button>
+    <div id="原文_terms" class="hide_on_start">
     <center><h2>Terms</h2></center>
 
     In Prolog, <i>all data</i>&mdash;including
     Prolog <i>programs</i>&mdash;are represented by
     Prolog <a href="data#term"><b>terms</b></a>.
+    </div>
 
+    <center><h2 id="program">プログラム（Programs）</h2></center>
+
+    Prologの<b>プログラム</b>は、<i>述語</i>の集まりです。
+
+    <br><br>
+
+    述語は、引数間の<b>関係</b>を定義します。
+    論理的には、Prologプログラムは何が<i>成り立つ</i>のかを示します。
+
+    <br><br>
+
+    Prologプログラムの<a href="writing"><b>書き方</b></a>には
+    いくつかの慣習があり、また異なる<a href="reading"><b>読み方</b></a>も存在します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_programs')">原文</button>
+    <div id="原文_programs" class="hide_on_start">
     <center><h2 id="program">Programs</h2></center>
 
     A Prolog <b>program</b> is a set of <i>predicates</i>.
@@ -38,7 +91,51 @@
     There are a few conventions
     for <a href="writing"><b>writing</b></a> Prolog programs, and
     different ways of <a href="reading"><b>reading</b></a> them.
+    </div>
 
+    <center><h3 id="predicate">述語（Predicates）</h3></center>
+
+    <b>述語</b>には<i>名前</i>があり、0個以上の<i>引数</i>を持ちます。
+    述語の<b>名前</b>はPrologの<i>アトム</i>です。各<b>引数</b>は任意のPrologの項です。
+
+    <br><br>
+
+    述語<i>Pred</i>と<i>N</i>個の引数を持つ述語は、<i>Pred</i>/<i>N</i>と表記され、
+    これを<b>述語指標</b>と呼びます。
+    <i>N</i>は述語の<b>アリティ（項数）</b>です。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/predicates"><img src="videos/t_predicates.png" alt="Predicates"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    述語は<i>節</i>の集まりによって定義されます。
+
+    <br><br>
+
+    <div id="clause">
+      <b>節（clause）</b>は、<i>ルール</i>または<i>事実（ファクト）</i>のいずれかです。
+      述語を構成する節は論理的な<i>選択肢</i>を示します。
+      つまり、<i>いずれか</i>の節が真であれば、その述語全体が真となります。
+    </div>
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/clauses"><img src="videos/t_clauses.png" alt="Clauses, Rules and Facts"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_predicates')">原文</button>
+    <div id="原文_predicates" class="hide_on_start">
     <center><h3 id="predicate">Predicates</h3></center>
 
     Each <b>predicate</b> has a <i>name</i>, and zero or
@@ -84,7 +181,39 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h3 id="rule">ルール（Rules）</h3></center>
+
+    Prologの<b>ルール</b>は次の形式を持ちます：
+
+    <pre>
+<i>Head</i> :- <i>Body</i>.
+    </pre>
+
+    ルールの<b>頭部（Head）</b>の表記は、引数の数によって異なります：
+
+    <ul>
+      <li>述語に<i>引数がない</i>場合、頭部は述語名だけで構成されます。</li>
+      <li>述語<i>Name</i>が<i>N</i>個の正の引数を持つ場合、頭部は次のように書かれます：
+        <tt><i>Name</i>(<i>Arg</i><sub>1</sub>, <i>Arg</i><sub>2</sub>, ..., <i>Arg</i><sub>N</sub>)</tt>
+      </li>
+    </ul>
+
+    各ルールの<b>本体（Body)</b>はPrologの<i>ゴール</i>です。
+
+    <br><br>
+
+    <b>ゴール</b>は、述語とその引数を表すPrologの項です。
+
+    <br><br>
+
+    ルールが<b>再帰的</b>である場合、そのゴールの一つが
+    ルールが定義している述語を参照しています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_rules')">原文</button>
+    <div id="原文_rules" class="hide_on_start">
     <center><h3 id="rule">Rules</h3></center>
 
     A Prolog <b>rule</b> has the form:
@@ -117,6 +246,27 @@
 
     A rule is called <b>recursive</b> if one of its goals refers to
     the predicate that the rule is defining.
+    </div>
+
+    <center><h3 id="fact">事実（ファクト）</h3></center>
+
+    <b>事実（ファクト）</b>は次のように書かれます：
+    <pre>
+<i>Head</i>.
+    </pre>
+
+    これは次の<a href="#rule">ルール</a>と同等です：
+
+    <pre>
+<i>Head</i> :- <b>true</b>.
+    </pre>
+
+    論理的には、これは組み込み述語<tt>true/0</tt>が常に真であるため、
+    ルールが<i>常に成立する</i>ことを意味します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_facts')">原文</button>
+    <div id="原文_facts" class="hide_on_start">
 
     <center><h3 id="fact">Facts</h3></center>
 
@@ -135,7 +285,53 @@
     Logically, this means that the rule <i>always&nbsp;holds</i>,
     because the <a href="#builtin">built-in</a>
     predicate <tt>true/0</tt> is always&nbsp;true.
+    </div>
 
+    <center><h2 id="toplevel">トップレベル（Toplevel）</h2></center>
+
+    Prologの<b>トップレベル</b>は、Prologプログラムを<i>実行</i>する主要な方法です。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/toplevel"><img src="videos/t_toplevel.png" alt="The Prolog Toplevel"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    Prolog述語を呼び出すには、トップレベルで<b>クエリ</b>を投入します。
+    クエリは任意のPrologの<i>ゴール</i>です。クエリ内の変数は<i>存在論的</i>に量化されます。
+    したがって、クエリは次のように解釈できます：
+    「与えられた述語が<i>成り立つ</i>ケースは存在するか？」
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/queries"><img src="videos/t_queries.png" alt="Queries"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    クエリに対する応答として、トップレベルは<b>答え</b>を報告します。
+    答えはクエリと宣言的に<i>同等</i>のPrologのゴールです。
+
+    <br><br>
+
+    各述語には関連する<b>最も一般的なクエリ</b>があり、
+    これは「すべての引数が新しい変数である」ことを意味します。
+
+    <br><br>
+    ゴールは<i>複数回成功する</i>ことがあります。
+    Prologの実装によって、<tt>スペース</tt>または「;」を押すと選択肢を表示できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_toplevel')">原文</button>
+    <div id="原文_toplevel" class="hide_on_start">
     <center><h2 id="toplevel">Toplevel</h2></center>
 
 
@@ -185,7 +381,62 @@
     Note that a goal can succeed <i>more than once</i>. Depending on
     your Prolog implementation, you either press <tt>SPACE</tt>
     or&nbsp;";" to see alternatives.
+    </div>
 
+    <center><h2>Prologコードの実行</h2></center>
+
+    Prologプログラムの実行は、
+    <a href="https://ja.wikipedia.org/wiki/%E5%B0%8E%E5%87%BA%E5%8E%9F%E7%90%86"><b>導出</b></a>
+    （<a href="https://en.wikipedia.org/wiki/Resolution_(logic)"><b>resolution</b></a>）
+    </a>の特別なケースと見なすことができます。
+    解決法は形式論理に根ざしたアルゴリズムです。
+    論理的には、Prologがクエリに答えるとき、それは否定されたクエリとプログラムを構成する一連の節の<i>解決による否定</i>を見つけようとします。
+    解決が見つかると、そのクエリがプログラムの論理的<b>結果</b>であることを意味します。
+
+    <br><br>
+
+    重要なステップの一つが、項の構文的<b>単一化（unification）</b>です。
+    単一化は<i>パターンマッチング</i>の一般化です。
+    節の頭部がPrologのゴールと単一化されるために選ばれると、
+    単一化は両者の引数に適用されます。
+
+    <br><br>
+
+    このため、<a href="purity">純粋な</a>述語において、
+    入力引数と出力引数の<i>区別はありません</i>。
+    Prolog述語はしばしば複数の方向で使用できます。
+
+    <br><br>
+
+    複数の節頭部がゴールと単一化する場合、
+    <b>バックトラッキング</b>によって選択肢が試されます。
+
+    <br><br>
+
+    非公式には、Prologのデフォルトの実行戦略
+    （これは<i>深さ優先探索と逐次的バックトラッキング</i>と呼ばれます）は、
+    他の言語で使用できる<i>関数呼び出し</i>の一般化と考えることができます。
+    主な違いは、(1)複数の節が一致することがあり、(2)単一化が双方向に機能する点です。
+
+    <br><br>
+
+    Prologプログラムは<i>異なる</i>実行戦略で解釈することができ、
+    それを柔軟に選択できます。
+    <a href="memoization#tabling">SLG解決法</a>は、Prologシステムで増えつつある
+    代替の実行戦略の一つです。
+    プログラムを変更することなく異なる実行戦略を使用できることは、
+    Prologの大きな魅力の一つです。
+
+    <br><br>
+
+    Prologプログラムの間違いを見つけるには、実際の実行ステップを追跡する必要は
+    <i>通常ありません</i>。
+    代わりに、論理的推論によって間違いを絞り込むための
+    <a href="debugging"><b>宣言的デバッグ</b></a>手法を適用できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_running')">原文</button>
+    <div id="原文_running" class="hide_on_start">
     <center><h2>Running Prolog code</h2></center>
 
     Running a Prolog program can be regarded as a special case
@@ -241,7 +492,50 @@
     steps. Instead, <a href="debugging"><b>declarative
     debugging</b></a> techniques can be applied to narrow down
     mistakes by logical reasoning.
+    </div>
 
+    <center><h2 id="builtin">ビルトイン述語</h2></center>
+
+    Prologシステムを開始すると、いくつかの述語は既に<i>事前に定義</i>されています。
+    これらは<i>ビルトイン述語</i>または単に<b>ビルトイン</b>と呼ばれます。
+
+    <br><br>
+
+    例えば、ビルトインの<tt>(=)/2</tt>は、その引数が<i>単一化</i>する場合に真となります。
+    ビルトインの<tt>true/0</tt>は常に<i>真</i>であり、<tt>false/0</tt>は常に<i>偽</i>です。
+
+    <br><br>
+
+    多くのビルトインは、<i>便利さ</i>のために存在しており、
+    上述のメカニズムを使って簡単に自分で定義することができます。
+    例えば、もしそれらが既に定義されていなければ、次のように述語を定義できます。
+
+    <pre>
+T = T.
+
+true.
+
+false :- a = b.
+    </pre>
+
+    しかし、すべてのビルトインがこの方法で定義できるわけではありません。
+
+    <br><br>
+
+    <tt>(=)/2</tt>、<tt>true/0</tt>、<tt>false/0</tt>に加えて、
+    有用で純粋なPrologプログラムを書くために知っておくべき
+    最も重要なビルトインは次の通りです：
+
+    <ul>
+      <li> <tt>dif/2</tt>はその引数が<i>異なる</i>項である場合に真となります</li>
+      <li> <a href="clpz"><b>整数制約</b></a>は、算術式に関する推論を可能にします</li>
+      <li> <tt>(',')/2</tt>は<b>論理積</b>（AND）を表します：<tt>(A,B)</tt>は<tt>A</tt>と<tt>B</tt>の両方が真である場合に真です</li>
+      <li> <tt>(';')/2</tt>は<b>論理和</b>（OR）を表します：<tt>(A;B)</tt>は<tt>A</tt>または<tt>B</tt>、あるいは両方が真である場合に真です。</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_built_ins')">原文</button>
+    <div id="原文_built_ins" class="hide_on_start">
     <center><h2 id="builtin">Built-ins</h2></center>
 
     Some predicates are already <i>predefined</i> when you start your
@@ -285,9 +579,117 @@ false :- a = b.
       <li> <tt>(',')/2</tt> denotes <b>conjunction</b>: <tt>(A,B)</tt> is true <i>iff</i> both <tt>A</tt> <i>and</i> <tt>B</tt> are true</li>
       <li> <tt>(';')/2</tt> denotes <b>disjunction</b>: <tt>(A;B)</tt> is true <i>iff</i> either <tt>A</tt> <i>or</i> <tt>B</tt> <i>or</i> both are true.</li>
     </ul>
-
+    </div>
 
     <hr>
+    <center><h2 id="collatz">例: コラッツ予想</h2></center>
+
+    これまでの概念を、次の例を用いて説明します。
+
+    <blockquote>
+      任意の正の整数<i>N</i>を取ります。
+      次の整数を得るには、次の手順を実行します：
+      <ul>
+        <li><i>N</i>が<i>偶数</i>なら、<i>N</i>を2で割ります。</li>
+        <li><i>N</i>が<i>奇数</i>なら、<i>N</i>に3を掛けて1を足します
+          （3&times;<i>N</i>&nbsp;+&nbsp;1）。</li>
+      </ul>
+      この操作を無限に繰り返すと、
+      <i>N</i><sub>0</sub>, <i>N</i><sub>1</sub>, <i>N</i><sub>2</sub>,&nbsp;...
+      という<i>hailstone(雹)の連鎖</i>が得られます。
+
+      <br><br>
+
+      <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">コラッツ予想</a>
+      は、<i>すべて</i>の正の初期整数に対して、
+      この連鎖に整数<b>1</b>が現れるというものです。
+    </blockquote>
+
+    雹の連鎖を次のようにモデル化します。
+    このとき、整数の<i>等式</i>を表すために、
+    ビルトインの<a href="clpz"><b>整数制約</b></a> <tt>(#=)/2</tt>を使用します。
+
+    <pre>
+hailstone(N, N).
+hailstone(N0, N) :-
+        N0 #= 2*N1,
+        hailstone(N1, N).
+hailstone(N0, N) :-
+        N0 #= 2*_ + 1,
+        N1 #= 3*N0 + 1,
+        hailstone(N1, N).
+    </pre>
+
+    この<b>述語</b> <tt>hailstone/2</tt>は、
+    1つの<b>ファクト</b>と
+    2つの<b>規則</b>からなる
+    3つの<b>節</b>によって定義されています。
+    これは2つの<b>引数</b>の間に<b>関係</b>を定義しています。
+    最初の引数は連鎖の現在の要素を表し、
+    2番目の引数は解を報告するために使用されます。
+    <b>クエリ</b>を投稿し、<b>トプレベル</b>によって<b>答え</b>が報告された後、
+    <b>バックトラッキング</b>により<i>代替</i>が試行されます。
+    <pre>
+?- hailstone(3, N).
+   N = 3
+;  N = 10
+;  N = 5
+;  N = 16
+;  N = 8
+;  N = 4
+;  N = 2
+;  N = 1
+;  N = 4
+;  N = 2
+;  N = 1
+;  ... .
+    </pre>
+
+    この<b>プログラム</b>は、一連の操作を連続する
+    <i>状態</i>間の関係としてモデル化できることを示しています。
+    他の例については<a href="/tist/"><i>Thinking in States</i></a>を参照してください。
+
+    <br><br>
+
+    純粋な関係に特徴的なのは、この述語が<i>すべての方向</i>で使用できることです。
+    例えば、最も一般的な<b>クエリ</b>を投稿することができます。
+
+    <pre>
+?- hailstone(X, Y).
+   X = Y
+;  clpz:(2*Y#=X)
+;  clpz:(2*Y#=_A), clpz:(2*_A#=X)
+;  clpz:(2*_A#=X), clpz:(2*Y#=_B), clpz:(2*_B#=_A)
+;  ... .
+    </pre>
+
+    Prolog述語を学ぶときは、最も一般的なクエリを試して、
+    <i>一般的に</i>どのような答えが得られるかを確認してみてください。
+
+    <br><br>
+
+    <tt>hailstone/2</tt>を
+    <a href="metapredicates#if_3"><tt>if_/3</tt></a>
+    を使ってより効率的に実装できます。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/collatz"><img src="videos/t_collatz.png" alt="コラッツ予想"></a></td>
+      </tr>
+    </table>
+
+    <br><br><br>
+    <b><a href="/prolog">Prologについてもっと知る</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">メインページ</a></b>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_collatz')">原文</button>
+    <div id="原文_collatz" class="hide_on_start">
     <center><h2 id="collatz">Example: Collatz conjecture</h2></center>
 
     We illustrate all these concepts by means of an example:
@@ -393,7 +795,7 @@ hailstone(N0, N) :-
     <br><br><br>
 
     <b><a href="/">Main page</a></b>
-
+    </div>
     <script src="jquery.js"></script>
     <script src="toc.js"></script>
   </body>

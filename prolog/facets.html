@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Facets of Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Facets of Prolog">
@@ -9,12 +10,29 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
-    <center><h1>Facets of Prolog</h1></center>
+    <center><h1>Prologの側面</h1></center>
     <br><br>
 
     <table>
@@ -25,6 +43,20 @@
       </tr>
     </table>
 
+    <h2>Prologは...</h2>
+
+    <ul>
+      <li>... 非常に<a href="#simple"><b>シンプル</b></a>な言語です
+      <li>... <a href="#declarative"><b>宣言的</b></a>な言語です
+      <li>... <a href="#logic"><b>論理プログラミング</b></a>言語です
+      <li>... <a href="#homoiconic"><b>ホモイコニック</b></a>な言語です
+      <li>... 非常に<a href="#dynamic"><b>動的</b></a>な言語です
+      <li>... 非常に<a href="#versatile"><b>多用途</b></a>な言語です
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_is')">原文</button>
+    <div id="原文_prolog_is" class="hide_on_start">
     <h2>Prolog is ...</h2>
 
     <ul>
@@ -35,8 +67,69 @@
       <li>... a very <a href="#dynamic"><b>dynamic</b></a> language</li>
       <li>... a very <a href="#versatile"><b>versatile</b></a> language.</li>
     </ul>
-    
+    </div>
 
+    <h2 id="simple"><center>Prologは非常にシンプルな言語です</center></h2>
+
+    Prologの<b>構文</b>は十分な詳細で簡単に説明でき、すぐにPrologで作業を始めることができます。
+
+    <br><br>
+
+    すべての<a href="data">データ</a>は
+    Prologの<a href="data#term"><b>項（term）</b></a>で表現されます。
+
+    <br><br>
+
+    Prologには「<a href="concepts#clause"><i>節（clause）</i></a>」と呼ばれる
+    単一の言語要素があります。節の形式は次の通りです：
+
+    <br><br>
+
+    <div style="padding-left: 3em">
+      <b><tt>Head :- Body.</tt></b>
+    </div>
+
+    <br>
+
+    これは「<b>もし</b><tt>Body</tt>が成り立つ<b>ならば</b>、<tt>Head</tt>も成り立つ」
+    という意味です。
+    中置演算子<tt>(:-)/2</tt>は、右から左への矢印「←」を表します。
+
+    <br><br>
+
+    <tt>Head</tt>が<i>常に</i>成り立つ場合、<tt>:- Body</tt>は
+    <i>省略</i>することができます。
+
+    <br><br>
+
+    <i>これだけで、最初の有用なPrologプログラムを書くのに十分です。</i>
+
+    <br><br>
+
+    <b>信じがたいかもしれません</b>が、その証拠を示します。
+    以下に示されるすべてのプログラムは、このような節<i>のみ</i>で構成されています。
+
+    <br><br>
+
+    実際、<i>すべての既知の計算</i>はこのような節で記述でき、
+    Prologは
+    <a href="https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%B3%E3%82%B0%E5%AE%8C%E5%85%A8">チューリング完全</a>
+    （<a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing&nbsp;complete</a>）
+    なプログラミング言語です。
+    Prologでチューリングマシンを実装する一つの方法は、
+    マシンの異なる状態間の<i>関係</i>を
+    「<i>もし</i>現在の状態が<tt>S0</tt>で、
+    <i>かつ</i>、テープヘッド下のシンボルが<tt>T</tt>であり、
+    <i>かつ</i>…
+    <i>ならば</i>次の状態は<tt>S</tt>である」
+    という形式の節で記述することです。
+    <a href="showcases/turing.pl"><tt>turing.pl</tt></a>に実装例があり、
+    「<a href="/tist/"><i>状態で考える - Thinking in States</i></a>」に
+    詳細な情報があります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_very_simple')">原文</button>
+    <div id="原文_very_simple" class="hide_on_start">
     <h2 id="simple"><center>Prolog is a very simple language</center></h2>
 
     It is easy to describe Prolog <b>syntax</b> in sufficient detail
@@ -94,8 +187,100 @@
     See <a href="showcases/turing.pl"><tt>turing.pl</tt></a> for one
     implementation, and <a href="/tist/"><i>Thinking
     in&nbsp;States</i></a> for more information.
+    </div>
 
-    <h2 id="declarative"><center>Prolog is a declarative language</center></h2>
+    <h2 id="declarative"><center>Prologは宣言的な言語です</center></h2>
+
+    Prologは<i>宣言的な言語</i>です。
+    これは、私たちが関心のある<i>ことがら</i>を述べることに集中することを意味します。
+    つまり、解決したい問題について<a href="writing">何が成り立つか</a>を表現します。
+    Prologの実装がこれらの解決策を<i>どのように</i>見つけるかについてはあまり気にしません。
+
+    <br><br>
+
+    この宣言的な性質により、非常に簡潔で明確かつ汎用的な仕様を記述できることがよくあります。
+    同じくらい明確で表現力のある、より短い形式は存在しない可能性があります。
+
+    <br><br>
+
+    例えば、<a href="data#list">リスト</a>とその長さの<i>関係</i>を
+    <a href="clpz">整数演算</a>を用いて記述してみましょう：
+
+    <div class="box" style="float: right; width: 30%">
+      <b>注意</b>:
+      <i>一部の</i>Prologシステムでは、
+      宣言的な整数演算を使用するために専用のライブラリを含める必要があります。
+      <a href="clpz">更に情報を得る...</a>
+    </div>
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 1,
+        list_length(Ls, N0).
+    </pre>
+
+    これを次のように<a href="reading#declarative"><b>宣言的に読む</b></a>
+    ことができます：
+
+    <ol>
+      <li><i>空のリスト</i><tt>[]</tt>の長さは0である。
+      <li><b>もし</b>リスト<tt>Ls</tt>の長さが<tt>N0</tt>であり、
+        <b>かつ</b>、<tt>N</tt>が<tt>N0+1</tt>である
+        <b>ならば</b>、<tt>[_|Ls]</tt>の長さは<tt>N</tt>である。
+        また、この関係は<b>もし</b><tt>N</tt>が0<i>より大きい</i>ときにのみ成り立つ。
+    </ol>
+
+    Prologでプログラムを作成する際には、
+    エンティティ間の<i>関係</i>に基づいて考えるべきです。
+    このアプローチを取ることで、プログラムは非常に汎用的になります。
+    しかし、上記の例では、
+    「リストの長さを計算している」と考えたり言ったりする誘惑に駆られます。
+    確かにその通りです。
+    実際、上記の定義を使用してリストの長さを計算することができます：
+
+    <pre>
+?- list_length("abc", L).
+   L = 3.
+    </pre>
+
+    しかし、この<i>命令型の</i>読み方は、
+    実際に実装したものを正確に表現しているとは言えません。
+    なぜなら、この定義はさらにいくつかの追加の使用パターンにも対応しているからです。
+    例えば、特定の長さが<i>与えられた</i>場合、
+    その長さのリストが<i>存在するかどうか</i>を尋ねることができます：
+
+    <pre>
+?- list_length(Ls, 3).
+   Ls = [_A,_B,_C]
+;  false.
+    </pre>
+
+    <b>最も一般的なクエリ</b>を使用して、
+    Prologが見つけるすべての解答を求めることも可能です：
+
+    <pre>
+?- list_length(Ls, L).
+   Ls = [], L = 0
+;  Ls = [_A], L = 1
+;  Ls = [_A,_B], L = 2
+;  Ls = [_A,_B,_C], L = 3
+;  ... .
+    </pre>
+
+    この関係は異なる<i>モード</i>で使用可能であると言います。
+    Prologは<i>バックトラッキング</i>を通じてすべての解答を報告するのが特徴です。
+
+    述語<tt>length/2</tt>は、
+    <a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue">Prologue for Prolog</a>
+    に含まれるドラフトの一部であり、上記の意味論を持つほとんどのProlog実装で
+    <a href="concepts#builtin">組み込み述語</a>として既に利用可能です。
+    
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_declarative')">原文</button>
+    <div id="原文_declarative" class="hide_on_start">
+    <h2><center>Prolog is a declarative language</center></h2>
 
     Prolog is a <i>declarative language</i>. This means that we focus
     on stating <i>what</i> we are interested in. We <a href="writing">express
@@ -187,7 +372,49 @@ list_length([_|Ls], N) :-
     for Prolog</a> draft, and already available as
     a <a href="concepts#builtin">built-in</a> predicate in almost all
     Prolog implementations with the above semantics.
+    </div>
 
+    <h2 id="logic"><center>Prologは論理プログラミング言語です</center></h2>
+
+    <i>宣言的な</i>言語のカテゴリには、
+    <i>関数型</i>プログラミング言語と
+    <i>論理</i>プログラミング言語が含まれます。
+    関数は関係の特殊なケースであり、関数型プログラミングは
+    制限された形式の論理プログラミングと見なすことができます。
+
+    <br><br>
+
+    Prologは<a href="logic"><b>論理</b></a>にしっかりと根ざしています。<br><br>
+
+    <a href="purity">純粋</a>なPrologプログラムは、
+    <a href="https://ja.wikipedia.org/wiki/%E3%83%9B%E3%83%BC%E3%83%B3%E7%AF%80">ホーン節</a>
+    （<a href="https://en.wikipedia.org/wiki/Horn_clause">Horn&nbsp;clauses</a>）
+    のセットで構成されます。
+
+    その実行は、
+    <a href="https://ja.wikipedia.org/wiki/%E5%B0%8E%E5%87%BA%E5%8E%9F%E7%90%86"><i>導出</i></a>
+    （<a href="https://en.wikipedia.org/wiki/Resolution_(logic)"><i>resolution</i></a>）
+    の特殊なケースと見なすことができます。
+
+    <br><br>
+
+    この形式論理との関係により、プログラムの論理的特性に基づく
+    強力な<a href="debugging"><b>宣言的デバッグ</b></a>技術を適用できます。
+    例えば、<i>制約</i>を追加すると解の集合が最大で「<i>減少</i>」し、
+    <i>節</i>を追加すると最大で拡張されます。
+    この純粋なPrologプログラムの特性は
+    単調性
+    （<a href="https://en.wikipedia.org/wiki/Monotonicity_of_entailment">monotonicity</a>）
+    と呼ばれます。
+
+    <br><br>
+
+    <i>Ulrich Neumerkelによる
+      <a href="https://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPUシステム</b></a>
+      は、これらのアイデアの印象的な応用例です。</i>
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_logic_programming')">原文</button>
+    <div id="原文_logic_programming" class="hide_on_start">
     <h2 id="logic"><center>Prolog is a logic programming language</center></h2>
 
     In the category of <i>declarative</i> languages, we
@@ -222,8 +449,52 @@ list_length([_|Ls], N) :-
       the <a href="https://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU
       system</b></a> by Ulrich Neumerkel for an impressive application
       of these&nbsp;ideas.</i>
+    </div>
 
-    <h2 id="homoiconic"><center>Prolog is a homoiconic language</center></h2>
+    <br>
+
+    <h2 id="homoiconic"><center>Prologはホモイコニックな言語です</center></h2>
+
+    <div style="padding: 10pt; margin-left: 70%; display: inline-block; background-color: #eeeeee; text-align: right">
+      <i>ホモイコニック - homoiconic</i>: from ὁμός = "same" and εικών = "image"
+    </div>
+    <br><br>
+    Prologの<i>プログラム</i>は、有効なPrologの<i>項（term）</i>でもあります！
+    これには多くの利点があります：
+    Prologプログラムは、<i>他の</i>Prologプログラムを分析、変換、解釈するために
+    簡単に記述できます。
+    組み込み述語<tt>read/1</tt>を使ってPrologの項を読み込むことができ、
+    したがってPrologの節も読み込むことができます。
+
+    <br><br>
+
+    Prologプログラムをコンパイル時に書き換える
+    強力な<a href="macros">マクロ機構</a>があり、
+    特定のタスクをより自然に解決するためのドメイン固有言語を簡単に実装できます。
+
+    <br><br>
+
+    <b>これを信じがたいかもしれません</b>。
+    なぜなら、<tt>list_length(Ls, N)</tt>のようなゴールは、
+    上述のProlog項に見えますが、
+    <tt>N #> 0</tt>のような他のゴールはかなり異なって見えるからです。
+    これには理由があります。
+    Prologでは接頭辞、接中辞、接尾辞の<i>演算子</i>が提供されており、
+    Prologの項をより読みやすく書くことができるのです。
+    例えば、Prologの項<tt>+(a,b)</tt>は、演算子表記を使用して
+    <tt>a+b</tt>と書くこともできます。
+
+    <i>抽象構文</i>は完全に統一されたままであり、
+    Prologの項がどのように記述されていても、それらを読み取り処理することができます。
+
+    <br><br>
+
+    <i>特定のユースケースに合わせてカスタム演算子を動的に定義することも可能です。</i>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_homoiconic')">原文</button>
+    <div id="原文_homoiconic" class="hide_on_start">
+    <h2><center>Prolog is a homoiconic language</center></h2>
 
     <div style="padding: 10pt; margin-left: 70%; display: inline-block; background-color: #eeeeee; text-align: right">
       <i>homoiconic</i>: from ὁμός = "same" and εικών = "image"
@@ -259,8 +530,40 @@ list_length([_|Ls], N) :-
 
     <br><br>
     <i>You can dynamically define custom operators for specific use cases.</i>
+    </div>
 
-    <h2 id="dynamic"><center>Prolog is a very dynamic language</center></h2>
+    <h2 id="dynamic"><center>Prologは非常に動的な言語です</center></h2>
+
+    Prologプログラムは<i>実行時に</i>簡単に作成、呼び出し、変更できます。
+    この特性によりPrologの表現力がさらに高まり、
+    <a href="metapredicates">高階述語</a>（他の述語を引数として持つ述語）
+    を実装することが可能になります。
+    また、<i>適応的パーシング</i>のような非常に動的な技術の実装も可能です。
+
+    <br><br>
+
+    Prologの動的な性質により、他のプログラマや一般のユーザが提供する
+    カスタムルールによって<i>拡張可能</i>なプログラムを書くのに理想的な言語となっています。
+    <a href="/proloxy/"><b>Proloxy</b></a>や
+    <a href="https://www.gerritcodereview.com/">Gerrit Code Review</a>は、
+    このアプローチの例です。
+    これらのプログラムは、非常に読みやすく柔軟に要件を表現する
+    Prologの<a href="concepts#rule">ルール</a>を提供することで設定できます。
+
+    <br><br>
+
+    詳細は、
+    <a href="/acomip/"><b>A Couple of Meta-interpreters in Prolog</b></a>
+    をご覧ください。
+
+    <br><br>
+
+    <i>2行のPrologコードで純粋なPrologのインタプリタを定義することができます。</i>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_very_dynamic')">原文</button>
+    <div id="原文_very_dynamic" class="hide_on_start">
+    <h2><center>Prolog is a very dynamic language</center></h2>
 
     Prolog programs can be easily created, called and modified <i>at
     run time</i>. This further increases the expressiveness of Prolog
@@ -289,8 +592,50 @@ list_length([_|Ls], N) :-
 
     <i>You can define an interpreter for pure Prolog in two lines of
       Prolog&nbsp;code.</i>
+    </div>
 
-    <h2 id="versatile"><center>Prolog is a very versatile language</center></h2>
+    <br>
+
+    <h2 id="versatile"><center>Prologは非常に多用途な言語です</center></h2>
+
+    Prologは非常に多用途な言語です。
+    その関係的な性質により、Prologプログラムは非常に柔軟で汎用的です。
+    これは<a href="dcg">言語処理</a>や
+    <a href="business#database">データベース</a>での
+    知識表現において重要な役割を果たします。
+    現代のPrologシステムは、<a href="puzzles">論理パズル</a>の解決から、
+    大規模なアプリケーションの構築に必要なすべてを提供しています。
+    これには
+    <a href="web">ウェブホスティング</a>や
+    <a href="theoremproving">検証</a>、
+    <a href="optimization">最適化</a>のタスクが含まれます。
+
+    <br><br>
+
+    Prologの多用途性と強力さは、
+    探索、単一化、引数のインデックス付け、制約伝播といった
+    <i>暗黙の</i>メカニズムに根ざしています。
+    これらのメカニズムを活用し、多くのタスクを
+    Prologエンジンに<i>委任</i>することができます。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/sparrows_on_eagles"><img src="videos/t_sparrows_on_eagles.png" alt="Sparrows on Eagles"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    <i>このページは
+      Prologプログラムによって送信されました: <a href="/server.pl"><tt>server.pl</tt></a></i>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_very_versatile')">原文</button>
+    <div id="原文_very_versatile" class="hide_on_start">
+    <h2><center>Prolog is a very versatile language</center></h2>
 
     Prolog is an extremely versatile language. Its relational nature
     makes Prolog programs very flexible and general. This plays an
@@ -326,6 +671,7 @@ list_length([_|Ls], N) :-
 
     <i>This page was sent to you by a Prolog
     program: <a href="/server.pl"><tt>server.pl</tt></a>.</i>
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

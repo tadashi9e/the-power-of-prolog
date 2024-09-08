@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>The Future of Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="The Future of Prolog">
@@ -8,11 +9,43 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologの未来</h1></center>
+    <br><br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      <pre>
+運命は、望む者を導き、望まない者を引きずる
+
+(ルキウス・アンナエウス・セネカによるとされる)
+      </pre>
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_future')">原文</button>
+    <div id="原文_future" class="hide_on_start">
     <center><h1>The Future of Prolog</h1></center>
     <br><br>
 
@@ -24,8 +57,47 @@ DUCUNT VOLENTEM FATA NOLENTEM TRAHUNT
 (Attributed to Lucius Annaeus Seneca)
       </pre>
     </div>
+    </div>
+
+    <center><h2>過去からの教訓</h2></center>
+
+    Prolog は、他の多くのプログラミング言語よりも習得が困難です。
+
     <br><br>
 
+    これは、部分的には固有の理由によるものです。
+    Prolog は他の多くのプログラミング言語よりも単純で強力であるため、
+    低レベル言語に慣れている場合は、これに慣れるのに時間がかかります。
+
+    <br><br>
+
+    ただし、はるかに重要な原因は、既存の教材の制限にあります。
+    多くの場合、Prolog は 1980 年代や 1990 年代に教えられたのと
+    まったく同じように教えられています。
+    時代遅れの教材は約束を破ることにつながります。
+    低レベルで純粋でない言語機能を使用すると、
+    Prolog プログラムに関する論理的推論が複雑になるか妨げられ、
+    学生はプログラムについて宣言的に考える<i>代わりに</i>
+    手続き的に考えることを余儀なくされます。
+
+    <br><br>
+
+    過去には、これが多くのフラストレーション、誤った印象、
+    <a href="horror">コーディング恐怖</a>をもたらしました。
+    初心者にとっては、脱線して低レベルの問題に取り組み始め、
+    はるかに重要な原則を見失いがちです。
+    この罠にはまらないようにしてください！
+
+    <br><br>
+
+    Prolog は<i>教える</i>のも難しいです。
+    なぜなら、Prolog プログラムに関するすべての非公式な記述を、
+    あらゆる使用モードを網羅できるほど十分に一般的なものにしておくのは
+    難しいからです。この一般性を初心者に伝えるには、意識的な努力が必要です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_lessons_from_the_past')">原文</button>
+    <div id="原文_lessons_from_the_past" class="hide_on_start">
     <center><h2>Lessons from the past</h2></center>
 
     Prolog is harder to learn than many other programming languages.
@@ -62,7 +134,78 @@ DUCUNT VOLENTEM FATA NOLENTEM TRAHUNT
     sufficiently general to cover all possible
     usage&nbsp;modes. Conscious effort is necessary to convey this
     generality to beginners.
+    </div>
 
+    <center><h2>現在の動向</h2></center>
+
+    Prolog コミュニティでは、現在の開発のほとんどは、
+    <a href="purity"><b>論理的な純粋性</b></a>を高め、
+    純粋なコードをより機能豊富で効率的にすることに重点が置かれています。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/preparing_prolog"><img src="videos/t_preparing_prolog.png" alt="Preparing Prolog"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    <a href="http://www.complang.tuwien.ac.at/ulrich/iso-prolog/">ISO 標準化プロセス</a>
+    は、さまざまな Prolog システム間の互換性を向上させる重要な手段です。
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/conformity_testing"><img src="videos/t_conformity_testing.png" alt="Prolog Conformity Testing"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    <a href="web">Web サービス</a>とデータ分析は、
+    Prolog の関連性の高いアプリケーション領域として
+    ますます重要になっています。
+
+    <br><br>
+
+    Prologによる効率的なデータおよびテキスト分析の
+    最もエキサイティングな開発の 1 つは、
+    <a href="data#string">文字列</a>を文字のリストとして非常にコンパクトに表現し、
+    DCG をファイルやストリームに効率的に適用できるようにすることです。
+    Scryer Prolog はこの表現を実装した最初のシステムであり、
+    他の Prolog システムでも採用されることが期待されます。
+    この開発の最終的な目標は、非常に効率的なアクセスのために
+    システム コール<tt>mmap</tt>を使用して、
+    Prolog システムが DCG をファイルの内容に直接適用できるようにすることです。
+    Trealla Prolog は、これを実現する最初の
+    (そして現在のところ唯一の) Prolog システムです。
+
+    <br><br>
+
+    Prologの最新の開発と進行中の開発は、大学や学術界と密接に関係する機関で
+    行われています。
+    重要な現代の研究領域には、
+    確率的論理プログラミング、
+    アンサーセットプログラミング (ASP)、
+    特定の安全基準や
+    その他の興味深い宣言的プロパティを満たす言語方言などがあります。
+
+    <br><br>
+
+    アプリケーション プログラマーおよび Prolog 実践者として、
+    最新の Prolog 機能を理解し、それを独自のプログラムに適用し、
+    Prolog ベンダーと改善の機会について話し合うことで、
+    これらの開発に貢献できます。継続的かつ広範囲に使用することで、
+    これらの機能が継続的に改善されることが保証されます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_current_developments')">原文</button>
+    <div id="原文_current_developments" class="hide_on_start">
     <center><h2>Current developments</h2></center>
 
     In the Prolog community, most current developments are focused on
@@ -130,7 +273,96 @@ DUCUNT VOLENTEM FATA NOLENTEM TRAHUNT
     discussing opportunities for&nbsp;improvements with your
     Prolog&nbsp;vendor. Continuous and wide-spread usage helps to
     ensure that these features are constantly improving.
+    </div>
 
+    <center><h2>始まり</h2></center>
+
+    新しい宣言型言語機能の登場と広範な利用可能性は、
+    私たちが過去に行っていたようにではなく、
+    <i>異なる方法でPrologを教える</i>ことを正当化し、
+    さらには<i>必要</i>にしています。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/koch_method"><img src="videos/t_koch_method.png" alt="Prologにコッホ法を適用する"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    現在では、低レベルの言語構造の複雑さを説明するために
+    授業のかなりの部分を割くのは、もはや適切ではなくなりつつあります。
+    これらの構造は、長い間、より汎用的な代替手段に置き換えられています。
+    その時間は、むしろ論理プログラミングの基礎を説明することに費やされるべきです。
+    そして、現代の言語構造が<i>自然に</i>カバーされるようになります。
+    これにより、完全な一般性が保たれ、宣言的な読み方と手続き的な読み方の
+    <i>両方</i>が可能になり、どちらか一方を排除することはありません。
+
+    <br><br>
+
+    現代のPrologの機能を本当に理解するためには、
+    その歴史も考慮に入れる必要があります。
+    以前のPrologの教師たちは、
+    教えていた構造に伴う宣言的な制限を痛感していましたが、
+    他の選択肢がありませんでした。
+    多くの場合、彼ら自身がよりエレガントで汎用的な構造を追求する
+    難しい探求の先駆者でもありました。
+
+    <br><br>
+
+    例えば、Richard O'Keefeによって1984年以前に書かれた
+    <a href="okeefe.txt">原稿</a>の一節を考えてみましょう。
+    <pre>
+      <b>インスタンシエーションエラー</b>
+      5番目のエラーは、質問に変数が多すぎる場合です。
+      しかし、これは論理的には全くエラーではありません。
+      「plus(X,X,Y)」という質問には、完全に妥当な解集合
+      {(X,Y)|Xは整数で、Y=2*X} があります。
+    </pre>
+
+    この草稿から、非常に宣言的な機能が数十年前から予見されていた
+    ことが明らかです。
+    それが完全に実現するまでには一定の時間がかかりましたが、
+    現在では多くの先駆者たちが構想し、さらには概説していた技術が
+    完全に実現されています。
+    今日では、この草稿で想定されていたものと完全に一致します。
+
+    <pre>
+?- X + X #= Y.
+<b>   clpz:(2*X#=Y).</b>
+    </pre>
+
+    今や、制約のような宣言的な機能は広く普及しており、
+    人気のあるPrologシステムでは少なくともある程度利用可能です。
+    宣言型言語の研究に携わる多くの人々にとって、
+    これは<i>夢が実現した</i>ようなものです。
+    そしてその実現はまだ進行中です。
+    これらの機能は<i>使われることが意図されている</i>のです。
+    単なる興味深い珍品としてではなく、言語の<b>不可欠な部分</b>としてです。
+    まだこれらの機能を含んでいないPrologシステムも、
+    これらの機能がより普及するにつれて<i>取り入れるでしょう</i>。
+
+    <br><br>
+
+    将来、最も影響力のあるPrologの書籍は、
+    Prologの<b>純粋なコア</b>と論理プログラミングや
+    制約の持つ独自の利点や応用の機会を最も明確に示すものになるでしょう。
+    例えば：
+    <ul>
+      <li><a href="debugging"><b>宣言的デバッグ</b></a></li>
+      <li><a href="clpfd"><b>宣言的整数演算</b></a></li>
+      <li><a href="optimization"><b>組み合わせ最適化</b></a></li>
+    </ul>
+
+    このような概念を完全に受け入れ、
+    最大限に活用することで、未来の世代はついにPrologの真の力を目にし、
+    その恩恵を受けることができるでしょう。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_the_begin')">原文</button>
+    <div id="原文_the_begin" class="hide_on_start">
     <center><h2>The begin</h2></center>
 
     The advent and wide availability of new, declarative language
@@ -225,7 +457,7 @@ has a perfectly good set of solutions {(X,Y)|X is an integer and Y=2*X}.
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
-
+    </div>
     <br><br><br>
 
     <b><a href="/">Main page</a></b>

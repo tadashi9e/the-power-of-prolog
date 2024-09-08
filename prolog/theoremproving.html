@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Theorem Proving with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Theorem Proving with Prolog">
@@ -8,11 +9,196 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+
+    <center><h1>Prologによる定理証明</h1></center>
+    <br>
+    <div style="margin-left: 50%; display: inline-block">
+      最初に、シュトゥルムとリウヴィルの美しい定理が全く役に立たないことに気付きました。
+      (ジャン＝カルロ・ロタ, <a href="https://web.williams.edu/Mathematics/lg5/Rota.pdf">微分方程式を教える前に学んでおきたかった10の教訓</a>)
+    </div>
 
     <br><br>
+
+    Prologは<b>定理証明器</b>でしょうか？
+    リチャード・オキーフが的確に言い表しています：
+    <div>
+      <blockquote class="box">
+        <br>
+        Prologは非常に愚かな定理証明器であるため、
+        効率的なプログラミング言語です。
+        <br><br>
+      </blockquote>
+    </div>
+
+    したがって、Prologと定理証明の間には<i>関連性</i>があります。
+    実際、Prologプログラムの実行は
+    <i>解決法</i>の特別なケースと見なすことができ、これはSLDNF解決法と呼ばれます。
+
     <br><br>
+
+    ただし、Prologは完全な定理証明器では<i>ありません</i>。
+    特に、Prologは深さ優先探索戦略のために論理的に<i>不完全</i>です。
+    そのため、解決できる場合でも、解決法を見つけられないことがあります。
+
+    <br><br>
+
+    <b>しかし</b>、重要なのは、もちろん、
+    Prologで定理証明器を<b>実装</b>できるということです！
+    Prologはチューリング完全な<b>プログラミング言語</b>であり、
+    コンピュータ上で実装できる定理証明器は、Prologでも<i>実装可能</i>です。
+
+    <br><br>
+
+    定理証明器は、しばしば<i>証明</i>や<i>反例</i>を探索する
+    何らかの<a href="sorting#searching"><i>探索</i></a>が必要です。
+    Prologではさまざまな探索戦略を簡単に実装できます。
+    組み込みの深さ優先探索を再利用することも、しないことも可能です。
+
+    <br><br>
+
+    以下はPrologで書かれた定理証明器の例で、
+    <b>命題論理</b>に対する<i>解決計算</i>を実装しています：
+
+    <pre>
+pl_resolution(Clauses0, Chain) :-
+        maplist(<a href="sorting#sort">sort</a>, Clauses0, Clauses), % remove duplicates
+        length(Chain, _),
+        pl_derive_empty_clause(Chain, Clauses).
+
+pl_derive_empty_clause([], Clauses) :-
+        member([], Clauses).
+pl_derive_empty_clause([C|Cs], Clauses) :-
+        pl_resolvent(C, Clauses, Rs),
+        pl_derive_empty_clause(Cs, [Rs|Clauses]).
+
+pl_resolvent((As0-Bs0) --&gt; Rs, Clauses, Rs) :-
+        member(As0, Clauses),
+        member(Bs0, Clauses),
+        select(Q, As0, As),
+        select(not(Q), Bs0, Bs),
+        append(As, Bs, Rs0),
+        <a href="sorting#sort">sort</a>(Rs0, Rs), % remove duplicates
+        maplist(dif(Rs), Clauses).
+    </pre>
+
+    完全なファイルは
+    <a href="/logic/plres.pl"><b><tt>plres.pl</tt></b></a>
+    から入手できます。
+
+    <br><br>
+
+    以下は、<tt>portray_clause/1</tt>を使用して
+    結果の反証チェーンを出力する例です。
+    この出力は、<tt>read/1</tt>を使って別のプログラムが簡単に読み取ることができます：
+
+    <pre>
+?- Clauses = <b>[[p,not(q)], [not(p),not(s)], [s,not(q)], [q]]</b>,
+   pl_resolution(Clauses, Rs),
+   maplist(portray_clause, Rs).
+    </pre>
+
+    これにより、次のような反証チェーンが生成されます：
+
+    <pre>
+[p, not(q)]-[not(p), not(s)] --&gt;
+	[not(q), not(s)].
+[s, not(q)]-[not(q), not(s)] --&gt;
+	[not(q)].
+[q]-[not(q)] --&gt;
+	[].
+    </pre>
+
+    特に注目すべき点は：
+    <ul>
+      <li>この場合、定理証明器の探索戦略として
+        Prologの組み込み探索戦略を使用していません！
+        この定理証明器は<b>反復深化</b>を使用して、
+        <i>反証完全性</i>を保証します。
+        つまり、<i>反証が存在する場合</i>、<i>必ず</i>見つかります。
+        反復深化は一見非常に非効率的な探索戦略に見えるかもしれませんが、
+        一般的な仮定の下では<i>最適な</i>探索戦略です。</li>
+      <li>この場合、Prolog変数をオブジェクトレベルの変数を
+        表現するために使用していません！
+        命題変数はPrologの<i>アトム</i>で表現されています。
+        これを<b>グラウンド表現</b>と呼びます。
+        Prolog変数を使用すれば、<a href="/clpb/"><b>ブール制約</b></a>を使用して、
+        式が充足不能であることを示す別の解法を取ることができます：
+
+        <pre>
+?- sat(P + ~Q), sat(~P + ~S), sat(S + ~Q), sat(Q).
+<b>false</b>.
+        </pre>
+
+        データの<a href="data">表現</a>の選択によって、
+        このような式についての推論の方法が大きく変わることがあります。
+      </li>
+    </ul>
+
+    したがって、Prologを使用して実装された定理証明器について議論する際には、
+    Prologの内部動作と定理証明器の<i>実装された</i>動作が
+    大きく異なる可能性があることを念頭に置く必要があります。
+    探索戦略、変数の表現、論理的性質、さらにはあらゆることが
+    Prolog内部での動作と異なる可能性があります。
+    なぜなら、Prologは定理証明器の実装言語の一つにすぎないからです。
+
+    <br><br>
+
+    それを踏まえた上で、Prologは定理証明器を<i>実装する</i>ための
+    特に適した言語である多くの特性を持っています。
+    例えば：
+    <ul>
+      <li>Prologの組み込みの<b>探索</b>と<b>バックトラッキング</b>
+        は、証明や反例を探索する際に簡単に利用できます。</li>
+      <li><b>完全な</b>探索戦略（例：反復深化）はPrologで簡単に表現できます。</li>
+      <li>Prologの<b>論理変数</b>は、
+        オブジェクトレベルの変数を表現するためにしばしば使用でき、
+        これにより<b>単一化</b>などのPrologの組み込み機能を<i>活用</i>できます。</li>
+      <li>組み込みの<b>制約</b>により、
+        非常にエレガントで効率的なプログラムを作成できる
+        宣言的な<b>仕様</b>が可能になります。</li>
+    </ul>
+
+    Prologで実装された定理証明器の他の例としては：
+    <ul>
+      <li><a href="/presprover/"><b>Presprover</b></a>:
+        <i>プレズバーガー算術</i>の式を証明します。</li>
+      <li><a href="/trs/"><b>TRS</b></a>:
+        Prologで<i>項書き換えシステム</i>の完了手続きを実装します。</li>
+    </ul>
+
+    Prologの助けを借りて最近確立された新しい組合せ論の定理については、
+    <a href="https://arxiv.org/abs/2307.12430v1"><i>UKナショナルロトリーで勝利を保証するには27枚のチケットが必要</i></a>
+    および
+    <a href="https://arxiv.org/abs/2207.01094"><i>Prolog支援による新しい単純なリー代数の探索</i></a>
+    で説明されています。
+
+    <br><br>
+
+    多くの<a href="puzzles">論理パズル</a> は
+    なんらかの定理証明の適用により解くことができます。
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_theorem_proving')">原文</button>
+    <div id="原文_theorem_proving" class="hide_on_start">
     <center><h1>Theorem Proving with Prolog</h1></center>
     <br>
 
@@ -206,6 +392,7 @@ pl_resolvent((As0-Bs0) --&gt; Rs, Clauses, Rs) :-
 
     Many <a href="puzzles">logic puzzles</a> can be solved by applying
     some form of theorem&nbsp;proving.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

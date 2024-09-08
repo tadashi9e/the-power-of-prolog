@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog Business Cases</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Business Cases">
@@ -8,11 +9,58 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologのビジネスケース</h1></center>
+    <br><br>
+
+    組織でPrologを導入するには、管理層に対してPrologが
+    ビジネスの観点からもたらす非常に大きな利益を理解してもらう必要があります。
+    例えば、次のような点です:
+    <ul>
+      <li>Prologは<b>ISO標準化</b>されています。
+        これは法的な観点から非常に重要な資産であり、
+        Prologベンダーが標準に違反した場合、
+        <i>責任を問われる</i>ことができます。</li>
+      <li>Prologは<b>コスト削減</b>に貢献します。
+        Prologプログラムは非常に汎用的であるため、
+        通常は<i>少ないコード量</i>で済み、その結果、
+        タイピング、読み込み、監査にかかる時間が短縮されます。</li>
+      <li>Prologは多くの重要なアプリケーションで
+        <b>実績</b>があります。
+        たとえば、SICStusの
+        <a href="https://sicstus.sics.se/customers.html">顧客事例</a>
+        を参照してください。</li>
+      <li>Prologは<b>ルールベース</b>のシステムに最適であり、
+        あなたの<b>ビジネスルール</b>を表現するのに適しています。</li>
+      <li>その他。</li> </ul>
+
+    どの組織においても、Prologを活用できる可能性のある
+    アプリケーションは数多く存在します。以下ではそのいくつかを検討します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_business_cases')">原文</button>
+    <div id="原文_business_cases" class="hide_on_start">
     <center><h1>Prolog Business Cases</h1></center>
     <br><br>
 
@@ -38,8 +86,53 @@
 
     In any organization, there are countless possible applications
     for&nbsp;Prolog. In the following, we consider some of them.
+    </div>
+
+    <center><h2 id="database">データベースとしての Prolog</h2></center>
+
+    Prolog の<i>最も基本的な</i>使用例の1 つは、
+    <b>データベース</b>として機能する機能を利用することです 。
 
     <br><br>
+
+    これは、単に<i>データを保存</i>し、<i>クエリ</i>に応じて
+    それを提供するアプリケーションを指します。
+
+    <br><br>
+
+    Prologは、このようなアプリケーションに非常に適しています。
+    動的にデータを追加・削除でき、実用的な状況で
+    優れたパフォーマンスを得るために自動的に
+    <i>インデックス作成</i>を利用できるからです。
+    また、Prologプログラムを様々な手段で簡単に編集・処理できるため、
+    蓄積された知識をエクスポート、インポート、処理することが非常に便利です。
+    さらに、Prologクエリの記述は、
+    SQLクエリの記述よりも自然で簡単なことが多いため、
+    他のデータベースシステムの代替としてPrologが優れる場合もあります。
+
+    <br><br>
+
+    Prologには、そのようなユースケースに特に適した
+    <a href="https://en.wikipedia.org/wiki/Datalog"><b>Datalog</b></a>
+    と呼ばれる構文的サブセットがあります。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/datalog"><img src="videos/t_datalog.png" alt="Datalog"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    また、<i>制約クエリ言語</i>である
+    <a href="http://eu.swi-prolog.org/pldoc/doc/_SWI_/library/cql/cql.pl">CQL</a>
+    を使用して、PrologからSQLデータベースにシームレスにアクセスすることもできます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_as_a_database')">原文</button>
+    <div id="原文_as_a_database" class="hide_on_start">
     <center><h2 id="database">Prolog as a database</h2></center>
 
     One of the <i>most basic</i> use cases of Prolog is to rely on its
@@ -84,8 +177,75 @@
     You can also use the <i>Constraint Query
     Language</i>&nbsp;<a href="http://eu.swi-prolog.org/pldoc/doc/_SWI_/library/cql/cql.pl">CQL</a>
     to seamlessly access SQL&nbsp;databases from Prolog.
+    </div>
+    
+    <center><h2>イベントと異常の分析</h2></center>
+
+    <b>ログファイル</b> にはイベントが記録されます。
+
+    たとえば、Prologの<a href="web#server">HTTPSサーバ</a>を設定して、
+    処理する<i>リクエスト</i>に関する情報を保存することができます。
 
     <br><br>
+
+    ローカルでそのようなサーバをテストし、ページ<a href="/prolog"><tt>/prolog</tt></a>にアクセスした場合、サーバのログファイルに次のようなエントリが書き込まれるかもしれません。
+
+    <pre>
+/*Sun Apr  9 23:01:19 2017*/
+request(45, 1491771679.213,
+         [peer(ip(127,0,0,1)),
+          method(get),request_uri('/prolog'),path('/prolog'),
+          http_version(1-1),host(localhost),port(3037),
+          connection('keep-alive'),upgrade_insecure_requests('1'),
+          if_modified_since('Wed, 05 Apr 2017 23:24:08 GMT')]).
+    </pre>
+
+    このエントリは、クライアントの<i>リクエスト</i>を記述しています。
+
+    <br><br>
+
+    リクエストの処理後、サーバはリクエストがどのように処理されたかを
+    記述する追加のエントリを書き込むかもしれません。
+    たとえば、次のようなエントリが追加されます。
+
+    <pre>
+completed(45, 0.0009790000000000076, 0, 304, not_modified).
+    </pre>
+
+    重要なのは、サーバを設定してログファイルを一連の
+    Prologの<i>事実</i>として保存できることです。
+    したがって、ログファイル全体を簡単に<i>Prologを使って分析</i>できるのです！
+
+    <br><br>
+
+    Prologの1回の呼び出しで<i>ファイル全体を読み込み</i>、
+    同時に蓄積されたデータに対して任意のクエリを投稿する準備が整います。
+
+    <br><br>
+
+    たとえば、上記のケースでは、
+    「<i>処理されなかったクライアントのリクエストはあるか？</i>」
+    と尋ねることができます。これをPrologで表現すると、次のようになります。
+
+    <pre>
+?- request(R, _, _), \+ completed(R, _, _, _, _).
+<b>false.</b>
+    </pre>
+
+    この結果は、少なくともサーバが<i>何らかの形で</i>すべてのリクエストに対処し、
+    1つも無視していないことを意味します。
+
+    <br><br>
+
+    もちろん、すべてのログファイルがPrologで直接解析できるわけではありません。
+    しかし、組織内でPrologの構文を多く使用すればするほど、
+    そのようなデータに対してクエリを投稿できる利点が大きくなります。
+    さらに、通常、どのようなログファイル形式でも
+    簡単に有効なPrologの事実に変換でき、その後同じロジックを適用することが可能です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_analyzing_event_and_anomalies')">原文</button>
+    <div id="原文_analyzing_event_and_anomalies" class="hide_on_start">
     <center><h2>Analyzing events and anomalies</h2></center>
 
     A <b>logfile</b> records events.
@@ -156,7 +316,135 @@ completed(45, 0.0009790000000000076, 0, 304, not_modified).
     able to post queries over such&nbsp;data. In addition, you can
     typically easily convert any logfile format to valid
     Prolog&nbsp;facts, and then apply the same&nbsp;reasoning.
+    </div>
+    
+    <center><h2>ルールベースのレポート作成</h2></center>
 
+    あらゆる組織において、優れた<b>レポート</b>のニーズは常に存在します。
+    Prologは、利用可能なデータから<i>レポートを生成</i>するのに理想的なツールです。
+
+    <br><br>
+
+    たとえば、会社のホームページの毎月の<i>訪問者数</i>を報告する
+    責任があると想像してみてください。
+    また、過去の理由から、技術チームは月末に
+    毎日平均の<i>訪問者数</i>を送ってくるとします。
+    つまり、以下のようにPrologの<i>事実</i>を使って、
+    日々の訪問者の増加を示すデータが保存されています。
+
+    <pre>
+year_month_daily_visitors(2017, jan, 30018).
+year_month_daily_visitors(2017, feb, 32913).
+year_month_daily_visitors(2017, mar, 35871).
+    </pre>
+
+    しかし、経営陣はあなたに
+    毎月の<i>合計</i>の訪問者数を報告することを求めています。
+    日々の平均ではなく、月ごとの合計です。
+
+    <br><br>
+
+    Prologの<b>ルール</b>を使って、データを<i>変換</i>し、
+    経営陣が求めるデータに簡単に対応できます。
+    たとえば、<a href="clpfd">整数演算</a>を使用して、
+    日々の平均と月ごとの合計を次のように関連付けることができます。
+
+    <pre>
+year_month_total(Year, Month, Total) :-
+        Total #= Days*Daily,
+        year_month_days(Year, Month, Days),
+        year_month_daily_visitors(Year, Month, Daily).
+    </pre>
+
+    これには、以下のような形の<tt>year_month_days/3</tt>の定義が必要です。
+
+    <pre>
+year_month_days(2017, jan, 31).
+year_month_days(2017, feb, 28).
+year_month_days(2017, mar, 31).
+    </pre>
+
+    これだけで必要な答えが得られます。たとえば:
+
+    <pre>
+?- year_month_total(Year, Month, Total).
+   Year = 2017, Month = jan, Total = 930558
+;  Year = 2017, Month = feb, Total = 921564
+;  Year = 2017, Month = mar, Total = 1112001.
+    </pre>
+
+    <tt>format/2</tt>を使用して、これをもっと読みやすいレポートに
+    変換することもできます。
+
+    <pre>
+?- <b>format("year month visitors~n", []),</b>
+   year_month_total(Year, Month, Total),
+   <b>format("~w ~w ~t~U~20|~n", [Year,Month,Total]),</b>
+   false.
+<b>year month visitors
+2017 jan     930_558
+2017 feb     921_564
+2017 mar   1_112_001</b>
+    </pre>
+
+    ここで、<a href="concepts#builtin"><tt>false/0</tt></a>を使って
+    <i>強制バックトラッキング</i>を行っています。
+
+    <br><br>
+
+    数週間後、経営陣は別のレポートを必要とします。
+    今度は、日々の平均でも合計数でもなく、現在の月までの累積訪問者数が求められます。
+
+    <br><br>
+
+    Prologを使えば、単に必要な<i>ルールを定義</i>するだけで、
+    このレポートを簡単に生成でき、元のデータはそのまま残すことができます。
+    たとえば次のようにします。
+
+    <pre>
+cumulative(Pred, Until, C) :-
+        months(Ms),
+        cumulative_(Ms, Pred, Until, 0, C).
+
+cumulative_([], _, _, C, C).
+cumulative_([M|Ms], Pred, Until, C0, C) :-
+        C1 #= C0 + Current,
+        call(Pred, M, Current),
+        if_(M=Until, C=C1,
+            cumulative_(Ms, Pred, Until, C1, C)).
+
+months([jan,feb,mar,apr,may,jun,jul,aug,sept,oct,nov,dec]).
+    </pre>
+
+    これは、<a href="metapredicates#call"><tt>call/3</tt></a>および
+    <a href="metapredicates#if_3"><tt>if_/3</tt></a>のメタ述語を使用して、
+    非常に一般的で柔軟な方法で累積合計を記述しています。たとえば:
+
+    <pre>
+?- cumulative(year_month_total(2017), M, C).
+   C = 930558, M = jan
+;  C = 1852122, M = feb
+;  C = 2964123, M = mar
+;  false.
+    </pre>
+
+    このクエリの特別なケースとして、特定の月についても
+    簡単に問い合わせることができます。
+
+    <pre>
+?- cumulative(year_month_total(2017), feb, C).
+   <b>C = 1852122</b>
+;  false.
+    </pre>
+
+    このようなデータを<i>推論</i>する方法の大きな利点に注目してください。
+    たとえば、<i>Prologの事実</i>をテキストとして簡単に共有でき、
+    事実の追加も非常に簡単です。毎月1つの事実を追加するだけで、
+    このレポートを最新の状態に保つことができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_rule_based_reporting')">原文</button>
+    <div id="原文_rule_based_reporting" class="hide_on_start">
     <center><h2>Rule-based reporting</h2></center>
 
     In every organization, there is a constant need for
@@ -290,7 +578,53 @@ months([jan,feb,mar,apr,may,jun,jul,aug,sept,oct,nov,dec]).
     plain&nbsp;text. Augmenting these facts is also very easy: It
     suffices to add one fact per month to keep the above
     report&nbsp;current.
+    </div>
+    
+    <center><h2>戦略的考慮事項</h2></center>
 
+    あなたが会社内でPrologを使って難しい問題を解決しているとします。
+    この事実を公に発表し、競合他社が同じ技術を利用できるようにしますか？
+    私の個人的な推測では、答えは<i>「いいえ」</i>、あなたは<i>しない</i>でしょう。
+
+    <br><br>
+
+    時には、組織にPrologを導入すると、人々はこの言語を使っている企業を
+    聞いたことがないという理由でその言語を無視することがあります。
+    しかし、
+    <a href="https://web.archive.org/web/20190203010151/https://www.sics.se/projects/sicstus-prolog-leading-prolog-technology"><b>全航空券の3分の1</b></a>
+    はSICStus Prologを使ったシステムで処理されています。
+    NASAは国際宇宙ステーションでの音声制御システムにSICStus Prologを使用しています。
+    Windows NTは
+    <a href="http://web.archive.org/web/20040603192757/research.microsoft.com/research/dtg/davidhov/pap.htm">ネットワーク設定</a>
+    に組み込みのPrologインタープリターを使用していました。
+    ニュージーランドの主要な
+    <a href="https://dtai.cs.kuleuven.be/CHR/files/Elston_SecuritEase.pdf">証券取引システム</a>
+    はPrologとCHRで書かれています。オーストリアでは
+    <a href="https://arxiv.org/abs/2406.15293v1">事業助成金について推論する</a>
+    ためにPrologが使用されています。
+
+    <br><br>
+
+    商用のPrologシステムは簡単に<i>何千ドル</i>もかかります。
+    これは個人が「ただ買う」ようなソフトウェアではありません。
+    プロフェッショナルなPrologシステムは、通常、
+    その力を<i>必要として</i>業務を解決するために購入される企業向けです。
+    その内部技術を宣伝することは少ないでしょう。
+    それでも、いくつかの企業は例外です。
+    たとえば、
+    <a href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-0-preface7.html">Java Virtual Machine Specification</a>
+    には多くのPrologコードが含まれていますし、
+    <a href="https://www.cs.nmsu.edu/ALP/2011/03/natural-language-processing-with-prolog-in-the-ibm-watson-system/">IBM WatsonはPrologを</a>
+    自然言語処理にを使用しています。
+
+    <br><br>
+
+    時には、Prologを組織に導入しようとするよりも、
+    すでにPrologを使っている会社で働き始める方が効率的な場合があります！
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_strategic_considerations')">原文</button>
+    <div id="原文_strategic_considerations" class="hide_on_start">
     <center><h2>Strategic considerations</h2></center>
 
     Suppose you are successfully applying Prolog within your company
@@ -336,7 +670,7 @@ months([jan,feb,mar,apr,may,jun,jul,aug,sept,oct,nov,dec]).
     Sometimes, instead of trying to introduce Prolog in an
     organization, it is more efficient to start working for one where
     it is already being&nbsp;used!
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

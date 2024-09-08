@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog Data Structures</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Data Structures">
@@ -9,9 +10,117 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prolog のデータ構造</h1></center>
+    <br><br>
+    
+    <center><h2 id="term">項 (Terms)</h2></center>
 
+    Prologでは、すべてのデータはPrologの<b>項</b>（terms）として表現されます。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/terms"><img src="videos/t_terms.png" alt="項"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    各項は、<b>変数</b>、<b>アトミック項</b>、または<b>複合項</b>のいずれかです：
+
+    <ul>
+      <li><b>変数</b>は大文字で始まるか、アンダースコア&nbsp;(<tt>_</tt>)で始まります。単独のアンダースコアは<i>匿名変数</i>を意味し、「任意の項」と解釈できます。例として、<tt>X</tt>、<tt>Y</tt>、<tt>_爱</tt>、および<tt>Prolog</tt>が挙げられます。</li>
+      <li><b>アトミック項</b>には以下が含まれます：
+        <ul>
+          <li><b>アトム</b>、例えば<tt>x</tt>、<tt>test</tt>、および<tt>'quotes and space'</tt></li>
+          <li><b>整数</b>、例えば<tt>42</tt></li>
+          <li>浮動小数点数</li>
+          <li>Prologのシステムによっては、複素数や有理数など他の種類のアトミック項も存在します。</li>
+        </ul>
+      </li>
+      <li><b>複合項</b>は次のように帰納的に定義されます：
+        <i>もしも</i> <tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>, ..., <tt>T<sub>N</sub></tt>が項であれば、
+        <i>F</i>(<tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>, ..., <tt>T<sub>N</sub></tt>)も項であり、
+        <i>F</i>は<i>ファンクタ名</i>と呼ばれ、アトムと同じ構文規則に従います。
+        <i>F/N</i>はその複合項の<i>主ファンクタ</i>と呼ばれ、
+        <tt>N</tt>はその<i>引数の数</i>です。
+        例：<tt>f(a)</tt>、<tt>g(f(X))</tt>、および<tt>+(a,f(X))</tt>。
+      </li>
+    </ul>
+
+    すべてのデータはこの方法で表現できます。項はただ記述することで存在します。
+
+    <br><br>
+
+    項に変数が含まれていない場合、その項は<i>地</i>（ground）と呼ばれます。
+    複合項に変数が含まれている場合、それは<i>部分的に具体化</i>されています。
+
+    <br><br>
+
+    Prologは<i>動的に型付け</i>されており、データを自由に表現できます。
+    たとえば、自然数を次のように表現することも可能です：
+    <ul>
+      <li>0を表すためにアトム<tt>zero</tt>を使用できます。</li>
+      <li><tt>s(X)</tt>という複合項を使用して
+        <tt>X</tt>の後続項を表すことができます。</li>
+    </ul>
+
+    この表現では、<tt>s(s(s(zero)))</tt>は数値3を表します。
+    しかし、このような表現は大きな数に対して非常に非効率的です。
+    このため、Prologは<a href="clpz">整数演算</a>を提供し、
+    より効率的な数の表現を可能にしています。
+
+    <br><br>
+
+    Prologの項は、<a href="optimization#tree">木構造</a>に自然に対応します。
+    項には<a href="sorting#order">標準の順序</a>もあります。
+
+    <br><br>
+
+    Prologでは、
+    プレフィックス、
+    インフィックス、および
+    ポストフィックスの<b>演算子</b>を定義し、異なる方法で項を記述することができます。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/operators"><img src="videos/t_operators.png" alt="演算子"></a></td>
+      </tr>
+    </table>
+    <br><br>
+
+    いくつかの標準的な演算子は事前に定義されています。
+    たとえば、<tt>a+b</tt>や<tt>X=Y</tt>と記述する代わりに、
+    <tt>+(a,b)</tt>や<tt>=(X,Y)</tt>と書くことができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文1')">原文</button>
+    <div id="原文1" class="hide_on_start">
     <br><br>
     <br><br>
     <center><h1>Prolog Data Structures</h1></center>
@@ -119,9 +228,71 @@
     operators are predefined. For example, you can write <tt>a+b</tt>
     and <tt>X=Y</tt> instead of <tt>+(a,b)</tt> and <tt>=(X,Y)</tt>,
     respectively.
+    </div>
 
+    <center><h2 id="list">リスト (Lists)</h2></center>
 
+    Prologの<b>リスト</b>は、<a href="#term"><i>項</i></a>の特別なケースです。
 
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/lists"><img src="videos/t_lists.png" alt="リスト"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    リストは次のように帰納的に定義されます：
+    <ul>
+      <li>アトム<tt>[]</tt>はリストであり、<i>空リスト</i>を表します。</li>
+      <li><i>もしも</i><tt>Ls</tt>がリストなら、項<tt>'.'(L, Ls)</tt>もリストです。</li>
+    </ul>
+
+    Prologではリストを便利に表記するための特別な構文があります：
+
+    <ol>
+      <li>リスト<tt>'.'(a, '.'(b, '.'(c, [])))</tt>は、<tt>[a,b,c]</tt>とも書くことができます。</li>
+      <li>項<tt>'.'(L, Ls)</tt>は、<tt>[L|Ls]</tt>とも書くことができます。</li>
+    </ol>
+
+    これらの表記法は、どのような形でも組み合わせて使うことができます。
+    たとえば、<tt>[a,b|Ls]</tt>という項は、
+    <tt>Ls</tt>がリストである場合のみリストとなります。
+
+    <br><br>
+
+    リストは自然に<i>要素の集合</i>を表現し、
+    ほぼすべてのPrologプログラムで使用されます。
+    リストと他の方法を比較して要素の集合を表現する際には、以下の質問を自問してみてください：
+
+    <ul>
+      <li>要素が<i>任意の数だけ</i>存在することが可能ですか？</li>
+      <li><i>要素がゼロ</i>であることが可能ですか？</li>
+      <li>要素の<i>順序</i>は重要ですか？</li>
+      <li>要素は同じ<i>種類</i>ですか？</li>
+    </ul>
+
+    これらの質問に対して「はい」と答えることが多い場合、
+    リストはしばしば適した選択となります。
+
+    <br><br>
+
+    対照的に、各集合がちょうど3つの要素で構成されている場合を考えてみてください。
+    このような場合、<tt>[A,B,C]</tt>という形式のリストを使って集合を表現し、
+    リストを操作する<a href="metapredicates">メタ述語</a>の利点を享受することができます。
+    しかし、一方で<tt>f(A,B,C)</tt>という複合項を使用する方がメモリ効率が良くなります。
+    これは、リスト<tt>[A,B,C]</tt>が<tt>'.'(A,'.'(B,'.'(C,[])))</tt>という複合項であり、
+    メモリ上で<tt>f(A,B,C)</tt>の約<i>2倍</i>の領域を使用するためです。
+
+    <br><br>
+
+    リストを記述するために、<a href="dcg">DCG表記法</a>が頻繁に使用されます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_lists')">原文</button>
+    <div id="原文_lists" class="hide_on_start">
     <center><h2 id="list">Lists</h2></center>
 
     Prolog <b>lists</b> are a special case of <a href="#term"><i>terms</i></a>.
@@ -193,7 +364,38 @@
 
     <a href="dcg">DCG notation</a> is frequently used for
     describing&nbsp;lists.
+    </div>
 
+    <center><h2 id="pair">ペア (Pairs)</h2></center>
+
+    <i>ペア</i>は、主要ファンクタが<tt>(-)/2</tt>の項です。
+    たとえば、項<tt>-(A, B)</tt>は、要素<tt>A</tt>と<tt>B</tt>のペアを表します。
+    Prologでは、<tt>(-)/2</tt>は中置<i>演算子</i>として定義されています。
+    そのため、この項は<tt>A-B</tt>と等価に書くことができます。
+
+    <br><br>
+    
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/pairs"><img src="videos/t_pairs.png" alt="ペア"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    標準述語<a href="sorting#keysort"><tt>keysort/2</tt></a>は、
+    ペアを操作する述語の例です。これらは<i>キー-値</i>ペアと呼ばれます。
+    なぜなら、各ペアの最初の引数がソートの<i>キー</i>として使用されるからです。
+    多くのPrologシステムは、ペアを操作するための追加の述語を提供しており、
+    <tt>keysort/2</tt>の用語を採用することがよくあります。
+    このような述語の一般的な例としては、
+    ペアのリストをそれぞれのキーと値に関連付ける
+    <tt>pairs_keys_values/3</tt>や<tt>pairs_keys/2</tt>などがあります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_pairs')">原文</button>
+    <div id="原文_pairs" class="hide_on_start">
     <center><h2 id="pair">Pairs</h2></center>
 
     <i>Pairs</i> are terms with principal functor <tt>(-)/2</tt>. For
@@ -224,7 +426,57 @@
     examples of such predicates are
     <tt>pairs_keys_values/3</tt> and <tt>pairs_keys/2</tt> to relate a
     list of pairs to their respective keys and values.
+    </div>
 
+    <center><h2 id="assoc">連想リスト (Association lists)</h2></center>
+
+    多くのPrologシステムでは、<b>連想リスト</b>が利用可能で、
+    要素のコレクションへの線形アクセスよりも速いアクセスが可能です。
+    これらのアソシエーションリストは、通常、<b>AVL木</b>のような平衡木に基づいています。
+
+    <br><br>
+
+    <tt>library(assoc)</tt>というパブリックドメインのライブラリがあり、
+    多くのPrologシステムに付属しています。
+    このライブラリは、コレクションの要素の挿入、取得、および変更の操作を提供します。
+
+    <br><br>
+
+    PrologでAVL木を表現する方法の一つは次の通りです：
+    <ol>
+      <li><i>空の木</i>は、アトム<tt>t</tt>で表されます。
+      </li>
+      <li><i>内部ノード</i>は、
+        <tt>t(Key, Value, Balance, Left, Right)</tt>
+        という形の<i>複合項</i>で表されます。この中で：
+
+        <ul>
+          <li><tt>Key</tt>と<tt>Value</tt>は、
+            <tt>Key</tt>と<tt>Value</tt>の<i>対応</i>を表します。</li>
+          <li><tt>Balance</tt>は、バランス基準を示す<i>アトム</i>で、
+            左右の部分木の子の数に関する関係を表します。
+            たとえば、<tt>&lt;</tt>、<tt>=</tt>、<tt>&gt;</tt>の
+            アトムを使用して、部分木間の異なる状態を表すことができます。</li>
+
+          <li><tt>Left</tt>と<tt>Right</tt>はAVL木です。</li>
+        </ul>
+    </ol>
+
+    AVL木に対するすべての操作（例えば、対応の追加や変更）は、
+    操作<i>前</i>の木と操作<i>後</i>の木の<i>関係</i>として
+    記述することができます。
+    詳しくは、<a href="/tist/"><i>Thinking in States</i></a>をご覧ください。
+
+    <br><br>
+
+    AVL木を使用すると、多くの重要な操作を
+    <i>O</i>(log(<i>N</i>))の時間で実行することができ、
+    ここで<i>N</i>は対応の数です。
+    多くのケースで、これは十分に効率的です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_association_list')">原文</button>
+    <div id="原文_association_list" class="hide_on_start">
     <center><h2 id="assoc">Association lists</h2></center>
 
     In many Prolog systems, <b>association lists</b> are available to
@@ -275,8 +527,92 @@
     AVL&nbsp;trees let us perform many important operations
     in <i>O</i>(log(<i>N</i>))&nbsp;time, where <i>N</i> is the number
     of associations. This is acceptably efficient in many&nbsp;cases.
+    </div>
 
+    <center><h2 id="string">文字列?</h2></center>
 
+    文字列についてのほとんどのことは、Richard O'Keefeが彼の
+    <a href="http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm">Prologライブラリ提案</a>
+    で見事に述べています。
+    特に、「<b>文字列は間違い</b>である」ということが強調されています：
+    
+    <blockquote>
+      何らかの処理を伴うほとんどすべてのユースケースにおいて、
+      文字列データに対して最も合理的な処理は、
+      それを早い段階で何らかの木に変換することです。
+      Prologは木の扱いに優れています。
+    </blockquote>
+
+    Prologでは、文字列を便利で自然に表現する方法として、
+    <i>文字</i>（一文字の<i>アトム</i>）の
+    リストを使用することが推奨されています。
+    Prologのフラグ<tt>double_quotes</tt>を<tt>chars</tt>に設定すれば、
+    ダブルクォートで囲まれた文字列は自動的に文字のリストとして解釈されます。
+    この設定を有効にするには、
+    Prologプログラムの冒頭またはPrologシステムの設定ファイルに
+    次のディレクティブを追加します：
+    <br><br>
+    <pre class="box">
+<b>:- set_prolog_flag(double_quotes, chars).</b></pre>
+
+    <br><br>
+    > この設定により、次のような結果が得られます：
+
+    <pre>
+<b>?- "abc" = [a,b,c].</b>
+   true.
+    </pre>
+
+    このように、文字列の処理は<a href="#list">リスト</a>の処理に還元され、
+    Prolog内で容易に扱うことができ、
+    <a href="dcg">DCG</a>などの組み込みメカニズムにも適応できます。
+
+    <br><br>
+
+    Prologで文字列を文字のリストとして扱うことは、
+    最初のPrologシステムであるマルセイユPrologから続く長い伝統です。
+    Prologシステムの中には、文字列を文字の<i>コード</i>、
+    つまり<i>整数</i>のリストとして扱うものもあり、
+    これらの整数は使用されるエンコーディングに依存するコードポイントを表します。
+    この動作は、Prologフラグ
+    <tt>double_quotes</tt>を<tt>codes</tt>に設定することで有効になります。
+    しかし、これは<tt>chars</tt>を使用するよりも回答が読みづらくなるため、
+    推奨されません。
+    代わりに、フラグを<tt>atom</tt>に設定すると、
+    ダブルクォートで囲まれた文字列がアトムとして扱われます。
+    しかし、<tt>atom</tt>の値を使用する主な欠点は、
+    アトムがDCGやリスト、部分リストを扱う他の述語に適応しないことです。
+    さらに、アトムは<i>部分的</i>にインスタンス化することができないため、
+    コードが<i>モード依存</i>になり、すべての可能な方向での利用が制限されます。
+
+    <br><br>
+
+    これらの理由から、<tt>chars</tt>が推奨され、
+    Scryer、Tau、Trealla Prologなどの新しいPrologシステムは、
+    すでにデフォルトでこの値を使用しています。
+
+    <br><br>
+
+    適切な実装技術を用いれば、Prologシステムは文字のリストを
+    非常に効率的に表現でき、便利で高速に扱うことが可能です。
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/representing_strings"><img src="videos/t_representing_strings.png" alt="文字列の表現"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    したがって、今後より多くのPrologシステムが
+    デフォルトで<tt>chars</tt>を使用するようになることが期待されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_strings')">原文</button>
+    <div id="原文_strings" class="hide_on_start">
     <center><h2 id="string">Strings?</h2></center>
 
     Almost everything that needs to be said about <i>strings</i> has
@@ -364,7 +700,44 @@
 
     There is thus hope that more Prolog systems will
     use <tt>chars</tt> as the default value in the future.
+    </div>
 
+    <center><h2>配列?</h2></center>
+
+    <b>配列</b>についてはどうでしょうか？
+    Prologには、個々の要素に<i>O(1)</i>でアクセスできるような、
+    項のコレクションを表すデータ構造が存在するのでしょうか？
+
+    <br><br>
+
+    まず最初に、<i>破壊的</i>変更という概念は、
+    論理プログラミングにはなじみません。
+    Prologでは、破壊的な効果を記述するのではなく、
+    エンティティ間の<i>関係</i>を記述します。
+    Prologデータ構造における変更を表現するには、
+    変更<i>前</i>の構造の状態と、変更<i>後</i>の
+    異なる構造の状態を関連付ける述語を定義します。
+    このため、<a href="purity"><b>純粋</b></a>な変更は、
+    しばしばデータの<i>コピー</i>を伴い、
+    通常は少なくとも対数的なオーバーヘッド
+    （たとえば、平衡木の部分木をコピーするための処理）を生じます。
+
+    <br><br>
+
+    それでもなお、内蔵述語<tt>arg/3</tt>を使えば、
+    項の<i>引数</i>に<i>O(1)</i>でアクセスすることが可能です。
+    さらに、<tt>setarg/3</tt>という非純粋な述語もあり、
+    項に対する破壊的変更を許可します。
+    ただし、使用には十分な注意が必要です：
+    <tt>setarg/3</tt>を使用すると、純粋な関係に基づいて
+    期待されるようなコードの推論ができなくなります。
+    本当に効率的な破壊的変更が必要な場合は、
+    <a href="attributedvariables">属性付き変数</a>
+    を使用する方が良いでしょう。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_arrays')">原文</button>
+    <div id="原文_arrays" class="hide_on_start">
     <center><h2>Arrays?</h2></center>
 
     What about <b>arrays</b>? Is there any data structure in Prolog to
@@ -394,8 +767,70 @@
     code in the way you expect from pure relations. If you really need
     efficient destructive modifications of terms, it is better to
     use <a href="attributedvariables">attributed&nbsp;variables</a>.
+    </div>
 
+    <h2 id="type_tests">型テスト</h2>
 
+    特定の<i>型</i>の項をテストするための述語があります。
+
+    <br><br>
+
+    残念ながら、型テストの標準述語（
+    <tt>atom/1</tt>、<tt>integer/1</tt>、<tt>compound/1</tt> など）は
+    <i>論理的に欠陥</i>があり、モノトニックではありません。
+    これらの述語を使用すると、クエリの<i>一般化</i>が
+    結果として<i>解の数が減る</i>ことがあり、
+    論理的特性に基づく<ａ href="debugging">宣言的デバッグ</a>が困難になります。
+    たとえば、<tt>atom/1</tt>は最も一般的なクエリに対して失敗しますが、
+    より具体的なクエリには成功します。
+
+    <pre>
+?-        atom(X).
+<b>   false.</b>
+
+?- X = a, atom(X).
+<b>   X = a.</b>
+    </pre>
+
+    そのため、最近では論理的な特性を持つ
+    型テストのための新しい述語群が利用可能になっています。
+    これらは次のような型テストを実装しています：
+    <ul>
+      <li><tt>..._si/1</tt> 述語群：
+        引数が<i>十分に</i>初期化されている場合には
+        標準述語と同様の動作をします</li>
+      <li><tt>must_be/2</tt>：
+        <i>入力</i>引数に使用されます</li>
+      <li><tt>can_be/2</tt>：
+        <i>出力</i>引数や一般的な引数に使用されます</li>
+    </ul>
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>ビデオ</i>：</td>
+        <td><a href="videos/type_tests"><img src="videos/t_type_tests.png" alt="Type tests"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    述語 <tt>must_be/2</tt> と <tt>can_be/2</tt> は、
+    特に Prolog ライブラリの著者にとって有用です。
+    また、<tt>..._si/1</tt> 型テストの群は、
+    型エラーを引き起こさずに特定の型を明示的にテストしたい
+    通常の Prolog プログラムに便利です。
+
+    <br><br>
+
+    重要な点として、これらの述語は、
+    テストされる項が十分に初期化されていない場合に、
+    <a href="engineering#errors"><i>初期化エラー</i></a> を発生させます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_type_tests')">原文</button>
+    <div id="原文_type_tests" class="hide_on_start">
     <h2 id="type_tests">Type tests</h2>
 
     There are predicates to test for specific <i>types</i>
@@ -457,7 +892,81 @@
     raise <a href="engineering#errors"><i>instantiation&nbsp;errors</i></a>
     if the terms that are tested are not sufficiently instantianted to
     allow a sound&nbsp;decision.
+    </div>
 
+    <center><h2>クリーン vs. デフォルティな表現</h2></center>
+
+    Prologの項でデータを表現する際、次の質問を自問してください：
+
+    <blockquote>
+      各コンポーネントの<i>種類</i>をその<i>主ファンクタ</i>から区別できるか？
+    </blockquote>
+
+    これが成り立つ場合、あなたの表現は<b>クリーン</b>と呼ばれます。
+    もし<i>主ファンクタ</i>で要素を区別できない場合、
+    その表現は<b>デフォルティ</b>と呼ばれます。
+    デフォルティは「デフォルト(default)」と「欠陥(faulty)」を組み合わせた言葉です。
+    これは、データについての<ａ href="debugging">推論</a>が、
+    すべてが失敗した場合に適用される「<i>デフォルトケース</i>」を必要とするからです。
+    さらに、このような表現は引数のインデックス作成を妨げ、欠陥があるとされます。
+    デフォルティな表現は常に避けるべきです！ クリーンな表現を目指しましょう。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>：</td>
+        <td><a href="videos/clean_vs_defaulty"><img src="videos/t_clean_vs_defaulty.png" alt="Clean vs. Defaulty Representations"></a></td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    たとえば、Prologで<b>完全二分木</b>を表現するとします。
+    完全二分木には二つの<i>種類</i>の要素があります：
+
+    <ul>
+      <li><b>葉</b>：木の具体的な要素</li>
+      <li><b>ノード</b>：二つの子ノードを持ち、それぞれが再び完全二分木である。</li>
+    </ul>
+
+    このような木をPrologの項で次のように表現できます：
+
+    <ul>
+      <li><tt>leaf(L)</tt>：<i>葉</i> <tt>L</tt> を表します</li>
+      <li><tt>node(Left, Right)</tt>：<i>ノード</i>とその二つの子ノードを表します。</li>
+    </ul>
+
+    上記は<b>クリーン</b>な表現です：
+    これは、主ファンクタによって要素の種類を区別することができます。
+    このような表現を使用すると、コードが非常に一般的で、
+    あらゆる方向で使用できるままで、
+    <a href="efficiency#indexing">引数のインデックス作成</a>にも適しています。
+
+    <br><br>
+
+    クリーンな表現の特徴として、データの一般的な<i>構造</i>を記述しながら、
+    具体的な要素を未指定のままにしておくことができます。
+    たとえば、完全二分木の場合、
+    葉がちょうど<i>二つ</i>の木の一般的なアウトラインを次のように表現できます：
+    <tt>node(leaf(_),leaf(_))</tt>。
+    もし<tt>leaf/1</tt>のラッパーを省略して葉を表現した場合、
+    これは<tt>node(_,_)</tt>になり、
+    正確にそのような表現を示さないデフォルティな表現になります。
+
+    <br><br>
+
+    時には、クリーンな方法がないように思えることもあります。
+    たとえば、特定の引数の<i>初期化状態</i>を<tt>var/1</tt>でテストするなどして、
+    デフォルティな表現を<i>非純粋</i>かつ
+    非モノトニックな方法で区別する必要がある場合です。
+    このような場合は、プログラムの非純粋な部分を小さな断片に制限し、
+    適切なラッパーを導入してデフォルティな表現を
+    クリーンなものに変換するのが良い方法です。
+    これにより、コア述語を複数の方向で使用できるようになります。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_clean_vs_defaulty')">原文</button>
+    <div id="原文_clean_vs_defaulty" class="hide_on_start">
     <center><h2 id="clean">Clean vs. defaulty representations</h2></center>
 
     When representing data with Prolog terms, ask yourself the following question:
@@ -541,7 +1050,61 @@
     by introducing suitable wrappers that let you distinguish the
     cases by pattern&nbsp;matching. This helps to ensure that you can
     use your core predicates in multiple directions.
+    </div>
 
+    <center><h2>項の検査</h2></center>
+
+    Prologでは、項について推論する最も自然な方法は
+    <i>単一化</i>に依存することです。
+    また、項を分解して分析するためのいくつかの述語も用意されています。
+    これらの中で最も重要な<b>項の検査</b>の述語は、
+    <tt>functor/3</tt>、<tt>arg/3</tt>、および<tt>(=..)/2</tt>です。
+
+    <br><br>
+
+    これらの述語の使い方を示す例を以下に示します：
+    <pre>
+<b>?- functor(f(a,g(X)), Functor, Arity).</b>
+   Functor = f, Arity = 2.
+
+<b>?- functor(Term, f, 2).</b>
+   Term = f(_A,_B).
+
+<b>?- arg(2, f(a,g(X)), Arg).</b>
+   Arg = g(X).
+
+<b>?- f(a,g(X)) =.. [Functor|Args].</b>
+   Functor = f, Args = [a,g(X)].
+
+<b>?- Term =.. [f,a,g(X)].</b>
+   Term = f(a,g(X)).
+    </pre>
+
+    これらの述語は有限の項によって定義することができないため、
+    <a href="metapredicates">高階述語</a>と見なすことができます。
+    これらの述語を使いすぎないようにしましょう！
+    <i>パターンマッチング</i>で表現できることは、
+    すべてパターンマッチングで表現するべきです。
+    たとえば、<tt>functor(Term, f, 2)</tt>の代わりに、
+    単に<tt>Term = f(_,_)</tt>と書くことができます。
+
+    <br><br>
+
+    すべてのPrologの項には<b>標準的な</b>表現があります。
+    項の構造が不明な場合は、<tt>write_canonical/1</tt>を使用して
+    標準的な表現を取得することができます。例えば：
+
+    <pre>
+?- write_canonical(a+b="xyz").
+<b>=(+(a,b),'.'(x,'.'(y,'.'(z,[]))))</b>
+    </pre>
+
+    標準的な表現は、項の構造を示す方法であり、
+    外部プログラムによっても簡単に解析できる形式です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_term_inspection')">原文</button>
+    <div id="原文_term_inspection" class="hide_on_start">
     <center><h2>Term inspection</h2></center>
 
     In Prolog, the most natural way to reason about&nbsp;terms is to
@@ -594,6 +1157,7 @@
     The canonical representation shows the structure of the&nbsp;term
     in such a way that it can also be easily parsed by
     external&nbsp;programs.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

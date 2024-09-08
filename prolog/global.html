@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Global Variables in Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Global Variables in Prolog">
@@ -8,11 +9,99 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologにおけるグローバル変数</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      「優れた」詩人はソネットの厳格な規則を嘆きません。
+    </div>
+    <br><br>
+
+
+    <br><br>
+
+    Prologを学び始めると、最初は言語が非常に制限されているように
+    感じるかもしれません。
+    他のプログラミング言語で知っている機能はどこにあるのでしょうか？
+    特に、情報を渡すために使用する<b>グローバル変数</b>はどこにあるのでしょうか？
+
+    <br><br>
+
+    Prologでは、情報を述語の<i>引数</i>で渡します。
+    グローバル変数は使用しません。
+
+    <br><br>
+
+    なぜでしょうか？考えてみてください:
+    グローバルな状態があって、ある述語によって変更されたとしましょう。
+    これには、関係がどのように振る舞うかに根本的に矛盾する結果が伴います。
+    例えば、関係に基づいてプログラミングする際には、次のことを期待します:
+    <ul>
+      <li>それらを<i>逆に</i>使うことができる</li>
+      <li>それらを互いに<i>独立して</i>推論できること、
+        これにより<a href="testing">宣言的なテスト</a>が可能である</li>
+      <li>同じ関係の繰り返し使用が全く同じ意味を持つこと</li>
+      <li>すべての変更が<i>バックトラッキング</i>によって<i>元に戻される</li>
+      <li>並列評価のためのスレッド安全性</li>
+      <li>など</li>
+    </ul>
+
+    したがって、Prologではグローバルな状態の使用を<em>避けます</em>。
+    代わりに、関心のある状態間の<i>関係</i>を記述します。
+    困ったときは、関心のある状態を表現できるように
+    述語に引数を追加することを検討してください。
+    詳細については、
+    <a href="/tist/"><i><b>状態を考える</b></i></a>
+    を参照してください。
+
+    <br><br>
+
+    とはいえ、グローバルな状態をプログラムで変更する方法もあります。
+    ただし、それを使用するのは<b>例外</b>であり、通常ではありません。
+    例えば、述語を動的に追加することでグローバルデータベースを変更できます。
+    <tt>assertz/1</tt>を使用します。
+    グローバルデータベースは情報の<em>読み取り</em>には非常に適していますが、
+    データを頻繁に<em>変更する</em>にはあまり適していません。
+    これは、グローバルデータベースがエントリに対して<em>インデックス作成</em>を行い、
+    新しい述語を追加するたびにインデックス作成のコストを支払う必要があるからです。
+    さらに、このような変更を他の方向で使用することはできません。
+    バックトラッキング時にはデータがそのまま残り、
+    同じコードを二回実行するとデータが重複して追加される可能性があります。
+
+    <br><br>
+
+    情報を渡すために<i>述語引数</i>を使用することで、
+    Prologプログラムはより自然に<a href="purity">純粋</a>で
+    <i>効率的</i>になります。
+    <a href="dcg#semicontext"><b>セミコンテキスト記法</b></a>
+    を使用すれば、多くの追加の述語引数を導入することなく情報を渡すことができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文')">原文</button>
+    <div id="原文" class="hide_on_start">
     <center><h1>Global Variables in Prolog</h1></center>
     <br>
 
@@ -84,7 +173,7 @@ It is not the <i>skilful</i> poet that bemoans the rigid rules of the sonnet.
     <a href="dcg#semicontext"><b>Semicontext&nbsp;notation</b></a>
     lets you pass around information without the need to introduce
     many additional predicate arguments.
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

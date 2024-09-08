@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog Macros</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Macros">
@@ -8,14 +9,89 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prolog におけるマクロ</h1></center>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_macros')">原文</button>
+    <div id="原文_prolog_macros" class="hide_on_start">
     <center><h1>Prolog Macros</h1></center>
+    </div>
+    
+    <center><h2>はじめに</h2></center>
+
+    Lispのコミュニティでは、<i>マクロ</i>は常に重要なものです。
+    Lispマクロは、<i>Lispコードを書き換える</i>ものです。
+
     <br><br>
 
+    この文脈ではよく「コードはデータだ」という表現が使われます。
+    しかし、これはCやJavaのコードにも当てはまります。
+    Cのコードも<i>同様に</i>データであり、
+    Cコードをプレーンテキストファイルとして保存・アクセスすることができます。
+    したがって、これだけではLispマクロが特に重要である理由を十分に説明できません。
+    より限定的な意味では、Cのプリプロセッサも<i>マクロ</i>をサポートしています。
+
+    <br><br>
+
+    では、LispマクロとCマクロの<i>本質的な違い</i>は何でしょうか？
+    明らかに、Lispマクロははるかに強力です。
+    <i>なぜならLispマクロは簡単にLispコードを解析できるからです</i>。
+    なぜそうなのでしょうか？それは、Lispコードが
+    <b>自然で構造を保持した形</b>でLispデータ構造として表現できるからです！
+    これがCやJavaにはない点です。
+    たとえば、CにはCソースコードを<i>構造を保持した形</i>で
+    忠実に表現する組み込みのデータ構造が存在しません。
+    CのソースコードをC内で文字の配列として表現することはできますが、
+    それではソースコードの<i>抽象的な構造</i>が保持されず、
+    基本的な操作が非常に困難になります。
+    例えば、以下のような質問に答えるのは難しいです：
+    <ul>
+      <li>プログラム内で使われている変数名は何ですか？</li>
+      <li>コード内にいくつの if-then-else 構文がありますか？</li>
+      <li>末尾再帰関数はありますか？</li>
+    </ul>
+
+    これらは、Cプログラムの構造を抽象的に扱うのが難しいため、
+    Cの場合には答えるのが難しい質問です。
+    しかし、Lispの場合はずっと簡単です。
+
+    <br><br>
+
+    このページの目的は、PrologにはLispの<b>マクロ</b>に似た機構が
+    あることを示すことです。
+    実際、Prologでマクロを書くのはLispよりもずっと簡単です。
+    いくつかの理由がありますが、たとえば、Prologコードを扱ったり
+    生成したりする際に<i>引用符で囲む</i>必要がなく、
+    変数名の衝突に偶然遭遇することもありません。
+    このシンプルさが、Prologプログラマーが他の言語コミュニティほど
+    この機能について騒がない主な理由です。
+    Prologでは、この機能は単に存在し、必要なときに簡単に使うことができるのです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_introduction')">原文</button>
+    <div id="原文_introduction" class="hide_on_start">
     <center><h2>Introduction</h2></center>
 
     In the Lisp community, <i>macros</i> are always a big&nbsp;deal. A
@@ -67,9 +143,53 @@
     programmers are not as hysteric about this feature as several
     other language communities. In Prolog, this facility is simply
     available, and easily used when needed.
+    </div>
+    
+    <center><h2>コードはデータ以上のもの</h2></center>
+
+    もちろん、<i>コードはデータ</i>です。
+    私たちはそれを書き、読みます。
+    しかし、Prologコードは単に「データ」以上のものです。
+    Prologの各句は有効な<a href="data"><b>Prolog項</b></a>です。
+    これは<i>構造化された</i>データであり、
+    Prologの<a href="concepts#builtin"><i>組み込み機能</i></a>を使って
+    体系的に解析し、処理することができます。
+
+    例えば、簡単なPrologの<i>ルール</i>を考えてみましょう：
+
+    <pre>
+f(X, Y) :- g(X), h(Y).
+    </pre>
+
+    これは次のProlog<i>項</i>です：
+
+    <ul>
+      <li><a href="data#term"><i>ファンクタ名</i></a>は
+        <tt>:-</tt>で、<i>アリティ</i>は2です。</li>
+      <li>この項の最初の<i>引数</i>は項<tt>f(X, Y)</tt>です。</li>
+      <li>2番目の引数は複合項<tt>','(g(X), h(Y))</tt>で、
+        これも2つの引数を持ちます。</li>
+    </ul>
+
+    もし、ある項が「実際に」何なのかよくわからなくなったときは、
+    <tt>write_canonical/1</tt>を使って、その項の
+    <b>標準形式</b>（<b>canonical form</b>）を取得することができます：
+
+    <pre>
+?- write_canonical( <b>(f(X, Y) :- g(X), h(Y))</b> ).
+<b>:-(f(A,B),','(g(A),h(B)))</b>
+    </pre>
+
+    標準形式では、すべての複合項が<i>関数記法</i>で出力されます。
 
     <br><br>
 
+    なお、<tt>write_canonical/1</tt>の引数が
+    1つであることを正確に示すために、項を括弧で囲んでいます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_code_is_more_than_data')">原文</button>
+    <div id="原文_code_is_more_than_data" class="hide_on_start">
     <center><h2>Code is more than data</h2></center>
 
     Of course, <i>code is data</i>: We write it down, we read it.
@@ -113,7 +233,45 @@ f(X, Y) :- g(X), h(Y).
 
     Note that we have used parentheses around the term to properly
     indicate the single argument of <tt>write_canonical/1</tt>.
+    </div>
 
+    <center><h2>Prologコードの書き換え</h2></center>
+
+    すべての広く使用されているPrologシステムには、
+    <b>コンパイル時</b>にPrologコードを
+    <i>書き換える</i>ためのメカニズムが提供されています。
+
+    <br><br>
+
+    この利点は明らかです。複雑なPrologコードの変換を
+    コンパイル時に<i>一度</i>行うことで、
+    <i>実行時</i>には通常、より高速なコードを得ることができます。
+
+    <br><br>
+
+    Prologシステムでは、通常この機能は<tt>term_expansion/2</tt>および
+    <tt>goal_expansion/2</tt>という
+    <i>拡張可能な</i>述語によって提供されます。
+    これらの述語は2つの引数を取ります：
+
+    <ul>
+      <li>最初の引数は、コンパイル中のプログラムで登場するPrologの項です。</li>
+      <li>2番目の引数は、その項の<i>置き換え</i>を示します。</li>
+    </ul>
+
+    この拡張可能な述語の節が成功すると、
+    コンパイル時に元の項の代わりに置き換えられた項が使用されます。
+
+    <br><br>
+
+    もし使用しているPrologシステムにこの機能がなければ、
+    組み込みの<tt>read/1</tt>述語を使って
+    ファイルからProlog項を読み込むことで、
+    簡単に自分で実装することができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_rewriting_prolog_code')">原文</button>
+    <div id="原文_rewriting_prolog_code" class="hide_on_start">
     <center><h2>Rewriting Prolog code</h2></center>
 
     All widely used Prolog systems provide mechanisms that let
@@ -147,8 +305,59 @@ f(X, Y) :- g(X), h(Y).
     If your Prolog system does not provide this facility, you can
     easily implement it yourself, using the built-in
     predicate <tt>read/1</tt> to read Prolog terms from a file.
+    </div>
+
+    <center><h2>例</h2></center>
+
+    ほとんどすべての広く利用可能なPrologシステムで使用される
+    <i>項</i>の拡張の例として、
+    <a href="dcg#implementation">DCGの実装</a>を
+    参照してください。
+    この場合、拡張メカニズムは、DCG規則およびすべてのDCG非終端記号に対して、
+    2つの追加の引数を<i>自動的に</i>体系的に付与するために使用されます。
 
     <br><br>
+
+    Scryer Prologでは、<a href="clpfd">整数演算</a>が
+    <i>ゴール</i>拡張の例として提供されています。
+    たとえば、次のProlog規則の本体は1つのゴールから構成されています：
+
+    <pre>
+integer_successor(I0, I) :- <b>I #= I0 + 1</b>.
+    </pre>
+
+    これがどのように自動的に拡張されるかを見るために、
+    述語を<tt>dynamic/1</tt>ディレクティブで動的に宣言し、
+    <tt>library(format)</tt>の<tt>listing/1</tt>を使用します：
+
+    <pre>
+<b>?- listing(integer_successor/2).</b>
+integer_successor(A,B) :-
+   (  integer(B) ->
+      (  integer(A) ->
+         B=:=A+1
+      ;  C is B,
+         clpz:clpz_equal(C,A+1)
+      )
+   ;  (  integer(A) ->
+         (  var(B) ->
+            B is A+1
+         ;  C is A+1,
+            clpz:clpz_equal(B,C)
+         )
+      ;  clpz:clpz_equal(B,A+1)
+      )
+   ).
+    </pre>
+
+    この例は、より高次の構文を使用していても、
+    低レベルの整数演算が可能な限り
+    <i>自動的に</i>使用されることを示しています。
+    これにより、他の方向でも動作する高次の構文が使用されている場合にも対応できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_examples')">原文</button>
+    <div id="原文_examples" class="hide_on_start">
     <center><h2>Examples</h2></center>
 
     See the <a href="dcg#implementation">implementation
@@ -195,7 +404,7 @@ integer_successor(A,B) :-
     This example illustrates that low-level integer arithmetic is
     <i>automatically</i> used whenever possible, even if you use
     higher-level constructs which <i>also</i> work in other directions.
-    
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

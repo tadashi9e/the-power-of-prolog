@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Fun Facts about Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Fun Facts about Prolog">
@@ -8,11 +9,37 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologに関する面白い事実</h1></center>
+
+    Prologについて語るべきことは無限にあります。
+    しかし同時に、Prologに関する自分自身の経験を積み、
+    いくつかの側面を自分で考えてみる必要もあります。
+    ここでは、自分自身の観察や考察を始めるためのいくつかの<i>真実</i>の事実を紹介します。
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_fun_facts')">原文</button>
+    <div id="原文_fun_facts" class="hide_on_start">
     <center><h1>Fun Facts about Prolog</h1></center>
     <br><br>
 
@@ -31,7 +58,55 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2>末尾再起はしばしば自然に起きる</h2></center>
+
+    Prolog では、<i>論理変数</i>の力により、
+    多くの述語は<i>自然に</i>末尾再帰的な記述になります。
+
+    <br><br>
+
+    たとえば、
+    <a href="reading#list_list_together3"><tt>list_list_together/3</tt></a>
+    をもう一度考えてみましょう。
+
+    <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    <tt>list_list_together(As, Bs, Cs)</tt>は
+    <i>末尾の位置での呼び出し</i>であることが簡単にわかります。
+    これは、その後に<i>さらにゴールが続かない</i>からです。
+
+    これを Lisp の<tt>append</tt>のような関数と比較してみましょう。
+
+    <pre>
+(defun append (x y)
+  (if x
+      (<b>cons</b> (car x) (append (cdr x) y))
+    y))
+    </pre>
+
+    Lisp でのこのバージョンの<tt>append</tt>は末尾再帰ではありません。
+    再帰呼び出しが <tt>cons</tt>の呼び出し内に包まれているため、
+    このブランチの最後の関数呼び出し<i>ではない</i>からです。
+
+    <br><br>
+
+    このような基本関数がLisp では自然には<i>末尾再帰にならない</i>のに、
+    対応する関係がProlog では<i>末尾再帰である</i>というのは、
+    いくぶん注目に値します。
+
+    <br><br>
+
+    Prologでは、さらに多くの述語が自然に末尾再帰です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tail_recursion')">原文</button>
+    <div id="原文_tail_recursion" class="hide_on_start">
     <center><h2>Tail recursion often arises naturally</h2></center>
 
     In Prolog, due to the power of <i>logic&nbsp;variables</i>, many
@@ -76,7 +151,169 @@ list_list_together([A|As], Bs, [A|Cs]) :-
     <br><br>
 
     In Prolog, many more predicates are <i>naturally</i> tail recursive.
+    </div>
 
+    <center><h2>末尾再起が非効率的な場合もある</h2></center>
+
+    多くの場合、末尾再帰は良好なパフォーマンスを示します。
+    述語が<b>決定論的</b>(deterministic)である場合、
+    末尾呼び出しは、Prolog システムが環境の割り当てられたスペースを
+    ローカルスタック上で<i>自動的に</i>再利用できることを意味します。
+    一般的なケースでは、これによりプログラムのメモリ消費量が、
+    再帰呼び出し回数の O(N) から O(1) に大幅に削減されます。
+    メモリ消費量が減ると、メモリ割り当てと
+    ガベージコレクションの負荷も減るため、
+    末尾再帰述語を記述すると、Prolog プログラムのスペースと
+    時間の効率が向上することがよくあります。
+
+    <br><br>
+
+    ただし、多くの Prolog プログラムは決定論的<i>ではない</i>ことを考慮してください。
+    選択点が残っている限り、ローカルスタック上の現在の環境は<i>破棄できません</i>。
+    バックトラックでまだ必要になる可能性があるためです。
+
+    <br><br>
+
+    たとえば、
+    <a href="data#list">リスト</a>、
+    その要素の 1 つ、
+    およびその要素の<i>ない</i>リストの間に、
+    関係<tt>list_element_rest/3</tt>を定義します。
+
+    <pre>
+list_element_rest([L|Ls], L, Ls).
+list_element_rest([L|Ls0], E, [L|Ls]) :-
+        list_element_rest(Ls0, E, Ls).
+    </pre>
+
+    <div style="border: 1px dotted; padding: 5pt">
+      <a href="reading#declarative"><b>宣言的読み方</b></a>:
+      <ol>
+        <li>関係は、リスト <tt>[L|Ls]</tt>、その<i>最初の</i>要素<tt>L</tt>,
+          そして残りの<tt>Ls</tt>に対して明らかに成り立ちます。</li>
+        <li>リスト<tt>Ls</tt>、その要素の一つ<i>E</i>、そして
+          残り<tt>Ls</tt>について関係が成り立つ<i>ならば</i>、
+          <tt>[L|Ls0]</tt> と <tt>E</tt>、残り<tt>[L|Ls]</tt>
+          についても関係が成り立ちます。
+          この規則は再帰呼出しが唯一のゴールであるため、明らかに末尾再起です。
+        </li>
+      </ol>
+    </div>
+    <br><br>
+
+    この述語はまったく多用途です。
+    操作的には、リストから 1 つの要素を削除したり、
+    リストに要素を追加したり、また、可能な解を生成、完了、またはテストするなど、
+    さまざまな方向に使用できます。
+    例:
+
+    <pre>
+?- list_element_rest("ab", E, Rest).
+   E = a, Rest = "b"
+;  E = b, Rest = "a"
+;  false.
+    </pre>
+
+    そしてさらに:
+
+    <pre>
+?- list_element_rest(Ls, c, "ab").
+   Ls = "cab"
+;  Ls = "acb"
+;  Ls = "abc"
+;  false.
+    </pre>
+
+    Prolog ドラフトの
+    <a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue">Prologue for Prolog</a>
+    といくつかの Prolog システムでは、ほぼ同じ述語が
+    <a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue#select"><tt>select/3</tt></a>
+    という名前で利用できます。
+
+    <br><br>
+
+    <tt>list_element_rest/3</tt>を構成要素として用いて、
+    リストとその<i>順列</i>の 1 つとの関係を記述する
+    <tt>list_permutation1/2</tt>を定義します。
+
+    <pre>
+list_permutation1([], []).
+list_permutation1(Ls, [E|Ps]) :-
+        list_element_rest(Ls, E, Rs),
+        <b>list_permutation1</b>(Rs, Ps).
+    </pre>
+
+    この述語も<i>やはり</i>末尾再帰であることに注意してください。
+
+    クエリの例を次に示します:
+
+    <pre>
+<b>?- list_permutation1("abc", Ps).</b>
+   Ps = "abc"
+;  Ps = "acb"
+;  Ps = "bac"
+;  Ps = "bca"
+;  Ps = "cab"
+;  Ps = "cba"
+;  false.
+    </pre>
+
+    では、いくつかのベンチマークを実行してみましょう。
+    長さ 9、10、11 のリストの すべての解を生成します:
+
+    <pre>
+?- L in 9..11, indomain(L), portray_clause(L),
+   length(Ls, L),
+   <b>time((list_permutation1(Ls,_),false))</b>.
+<b>9.</b>
+   % CPU time: 1.662s
+<b>10.</b>
+   % CPU time: 16.620s
+<b>11.</b>
+   % CPU time: 187.939s
+    </pre>
+
+    ここで、この関係の別の定義、
+    <tt>list_permutation2/2</tt>を考えてみましょう:
+
+    <pre>
+list_permutation2([], []).
+list_permutation2([L|Ls0], Ps) :-
+        <b>list_permutation2</b>(Ls0, Ls),
+        list_element_rest(Ps, L, Ls).
+    </pre>
+
+    このバージョンは末尾再帰ではありません。
+    この新しいバージョンで同じベンチマークを実行してみましょう。
+
+    <pre>
+?- L in 9..11, indomain(L), portray_clause(L),
+   length(Ls, L),
+   <b>time((list_permutation2(Ls,_),false))</b>.
+<b>9.</b>
+   % CPU time: 0.344s
+<b>10.</b>
+   % CPU time: 3.342s
+<b>11.</b>
+   % CPU time: 36.651s
+    </pre>
+
+    このバージョンは、上記の各ケースで<i>数倍高速</i>であることに注意してください！
+    パフォーマンスを重視する場合は、その理由の理解に努めてください。
+
+    <br><br>
+
+    前のセクションと合わせて、この例は
+    末尾再帰には確かに用途が<i>ある</i>ことを示していますが、
+    それを過度に強調すべきではありません。
+    初心者にとっては、
+    <a href="termination">終了</a>と
+    <a href="nontermination">非終了</a>を理解し、
+    明確な宣言的記述に重点を置くことの方が重要です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tail_recursion_inefficient')">原文</button>
+    <div id="原文_tail_recursion_inefficient" class="hide_on_start">
     <center><h2>Tail recursion is sometimes inefficient</h2></center>
 
 
@@ -241,7 +478,111 @@ list_permutation2([L|Ls0], Ps) :-
     understand <a href="termination">termination</a>
     and <a href="nontermination">nontermination</a>, and to&nbsp;focus
     on clear declarative descriptions.
+    </div>
 
+    <center><h2>大抵のカットは赤</h2></center>
+
+    プログラムに<tt>!/0</tt>を追加すると、ほとんどの場合、
+    いわゆる<i>red cut</i>になります。
+    つまり、一部の使用モードでのみ一部のソリューションが
+    <i>誤って</i>省略されるため、プログラムが間違っていることになります。
+
+    <br><br>
+
+    これは、ほとんどの Prolog プログラマーにとって受け入れがたい真実です。
+    システムを何とかして出し抜いて、パフォーマンスを向上させ、
+    すべての使用パターンを尊重する<i>green cut</i>で済む
+    という希望は常にあるようです。
+    この希望はまったく根拠のないものです。
+    通常、考慮すべきケースが多すぎるため、
+    少なくとも 1 つは必ず忘れてしまうからです。
+    特に、命令型プログラミングに慣れている場合は、
+    <i>一般的なケースを無視する</i>という罠に陥りがちです。
+
+    <br><br>
+
+    たとえば、多くの初心者は、
+    <i>リスト</i>を記述する Prolog 述語を正しく記述できます:
+
+    <pre>
+list([]).
+list([_|Ls]) :-
+        list(Ls).
+    </pre>
+
+    これはあらゆる方向に機能する非常に一般的な関係です。例:
+
+    <pre>    
+?- list("abc").
+   true.
+
+?- list(Ls).
+   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_B]
+;  ... .
+
+?- list(true).
+   false.
+    </pre>
+
+    <tt>!/0</tt>で Prolog の制御フローに実際に影響を与えることができる
+    とわかると 、多くの初心者は、ソリューションが削除される場合に
+    この構造を誤って適用します。
+
+    <br><br>
+
+    たとえば、一見すると、2 つの節は<i>相互に排他的である</i>ように
+    見えるかもしれません。
+    結局のところ、リストは空であるか、
+    少なくとも 1 つの要素を持っているかの<i>どちらか</i>です。
+    したがって、次のように記述すると
+    <a href="horror"><i>恐怖</i></a>が始まります:
+
+    <pre>
+list([]) :- <b>!</b>. % <b>間違い</b>!
+list([_|Ls]) :-
+        list(Ls).
+    </pre>
+
+    簡単なテストケースで、<i>すべて</i>がまだ機能していることが「確認」されます。
+
+    <pre>
+?- list("abc").
+   true.
+    </pre>
+
+    この推論の<i>欠陥</i>は、節が実際には相互に排他的<i>ではない</i>ことです。
+    引数が<i>十分にインスタンス化されている</i>場合にのみ、節は排他的です。
+
+    <br><br>
+
+    Prolog では、他のプログラミング言語で慣れているよりも
+    一般的なケースが多くあります。
+    たとえば、壊れた定義では、次のようになります:
+
+    <pre>
+?- list(Ls).
+   Ls = []. % <b>不完全</b>!
+    </pre>
+
+    したがって、述語は、
+    <i>無限の</i>解のセットではなく、
+    <i>ただ一つの</i>解のみを記述するようになりました。
+
+    <br><br>
+
+    宣言型プログラミングのメリットを真に享受するには、
+    <a href="purity">純粋な</a>サブセットにとどまってください。
+    <i>パターンマッチング</i>または
+    <tt><a href="metapredicates#if_3">if_/3</a></tt>
+    などのメタ述語を使用して、
+    関係の完全な一般性を維持しながら、
+    論理的な選択肢を効率的に表現してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_cut')">原文</button>
+    <div id="原文_cut" class="hide_on_start">
     <center><h2>Most cuts are red</h2></center>
 
     Almost every time you add a <tt>!/0</tt> to your program, it will
@@ -338,7 +679,55 @@ list([_|Ls]) :-
     like&nbsp;<tt><a href="metapredicates#if_3">if_/3</a></tt> to
     efficiently express logical alternatives while retaining full
     generality of your&nbsp;relations.
+    </div>
 
+    <center><h2><tt>flatten/2</tt> は関係ではありません</h2></center>
+
+    一部の Prolog 入門コースでは、
+    <tt>flatten/2</tt>と呼ばれる述語を実装する必要があります。
+
+    <br><br>
+
+    そのような場合、次のクエリを考えてください:
+
+    <pre>
+?- flatten(Xs, Ys).
+    </pre>
+
+    このような状況で妥当な答えは何でしょうか? 述語が次のように答えるとします:
+
+    <pre>
+Ys = [Xs].
+    </pre>
+
+    宣言的な観点から見ると、この答えは<b>間違って</b>います。
+    その理由は、<tt>Xs</tt> がリストである可能性があり、
+    そのような場合には結果が<i>フラット化されない</i>からです。
+    証拠を自分で確認してください:
+
+    <pre>
+?- flatten(Xs, Ys), Xs = "a".
+   Xs = "a", Ys = ["a"].
+    </pre>
+
+    このように、Y はフラットなリストではなく、ネストされたリストです。
+    対照的に、目標を交換すると次のようになります:
+
+    <pre>
+?- Xs = "a", flatten(Xs, Ys).
+   Xs = Ys, Ys = "a".
+    </pre>
+
+    つまり、目標の順序を入れ替えると、ソリューションのセットが変わります。
+
+    <br><br>
+
+    この基本的な宣言的な欠点を指摘すれば、あなたの先生は理解できるはずです。
+    実際には<tt>append/2</tt>を使用して、ネストを適切な方法で 1 レベル削除します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_flatten')">原文</button>
+    <div id="原文_flatten" class="hide_on_start">
     <center><h2><tt>flatten/2</tt> is no relation</h2></center>
 
     In some introductory Prolog courses, you will be required to
@@ -386,8 +775,67 @@ Ys = [Xs].
     declarative shortcoming if you point it&nbsp;out. In practice,
     use <tt>append/2</tt> to remove precisely one level
     of&nbsp;nesting in a sound&nbsp;way.
+    </div>
 
+    <center><h2>反復深化はしばしば良い戦略である</h2></center>
 
+    Prologのデフォルトの探索戦略は<i>不完全</i>です。
+    しかし、これを<i>反復深化</i>に変更することで、
+    容易に<i>完全</i>にすることができます。
+    これは、まず深さ0の解を探し、その後
+    深さ1、深さ2…と順に探索していく方法です。
+
+    <br><br>
+
+    一見すると、同じ解を何度も訪れるため、
+    非常に非効率に思えるかもしれませんが、
+    実際にはそれぞれの解を<i>一度</i>だけ必要とします。
+
+    <br><br>
+
+    では、深さ<i>k</i>で分岐係数<i>b</i>の探索木を考えてみましょう。
+    深さ<i>k</i>まで反復深化を行うと、
+    <i>根</i>ノードを<i>k+1</i>回訪れることになります。
+    これは深さ0から始めて、深さ<i>k</i>までの各反復で根に戻るからです。
+    さらに、深さ1の<i>b</i>個のノードは、ちょうど<i>k</i>回訪れます。
+    一般的に、深さ<i>j</i>（0≦<i>j</i>≦<i>k</i>）にある
+    <i>b</i><sup><i>j</i></sup>個のノードを
+    <i>k+1−<i>j</i>回訪れます。
+
+    <br><br>
+
+    これを合計して、訪問回数を計算してみましょう。
+    <i>b</i><sup>0</sup>(<i>k</i>+1) + <i>b</i><sup>1</sup><i>k</i> + <i>b</i><sup>2</sup>(<i>k</i>−1) + … + <i>b</i><sup><i>k</i></sup>です。
+
+    <br><br>
+
+    さて、重要な点です。この合計は最終的な深さ<i>k</i>での
+    訪問回数に<i>漸近的に支配</i>されます（<b>演習:</b> なぜ？）。
+    この時点では、<i>b</i><sup><i>k</i></sup>個のノードを
+    それぞれ<i>一度</i>だけ訪れます。
+    これは、反復深化が非常に一般的な仮定の下で
+    漸近的に<i>最適</i>な探索戦略であることを示しています。
+    なぜなら、<i>すべて</i>の情報を持たない探索戦略は、
+    完全性のためにこれらの
+    <b><i>b</i><sup><i>k</i></sup></b>個のノードを
+    少なくとも一度は訪れる必要があるからです。
+
+    <br><br>
+
+    このことから、人々が指数的な成長の意味を<i>過小評価</i>
+    していることがよくわかります。
+    このような探索木を実際に巡る必要がある場合、
+    反復深化はメモリ効率の良い深さ優先探索と、
+    完全性を持つ幅優先探索を組み合わせた非常に優れた戦略となります。
+    さらに、反復深化はPrologの組み込みのバックトラッキングを使って簡単に実装できます。
+
+    <br><br>
+
+    反復深化には<i>単調性</i>が必要であることに注意してください！
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_iterative_deeping')">原文</button>
+    <div id="原文_iterative_deeping" class="hide_on_start">
     <center><h2>Iterative deepening is often a good strategy</h2></center>
 
     Prolog's default search strategy is <i>incomplete</i>, and we can
@@ -448,7 +896,7 @@ Ys = [Xs].
     <br><br>
 
     Note that iterative deepening requires <i>monotonicity</i>!
-
+    </div>
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
 

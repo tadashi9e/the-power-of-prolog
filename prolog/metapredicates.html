@@ -1,18 +1,51 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Higher-order Predicates</title>
+    <meta charset="UTF-8">
+    <title>高階述語 - Higher-order Predicates</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Higher-order Predicates">
     <meta name="keywords" content="Prolog,Higher-order predicates">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>高階述語</h1></center> <br>
+
+    Prologで、述語を引数として受け取る述語は
+    <b>高階述語</b>または<b>メタ述語</b>と呼ばれます。
 
     <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/metapredicates"><img src="videos/t_metapredicates.png" alt="Meta-Predicates"></a></td>
+      </tr>
+    </table>
+
     <br><br>
+    <button onclick="toggleOriginalContent('原文_higher_order')">原文</button>
+    <div id="原文_higher_order" class="hide_on_start">
     <center><h1>Higher-order Predicates</h1></center>
     <br>
 
@@ -28,7 +61,48 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2 id="call"><tt>call/N</tt></h2></center>
+
+    <tt>call/N</tt> ファミリーは、
+    Prologの<i>部分的ゴール</i>を動的に呼び出すための
+    <a href="concepts#builtin">組み込み</a>述語です。
+    <b>部分的ゴール</b>とは、
+    呼び出される前に0個以上の引数が追加されるPrologのゴールを表す項です。
+
+    <br><br>
+
+    任意のPrologゴールを動的に呼び出すメカニズムは
+    <b>メタコール</b>と呼ばれ、
+    任意のメタ述語をPrologで定義するための基本的な構成要素です。
+
+    <br><br>
+
+    重要なことに、<tt>call/N</tt> ファミリーの述語は、
+    呼び出す述語の<a href="purity"><b>論理的純度</b></a>を保持します。
+
+    <br><br>
+
+    ほとんどのメタ述語と同様に、
+    <tt>call/N</tt> は<i>原理的には</i>Prolog自身で実装可能です。
+    たとえば、以下のように、各述語に対して1つの節を用いて
+    <tt>call/1</tt>を実装できます。
+
+    <pre>
+call(true).
+call(X #= Y)  :- X #= Y.
+call(call(G)) :- call(G).
+etc.
+    </pre>
+
+    もちろん、実際には非現実的な数の節が必要になるため、
+    このような理由で<tt>call/N</tt> ファミリーの述語は
+    異なる方法で実装されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_call')">原文</button>
+    <div id="原文_call" class="hide_on_start">
     <center><h2 id="call"><tt>call/N</tt></h2></center>
 
     The <tt>call/N</tt> family
@@ -67,7 +141,79 @@ etc.
     Of course, this would need an impractical number of clauses
     in&nbsp;practice, and for this reason the <tt>call/N</tt> family
     of predicates is implemented differently.
+    </div>
 
+    <center><h2 id="maplist"><tt>maplist/N</tt></h2></center>
+
+    述語<tt>maplist/2</tt>と<tt>maplist/3</tt>は、
+    最も重要で頻繁に使用されるメタ述語の一つです。
+    広く使われているPrologシステムでは、
+    これらは組み込みまたはライブラリ述語として提供されています。
+
+    <br><br>
+
+    ゴール<tt>maplist(Pred_1, Ls)</tt>は、
+    リスト<tt>Ls</tt>内の各要素<tt>L</tt>に対して
+    <tt>call(Pred_1, L)</tt>が真である場合に<i>true</i>です。
+
+    <br><br>
+
+    ゴール<tt>maplist(Pred_2, As, Bs)</tt>は、
+    <tt>As</tt>と<tt>Bs</tt>内の対応するインデックスを持つ
+    各要素のペア<tt>A</tt>および<tt>B</tt>に対して
+    <tt>call(Pred_2, A, B)</tt>が真である場合に<i>true</i>です。
+
+    <br><br>
+
+    このファミリーには、あまり頻繁に使用されない
+    <tt>maplist/[4,5,...]</tt>といった他の述語もあります。
+
+    <br><br>
+
+    Prologシステムがこれらの述語を提供していない場合でも、
+    自分で簡単に定義できます。
+    例えば、<tt>maplist/3</tt>は宣言的に以下と同等です。
+
+    <pre>
+maplist(_, [], []).
+maplist(Pred_2, [A|As], [B|Bs]) :-
+        call(Pred_2, A, B),
+        maplist(Pred_2, As, Bs).
+    </pre>
+
+    <a href="macros">ゴール展開</a>を使用すれば、
+    メタコールは多くの場合、コンパイル時に除去され、
+    パフォーマンスが向上します。
+
+    <br><br>
+
+    <tt>maplist/N</tt>の主な利点は、
+    <i>単一</i>の要素（または単一のペア、トリプルなどの要素）
+    に対して成り立つ関係を、
+    そうした要素の<i>リスト</i>（または対応する要素）に対しても
+    適用できることです。
+
+    <br><br>
+
+    例えば、項<tt>E</tt>が
+    リスト<tt>Ls</tt>内の<i>すべて</i>の要素と<i>異なる</i>と
+    表現することができます。
+
+    <pre>
+?- maplist(dif(E), Ls).
+   Ls = []
+;  Ls = [_A], dif:dif(E,_A)
+;  Ls = [_A,_B], dif:dif(E,_A), dif:dif(E,_B)
+;  Ls = [_A,_B,_C], dif:dif(E,_A), dif:dif(E,_B), dif:dif(E,_C)
+;  ... .
+    </pre>
+
+    これは、<tt>Ls</tt>が具体化されていない場合でも、
+    <i>すべての方向</i>で機能します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_maplist')">原文</button>
+    <div id="原文_maplist" class="hide_on_start">
     <center><h2 id="maplist"><tt>maplist/N</tt></h2></center>
 
     The predicates <tt>maplist/2</tt> and <tt>maplist/3</tt> are among
@@ -132,7 +278,61 @@ maplist(Pred_2, [A|As], [B|Bs]) :-
 
     This works in <i>all directions</i>, even if <tt>Ls</tt> is not
     instantiated.
+    </div>
 
+    <center><h2 id="if_3"><tt>if_/3</tt> and related predicates</h2></center>
+
+    メタ述語<tt>if_/3</tt>は、
+    Ulrich NeumerkelとStefan Kralによって説明された、
+    重要な最近の発展です。
+    詳細は
+    <a href="https://arxiv.org/abs/1607.01590"><b><i>Indexing dif/2</i></b></a>
+    に記載されています。
+
+    <br><br>
+
+    以下のPrologシステムで実装が利用可能です:
+    <ul>
+      <li>SICStus Prolog:
+        <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/reif.pl"><tt>library(reif)</tt></a></li>
+      <li>Scryer Prologには<tt>library(reif)</tt>が同梱されています。
+        <tt>?- use_module(library(reif)).</tt>を入力して
+        <tt>if_/3</tt>と関連するメタ述語を使用します。</li>
+      <li>SWI-Prolog:
+        <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/reif.pl"><tt>library(reif)</tt></a></li>
+    </ul>
+
+    重要なのは、<tt>if_/3</tt>が、実用上高い重要性を持つ多くの状況で、
+    望ましい宣言的な特性と優れたパフォーマンスを兼ね備えている点です。
+
+    <br><br>
+
+    例えば、<a href="concepts#collatz"><b>基本概念</b></a>で説明されている
+    述語<tt>hailstone/2</tt>は、以下のように<tt>if_/3</tt>を使って表現できます。
+
+    <pre>
+hailstone(N, N).
+hailstone(N0, N) :-
+        R #= N0 mod 2,
+        if_(R = 0,
+            N0 #= 2*N1,
+            N1 #= 3*N0 + 1),
+        hailstone(N1, N).
+    </pre>
+
+    <tt>if_/3</tt>は、許容される場合に2つの選択肢のうち1つに正しくコミットし、
+    <i>完全な一般性</i>を保持します。
+
+    <br><br>
+
+    この新しい重要なライブラリで提供される、
+    <tt>tfilter/3</tt>、
+    <tt>tpartition/4</tt>
+    などの述語や他の機能についても参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_if_3')">原文</button>
+    <div id="原文_if_3" class="hide_on_start">
     <center><h2 id="if_3"><tt>if_/3</tt> and related predicates</h2></center>
 
     The meta-predicate <tt>if_/3</tt> is an important recent
@@ -179,7 +379,74 @@ hailstone(N0, N) :-
 
     See also the predicates <tt>tfilter/3</tt>, <tt>tpartition/4</tt> and
     other features that are provided by this important new&nbsp;library.
+    </div>
 
+    <center><h2 id="foldl"><tt>foldl/N</tt></h2></center>
+
+    <tt>foldl/N</tt> ファミリーの述語は、
+    リストの左からの「フォールド」を表現します。
+    <b>フォールド</b> は、リストをトラバースしながら中間状態を持つ操作で、
+    中間状態は要素がなくなると最終状態になります。
+
+    <br><br>
+
+    これらの述語の中で最も頻繁に使用されるのが <tt>foldl/4</tt> です。
+
+    <br><br>
+
+    <tt>foldl(Pred_3, Ls, S0, S)</tt> は、
+    リスト <tt>Ls</tt> の左からのフォールドを表し、
+    <tt>S0</tt> が初期状態、
+    <tt>S</tt> が最終状態です。
+    各要素 <tt>L∈Ls</tt> と
+    中間状態 <tt>S<sub>n</sub></tt> に対して、
+    <tt>call(Pred_3, L, S<sub>n</sub>, S<sub>n+1</sub>)</tt> が呼び出され、
+    現在のリスト要素 <tt>L</tt> と
+    中間状態 <tt>S<sub>n</sub></tt> が
+    次の中間状態 <tt>S<sub>n+1</sub></tt> に
+    関連付けられます。
+
+    <br><br>
+
+    これらの述語は、1つの要素に対する関係に焦点を当て、
+    それを要素のリストに拡張することができます。
+
+    <br><br>
+
+    たとえば、次の整数間の関係とその <i>合計</i> を考えてみましょう：
+
+    <pre>
+integer_integer_sum(A, B, S) :- S #= A + B.
+    </pre>
+
+    この関係を使用して、リスト <tt>Ls</tt> の整数の合計を
+    <tt>foldl/4</tt> で表現できます。
+    初期状態として 0 を使用します：
+
+    <pre>
+?- foldl(integer_integer_sum, Ls, 0, S).
+   Ls = [], S = 0
+;  Ls = [S], clpz:(S in inf..sup)
+;  Ls = [_A,_B], clpz:(_B+_A#=S)
+;  Ls = [_A,_B,_C], clpz:(_B+_A#=_J), clpz:(_C+_J#=S)
+;  ... .
+    </pre>
+
+
+    もう1つの例として、
+    リスト <tt>Ls</tt> の <i>最大値</i> を次のように定義できます：
+
+    <pre>
+list_maximum([L|Ls], Max) :- foldl(maximum_, Ls, L, Max).
+
+maximum_(A, B, Max) :- Max #= max(A, B).
+    </pre>
+
+    この場合、リストの最初の要素を初期状態として使用します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_foldl')">原文</button>
+    <div id="原文_foldl" class="hide_on_start">
     <center><h2 id="foldl"><tt>foldl/N</tt></h2></center>
 
     The <tt>foldl/N</tt> family of predicates describe a <i>fold from
@@ -242,7 +509,47 @@ maximum_(A, B, Max) :- Max #= max(A, B).
     </pre>
 
     In this case, we use the first element of the list as the initial state.
+    </div>
 
+    <center><h2 id="solutions">全解の取得に関する述語</h2></center>
+
+    いくつかの組み込み述語があり、これらを使うことで
+    述語の<i>全ての解</i>を得ることができます。
+
+    <br><br>
+
+    これらの述語は、通常バックトラッキングで見つかる解を
+    <i>解のリスト</i>に変換します。
+    前者は時系列的な表現と呼ばれ、後者は空間的な表現と呼ばれます。
+
+    <br><br>
+
+    この種の述語で最も重要なものは
+    <tt>bagof/3</tt>、
+    <tt>setof/3</tt>、
+    <tt>findall/3</tt> です。
+
+    <br><br>
+
+    一般的に、このようにデータベースについて推論することは、
+    プログラムの<i>単調性</i>を破壊します。
+    すなわち、述語が追加された後に、以前は成功していたゴールが
+    <i>失敗する</i>可能性があります。
+    これにより、<a href="debugging">宣言的デバッグ</a>のアプローチが
+    適用できなくなることがあります。
+    これらの述語が問題を引き起こす理由の一つは、
+    <tt>(\+)/1</tt>（「証明できない」）が
+    <tt>findall/3</tt> を用いて実装できることからも分かります：
+
+    <pre>
+\+ Goal :- findall(., Goal, []).
+    </pre>
+
+    このため、これらの述語は注意して使用してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_solutions')">原文</button>
+    <div id="原文_solutions" class="hide_on_start">
     <center><h2 id="solutions">All solutions predicates</h2></center>
 
     There are several built-in predicates that let us obtain <i>all
@@ -278,7 +585,25 @@ maximum_(A, B, Max) :- Max #= max(A, B).
 
 
     For this reason, use these predicates with caution.
+    </div>
 
+    <center><h2>さらなる参考文献</h2></center>
+
+    Ulrich Neumerkel の
+    <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/ISO-Hiord.html"><tt>library(lambda)</tt></a>
+    は、ISO Prolog における<i>ラムダ式</i>の重要な新提案です。
+    補助述語を導入せずに述語の変種を呼び出したい場合に、
+    このライブラリを使用してください。
+
+    <br><br>
+
+    Richard O'Keefe の草稿、
+    <a href="http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm">An Elementary Prolog Library</a>
+    も、重要な高階述語の説明と実装を含んでいます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading</h2></center>
 
     Ulrich
@@ -294,6 +619,7 @@ maximum_(A, B, Max) :- Max #= max(A, B).
     draft, <a href="http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm">An
     Elementary Prolog Library</a>, also contains descriptions and
     implementations for many important higher-order predicates.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

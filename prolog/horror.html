@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Prolog Coding Horror</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Prolog Coding Horror">
@@ -8,11 +9,39 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <br><br>
+    <center><h1>Prologコーディングの恐怖</h1></center>
+    <br>
+    <div style="margin-left: 50%; display: inline-block">
+      「恐ろしい！恐ろしい！」というささやき声が聞こえたような気がした。
+      <br>
+      （ジョセフ・コンラッド『闇の奥』
+      <br>
+    </div>
 
     <br><br>
-    <br><br>
+    <button onclick="toggleOriginalContent('原文_horror')">原文</button>
+    <div id="原文_horror" class="hide_on_start">
     <center><h1>Prolog Coding Horror</h1></center>
     <br>
     <div style="margin-left: 50%; display: inline-block">
@@ -21,8 +50,35 @@
 (Joseph Conrad, <i>Heart of Darkness</i>)
       <br>
     </div>
+    </div>
+
+    <center><h2>なぜここに?</h2></center>
+
+    Prolog プログラマーとして、あなたはおそらく反抗的な気性の持ち主でしょう。
+    多くの場合、これが、あなたを業界全体の問題から遠ざける形で
+    問題を解決するために必要なことです。
+    <i>その先</i>にあるものに焦点を当てます。
+
     <br><br>
 
+    このページのポイントは、コストが高く、メリットがないため、
+    この一面に従うことがおそらく良い考えでは<i>ない</i>ことを示すことです。
+    優れた Prolog コードを書くには、少数のルールで十分です。
+    それらを破ると、1 つ以上の点で欠陥のあるプログラムになります。
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="videos/antipatterns"><img src="videos/t_antipatterns.png" alt="Prolog Antipatterns"></a>
+        </td>
+      </tr>
+    </table>
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_why_are_you_here')">原文</button>
+    <div id="原文_why_are_you_here" class="hide_on_start">
     <center><h2>Why are you here?</h2></center>
 
     As a Prolog programmer, you likely have a rebellious streak
@@ -50,7 +106,45 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2>恐怖: 解を失う</h2></center>
+
+    <i>終了</i>し、許容できるほど効率的なProlog プログラムには、
+    主に次の 2 つの点で<i>欠陥</i>がある可能性があります:
+
+    <ol>
+      <li><i>間違った</i>解を報告する。</li>
+      <li>意図した解<i>報告できない</i>。</li>
+    </ol>
+
+    これらのケースのどちらが悪いでしょうか。考えてみてください！
+
+    <br><br>
+
+    プログラムが最初の方法で<i>のみ</i>欠陥があるとします。
+    それでも正しい結果だけを得るためにできることはありますか。
+    次に、プログラムが2 番目の方法で<i>のみ</i>欠陥があるとします。
+    意図したすべてのソリューションを何とかして取得するには、
+    どのような選択肢がありますか？
+
+    <br><br>
+    
+    プログラムを<i>2 番目</i>の方法 で欠陥にする主な方法は、
+    <i>不純</i>で<i>非単調</i>な言語構造を使用することです。
+    この例としては、
+    <tt>!/0</tt>, <tt>(->)/2</tt> そして <tt>var/1</tt>
+    などがあります。
+    宣言的な解決策としては、
+    <a href="data#clean">クリーン</a>なデータ構造、
+    <a href="concepts#builtins"><tt>dif/2</tt></a>
+    などの<i>制約</i>、
+    <a href="metapredicates#if_3"><b><tt>if_/3</tt></b></a>
+    などのメタ述語 を使用することです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_why_are_you_here')">原文</button>
+    <div id="原文_why_are_you_here" class="hide_on_start">
     <center><h2>The horror: Losing solutions</h2></center>
 
     A Prolog program that <i>terminates</i> and is acceptably
@@ -82,7 +176,31 @@
     like <a href="concepts#builtins"><tt>dif/2</tt></a>, and
     meta-predicates
     like&nbsp;<a href="metapredicates#if_3"><b><tt>if_/3</tt></b></a>.
+    </div>
 
+    <center><h2>恐怖: グローバル状態</h2></center>
+
+    初心者の場合、Prolog の
+    <a href="global">グローバルデータベース</a>
+    を変更したくなるでしょう。
+    これにより、プログラム内に<i>暗黙の依存関係</i>が導入されます。
+    「暗黙」とは、プログラム内にこれらの依存関係を
+    <i>強制</i>するものが何もないことを意味します。
+    たとえば、このような述語を意図とは異なる順序で使用すると、
+    予期せず失敗したり、奇妙な結果が生じたりすることがあります。
+
+    <br><br>
+
+    このようにプログラムに欠陥を生じさせる主な手段は、
+    <tt>assertz/1</tt>や <tt>retract/1</tt>
+    などの述語を使用することです。
+    宣言的な解決策は、述語<i>引数</i>または
+    <a href="dcg#semicontext">セミコンテキスト表記</a>
+    を使用して状態をスレッド化することです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_why_are_you_here')">原文</button>
+    <div id="原文_why_are_you_here" class="hide_on_start">
     <center><h2>The horror: Global state</h2></center>
 
     As a beginner, you will be tempted to modify
@@ -101,7 +219,51 @@
     predicate <i>arguments</i>
     or <a href="dcg#semicontext">semicontext&nbsp;notation</a> to
     thread the state&nbsp;through.
+    </div>
 
+    <center><h2>恐怖: 純粋でない出力</h2></center>
+
+    初心者の場合、トップレベルで結果を報告させるのではなく、
+    システム端末に結果を<i>プリント</i>したい
+    という誘惑に駆られることがあります。
+    たとえば、プログラムには次のようなコードが含まれている場合があります。 
+
+    <pre>
+solve :-
+        solution(S),
+        format("the solution is: ~q\n", [S]).
+    </pre>
+
+    このアプローチの主な欠点は、
+    このような出力はシステム端末でのみ発生し、
+    プログラム内で Prolog 項として使用できないため、
+    <i>出力を簡単に推論できない</i>ことです。
+    したがって、このような出力のテストケースは作成されず、
+    このような述語を壊す変更が導入される可能性が高くなります。
+    もう 1 つの重大な欠点は、これによりコードを
+    真の<i>関係</i>として使用できなくなることです。
+
+    <br><br>
+
+    関係の完全な一般性を活用するには、
+    Prolog コードでソリューションを<i>記述</i>し、
+    <i>トップレベルでプリントを実行</i>させます。
+
+    <pre>
+solution(S) :-
+        constraint_1(S),
+        etc.
+    </pre>
+
+    場合によっては、特別なフォーマットが必要になることがあります。
+    そのような場合でも、たとえば非終端記号
+    <a href="dcg#output"><tt><b>format_//2</b></tt></a>
+    を使用して、純粋な方法で出力を記述できます。
+    これにより、テストケースを簡単に記述できます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_inpure_output')">原文</button>
+    <div id="原文_impure_output" class="hide_on_start">
     <center><h2>The horror: Impure output</h2></center>
 
     As a beginner, you will sometimes be tempted to <i>print</i>
@@ -140,7 +302,37 @@ solution(S) :-
     still describe the output in a pure way, using for example the
     nonterminal&nbsp;<a href="dcg#output"><tt><b>format_//2</b></tt></a>.
     This makes test&nbsp;cases easy to&nbsp;write.
+    </div>
 
+    <center><h2>恐怖: 低レベル言語構造</h2></center>
+
+    Prolog プログラマーの中には、最近の言語構造を使用する理由が
+    ほとんどないと考える人もいるかもしれません。
+    たとえば、CLP(FD) 制約が広く利用されるようになったのは約 20 年ほどで、
+    これはProlog にとっては<i>比較的</i>最近の開発です。
+    低レベル構造が役に立ったと考えているのであれば、
+    なぜ新しい教材を学ぶ必要があるのでしょうか。
+    何百万人もの学生が低レベル構造で十分に役に立た<i>なかった</i>という事実は、
+    気にする必要はありません。
+
+    <br><br>
+
+    残念ながら、低レベル構造に固執すると、大きな代償を伴います。
+    つまり、必要以上に言語を教えにくく、学びにくく、理解しにくくなります。
+    学生は宣言的意味論と操作的意味論を基本的に<i>同時に</i>学ぶ必要があり、
+    ほとんどの場合、一度には多すぎます。
+
+    <br><br>
+
+    Prologを必要以上に教えにくくする主な方法は、初心者に
+    <tt>(is)/2</tt>, <tt>(=:=)/2</tt> や <tt>(&gt;)/2</tt>
+    などの低レベル述語の算術表現を紹介することです。
+    宣言的な解決策は、代わりに制約を教えることです。
+    <a href="clpfd"><b>宣言的整数算術</b></a>を参照してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_low_level')">原文</button>
+    <div id="原文_low_level" class="hide_on_start">
     <center><h2>The horror: Low-level language constructs</h2></center>
 
     Some Prolog programmers may see little reason to use more recent
@@ -168,7 +360,62 @@ solution(S) :-
     declarative way out is to <i>teach constraints
     instead</i>. See <a href="clpfd"><b>declarative integer
         arithmetic</b></a>.
+    </div>
 
+    <center><h2>恐怖の階乗</h2></center>
+
+    これらの欠陥のいくつかの例を見るには、
+    <i><b>恐怖の階乗</b></i>を注視してください。
+
+    <pre>
+horror_factorial(0, 1) :- !.
+horror_factorial(N, F) :-
+        N &gt; 0,
+        N1 is N - 1,
+        horror_factorial(N1, F1),
+        F is N*F1.
+    </pre>
+
+    <a href="concepts#toplevel">最も一般的なクエリ</a>
+    を投入するときに<i>解を失う</i>恐ろしさを観察してください:
+
+    <pre>
+?- horror_factorial(N, F).
+<b>   N = 0, F = 1.</b>
+    </pre>
+
+    <tt>!/0</tt>のないバージョンもほぼ同じくらいひどいです:
+
+    <pre>
+horror_factorial(0, 1).
+horror_factorial(N, F) :-
+        N &gt; 0,
+        N1 is N - 1,
+        horror_factorial(N1, F1),
+        F is N*F1.
+    </pre>
+
+    低レベル言語構造の恐怖が蔓延しています:
+
+    <pre>
+?- horror_factorial(N, F).
+   N = 0, F = 1
+;  <b>caught: error(instantiation_error,'(is)'/2)</b>
+    </pre>
+
+    これを受け入れると、あなたは
+
+    <ul>
+      <li>時代遅れの言語構造を使用することで制限されます。</li>
+      <li>関係を関数と間違える。</li>
+      <li>最も一般的なクエリについては考慮しません。</li>
+      <li>不純な構造を使用することで
+        <a href="debugging">宣言的なデバッグ</a>を妨げます。</li>
+    </ul>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_low_level')">原文</button>
+    <div id="原文_low_level" class="hide_on_start">
     <center><h2>Horror factorial</h2></center>
 
     To see some of these defects exemplified, behold the <i><b>horror
@@ -218,7 +465,55 @@ horror_factorial(N, F) :-
       <li>not caring about the most general query.</li>
       <li>preventing <a href="debugging">declarative debugging</a> by using impure constructs.</li>
     </ul>
+    </div>
 
+    <center><h2>出口はこちら: 純粋</h2></center>
+
+    恐怖を止めるには、Prolog の
+    <a href="purity">純粋</a>で単調なサブセットに留まることです。
+
+    <br><br>
+
+    小さなことから始めましょう。
+    たとえば、低レベルの整数演算の代わりに、より宣言的な代替手段を使用します。
+
+    <pre>
+horror_factorial(0, 1) :- !.
+horror_factorial(N, F) :-
+        N #&gt; 0,
+        N1 #= N - 1,
+        horror_factorial(N1, F1),
+        F #= N*F1.
+    </pre>
+
+    何もないよりはましです。次に、<tt>!/0</tt>を削除します:
+
+    <pre>
+n_factorial(0, 1).
+n_factorial(N, F) :-
+        N #&gt; 0,
+        N1 #= N - 1,
+        n_factorial(N1, F1),
+        F #= N*F1.
+    </pre>
+
+    このバージョンでは、最も一般的なクエリに対しても機能します:
+
+    <pre>
+?- n_factorial(N, F).
+<b>   N = 0, F = 1
+;  N = 1, F = 1
+;  N = 2, F = 2
+;  N = 3, F = 6
+;  ... .</b>
+    </pre>
+
+    かなりよくなりました:
+    ちょっとした簡単な変更によって、非常に一般的なロジックプログラムが実現しました。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_purify')">原文</button>
+    <div id="原文_purify" class="hide_on_start">
     <center><h2>A way out: Purity</h2></center>
 
     To stop the horror, stay in the <a href="purity">pure</a>
@@ -262,7 +557,25 @@ n_factorial(N, F) :-
 
     That's quite good: A few simple changes have led to a quite
     general logic program.
+    </div>
 
+    <center><h2>まとめ</h2></center>
+
+    まとめると、<i>理にかなっている場合にのみ反抗する</i>ことをお勧めします。
+
+    <br><br>
+
+    時代遅れの機能に固執するのは、方向性のない反抗です。
+    人生は過去を振り返るものではなく、昨日にとどまるものでもありません。
+
+    <br><br>
+
+    Prolog プログラムで宣言型構造を使用して、
+    許容できるパフォーマンスを維持しながら、より汎用的にします。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_purify')">原文</button>
+    <div id="原文_purify" class="hide_on_start">
     <center><h2>Conclusion</h2></center>
 
     In summary, I recommend you <i>rebel where it makes sense</i>,
@@ -277,7 +590,7 @@ n_factorial(N, F) :-
 
     Use declarative constructs in your Prolog programs to make them
     more general while retaining acceptable performance.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

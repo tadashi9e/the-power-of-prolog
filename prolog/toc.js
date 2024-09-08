@@ -3,7 +3,7 @@ var toc = new Array(
       title: "Overview"
     },
     { link: "/prolog/introduction",
-      title: "Introduction"
+      title: "はじめに - Introduction"
     },
     { link: "/prolog/facets",
       title: "Facets of Prolog"
@@ -56,7 +56,7 @@ var toc = new Array(
     { link: "/tist/",
       title: "Thinking in States"
     },
-    { link: "/acomip/",
+    { link: "/prolog/acomip",
       title: "Meta-interpreters"
     },
     { link: "/prolog/macros",

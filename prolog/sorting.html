@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Sorting and Searching with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Sorting and Searching with Prolog">
@@ -8,11 +9,40 @@
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prologによるソートと探索</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br> 実際のところ、プログラミングにおけるほぼ<i>すべて</i>の
+      重要な側面は、ソートや探索の文脈でどこかに現れると信じています！
+      (<a href="http://www-cs-faculty.stanford.edu/~uno/">ドナルド・クヌース</a>, <i>コンピュータプログラミングの技法</i>, 第3巻「ソートと探索」)
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_sorting_and_searching')">原文</button>
+    <div id="原文_sorting_and_searching" class="hide_on_start">
     <center><h1>Sorting and Searching with Prolog</h1></center>
     <br>
 
@@ -23,7 +53,64 @@
       searching! (<a href="http://www-cs-faculty.stanford.edu/~uno/">Donald&nbsp;Knuth</a>, <i>The Art of Computer
         Programming</i>, Volume&nbsp;3, "Sorting and Searching")
     </div>
+    </div>
 
+    <center><h2 id="order">標準の項順序</h2></center>
+
+    <b>標準の項順序</b>は、Prologの<a href="data#term">項</a>に対して
+    以下の<i>順序</i>を課します:
+
+    <br><br>
+    <div class="box">
+      変数 &#x227A; 数値 &#x227A; アトム &#x227A; 複合項
+    </div>
+    <br><br>
+
+    この順序には以下の追加ルールが適用されます:
+
+    <ol>
+      <li>数値は値に基づいて比較されます。</li>
+      <li>浮動小数点数はすべて整数よりも前にきます。</li>
+      <li>アトムはアルファベット順に比較されます。</li>
+      <li>複合項はまず引数の数（アリティ）でソートされ、
+        その後ファンクタ名でアルファベット順にソートされ、
+        最後に引数の順に（左から順に）再帰的に比較されます。</li>
+    </ol>
+
+    任意の項を標準順序に従って比較するには、
+    <tt>(@&lt;)/2</tt>,
+    <tt>(@=&lt;)/2</tt>,
+    <tt>compare/3</tt>
+    などの述語を使用します。
+    これらの述語の大きな欠点は、真の関係ではないことです。例えば:
+
+    <pre>
+?- a @&lt; b.
+   <b>true.</b>
+    </pre>
+
+    しかし、<i>より一般的な</i>クエリは失敗します:
+
+    <pre>
+?- a @&lt; X.
+   <b>false.</b>
+    </pre>
+
+    これは<a href="purity">純粋な</a>述語に期待される性質に反しており、
+    <a href="debugging">宣言的デバッグ</a>を妨げます。
+    そのため、特定のドメインに対してより宣言的な性質を持つ
+    専用の比較述語を使用するのが良い習慣です。
+    例えば、<i>整数</i>の場合は、
+    CLP(FD) <a href="clpfd#constraint">制約</a>の
+    <tt>(#&lt;)/2</tt>,
+    <tt>(#=&lt;)/2</tt>
+    や
+    <tt>zcompare/3</tt>
+    を使用し、他にもPrologシステムが提供する関係を利用してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_order')">原文</button>
+    <div id="原文_order" class="hide_on_start">
     <center><h2 id="order">Standard order of terms</h2></center>
 
     The <b>standard order of terms</b> imposes the
@@ -74,7 +161,94 @@
     CLP(FD)&nbsp;<a href="clpfd#constraint">constraints</a> <tt>(#&lt;)/2</tt>, <tt>(#=&lt;)/2</tt>
     and <tt>zcompare/3</tt> instead, in addition to other relations
     that are provided by your Prolog&nbsp;system.
+    </div>
 
+    <center><h2 id="sorting">Prolog項のソート</h2></center>
+
+    ISO標準述語の<tt>sort/2</tt>と<tt>keysort/2</tt>は、
+    任意のProlog項を<i>ソート</i>するための最も重要な述語です。
+    どちらの述語も<a href="#order">標準の項順序</a>に従います。
+    具体的には:
+    <ul>
+      <li id="sort"><tt>sort(Ls0, Ls)</tt>は、
+        リスト<tt>Ls0</tt>の要素が項の標準順序に従ってソートされた
+        リスト<tt>Ls</tt>を持つ場合に真です。
+        <tt>Ls</tt>には<i>重複が含まれません</i>。</li>
+      <li id="keysort"><tt>keysort(Pairs0, Pairs)</tt>:
+        <tt>Pairs0</tt>と<tt>Pairs</tt>は<tt>Key-Value</tt>形式の
+        <a href="data#pair">ペア</a>のリストです。
+        <tt>Pairs0</tt>が標準の項順序に従って<tt>Key</tt>でソートされ、
+        結果が<tt>Pairs</tt>である場合に真です。
+        重複は<i>保持され</i>、同じキーを持つ複数の要素の
+        相対的な位置も<i>保持されます</i>。
+        このように、同じ要素の相対的な位置が保持される
+        ソートアルゴリズムは<i>安定</i>ソートと呼ばれます。</li>
+    </ul>
+
+    <tt>keysort/2</tt>は一見以上に便利です。
+    例えば、以下のリストをその<i>長さ</i>でソートしてみましょう:
+
+    <pre>
+lists(["abcd",
+       "abc",
+       "abcde",
+       "a",
+       "ab"]).
+    </pre>
+
+    このタスクを解くために、
+    リストとその長さの形式<tt>Length-List</tt>
+    （これはProlog項<tt>-(Length, List)</tt>の中置表記です）のペア
+    との関係を定義します。
+    ここでは、先に定義した
+    述語<a href="clpfd#list_length">list_length/2</a>を使います:
+
+    <pre>
+list_pair(Ls, L-Ls) :-
+        list_length(Ls, L).      
+    </pre>
+
+    <a href="metapredicates#maplist"><tt>maplist/3</tt></a>
+    を使用して、この関係をリストの<i>リスト</i>とペアに<i>持ち上げ</i>ます:
+
+    <pre>
+?- lists(Lists),
+   maplist(list_pair, Lists, Pairs0).
+   Lists = ["abcd","abc","abcde","a","ab"],
+<b>   Pairs0 = [4-"abcd",3-"abc",5-"abcde",1-"a",2-"ab"]</b>.
+    </pre>
+
+    この表現を使うと、<tt>keysort/2</tt>でリストを
+    その<i>長さ</i>に従ってソートできます:
+
+    <pre>
+?- lists(Lists),
+   maplist(list_pair, Lists, Pairs0),
+   keysort(Pairs0, Pairs).
+   Lists = ["abcd","abc","abcde","a","ab"],
+   Pairs0 = [4-"abcd",3-"abc",5-"abcde",1-"a",2-"ab"],
+<b>   Pairs = [1-"a",2-"ab",3-"abc",4-"abcd",5-"abcde"].</b>
+    </pre>
+
+    したがって、長さが<i>最小</i>のリスト<tt>Ls</tt>を得るには、
+    単に<tt>Pairs = [-Ls|]</tt>と書けばよいです。
+    長さが<i>最大</i>のリストを得るには、次の選択肢があります。
+    リストとその<i>最後の</i>要素との関係を定義するか、
+    <tt>list_pair/2</tt>を修正して
+    各ペアの<i>キー</i>として<i>反転させた</i>長さを使用し、
+    再び<tt>keysort/2</tt>の最初の要素を取得します。
+    長さを反転させることで、長さが<i>最大</i>のリストが
+    最初のペアの一部として現れます。
+
+    <br><br>
+
+    一般的に、適切な<i>キー</i>を持つ<i>ペア</i>を構築することで、
+    <tt>keysort/2</tt>にソートを任せることができ、
+    アプリケーションに合わせたソートが可能です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_sorting')">原文</button>
+    <div id="原文_sorting" class="hide_on_start">
     <center><h2 id="sorting">Sorting Prolog terms</h2></center>
 
     The ISO predicates <tt>sort/2</tt> and <tt>keysort/2</tt> are the
@@ -164,7 +338,54 @@ list_pair(Ls, L-Ls) :-
     In general, by constructing <i>pairs</i> with
     suitable <i>keys</i>, you can delegate sorting
     to <tt>keysort/2</tt> in a way that suits your application.
+    </div>
+    
+    <center><h2 id="algorithms">Prologにおけるソートアルゴリズムの実装</h2></center>
 
+    時には、自分自身のバージョンの
+    <a href="https://en.wikipedia.org/wiki/Sorting_algorithm">ソートアルゴリズム</a>
+    をPrologで実装したくなることがあります。
+
+    <br><br>
+
+    以下のソートアルゴリズムのProlog実装は、
+    <a href="/misc/sorting.pl"><b><tt>sorting.pl</tt></b></a>にあります:
+
+    <ul>
+      <li>バブルソート</li>
+      <li>クイックソート</li>
+      <li>マージソート</li>
+    </ul>
+
+    いくつかのベンチマークとコメントも含まれています。
+
+    <br><br>
+
+    特に、<i>クイックソート</i>がどれほど自然にPrologで
+    <a href="dcg">DCG</a>として記述できるかを考えてみてください:
+
+    <pre>
+quicksort([])	  --&gt; [].
+quicksort([L|Ls]) --&gt;
+        { partition(Ls, L, Smallers, Biggers) },
+        quicksort(Smallers),
+        [L],
+        quicksort(Biggers).
+    </pre>
+
+    この定義は、リスト<tt>Ls</tt>と、それぞれ、
+    ピボット要素<tt>L</tt>より小さい要素と大きい要素に
+    分割されたリスト<tt>Smallers</tt>と<tt>Biggers</tt>とを
+    関連付ける<tt>partition/4</tt>が存在することを前提としています。
+
+    <br><br>
+
+    一般的には、ソートにはビルトイン述語
+    <tt>sort/2</tt>や<tt>keysort/2</tt>を単純に使用する方が良いことが多いです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_algorithms')">原文</button>
+    <div id="原文_algorithms" class="hide_on_start">
     <center><h2 id="algorithms">Implementing sorting algorithms in Prolog</h2></center>
 
     Sometimes, you want to implement your <i>own</i> version of a
@@ -208,7 +429,189 @@ quicksort([L|Ls]) --&gt;
 
     In general, it is often better to simply use the built-in
     predicates <tt>sort/2</tt> and <tt>keysort/2</tt> for sorting.
+    </div>
     
+    <center><h2 id="searching">Prologによる探索</h2></center>
+
+    Prologと<i>探索</i>には深い関係があります。
+    まず、Prologの実行戦略はすでに一形態の<i>探索</i>です。
+    それは<i>深さ優先探索</i>であり、時系列バックトラッキングを伴い、
+    <i>解決</i>の特別なケースとして見なすことができます。
+    この効率的なバックトラッキングの実装により、
+    Prologは探索タスクの解決に非常に適しています。
+    第二に、他の探索戦略も、ビルトイン戦略の上に<i>構築</i>することで
+    簡単に実装できます。
+    たとえば、探索の一部の側面を制限することで<i>反復深化</i>を得ることができます。
+
+    <br><br>
+
+    多くのPrologプログラムは、<i>証明</i>や反例、または
+    <a href="optimization">最適化タスク</a>や
+    <a href="puzzles">論理パズル</a>の解決など、何かを<i>探索</i>します。
+    それでも、これらのプログラムを最初に
+    <i>解決策の望ましい属性を記述する</i>
+    ものとして考える方が良いことが多いです。
+    これは、プログラムを他の方向にも使用できるようにする、
+    より宣言的な視点につながります。
+
+    <br><br>
+
+    たとえば、整数のリストの最小値を<i>見つける</i>ことを考えます。
+    これは、次のより<i>一般的な</i>タスクの一側面を表現する<i>命令的な</i>視点です:
+    整数のリストとその最小値との間の<i>関係を記述する</i>ことです。
+    Prologでは、この関係を次のように定義できます:
+
+    <pre>
+list_minimum([L|Ls], Min) :- <a href="metapredicates#foldl">foldl</a>(minimum_, Ls, L, Min).
+
+minimum_(A, B, Min) :- Min #= min(A, B).
+    </pre>
+
+    これは複数の方向で機能します:
+
+    <pre>
+?- list_minimum([3,1,2], M).
+   <b>M = 1.</b>
+
+?- list_minimum([A,B], 0).
+<b>   clpz:(B in 0..sup),
+   clpz:(0#=min(B,A)),
+   clpz:(A in 0..sup).</b>
+    </pre>
+
+    したがって、探索タスクに取り組む際には、
+    命令的な視点に囚われないようにしましょう。
+    代わりに、定義したい全ての関係の明確な一般的な記述に焦点を当ててください。
+
+    <br><br>
+
+    場合によっては、<i>単純な</i>探索では効率が足りないことがあります。
+    これはPrologにおいても、他の言語においても同様です。
+    ここに例があります:
+    完全な<a href="optimization#graph">グラフ</a>の
+    <a href="clpfd">順序</a>が<i>n</i>の時、
+    それをK<sub><i>n</i></sub>と略します。
+    その<i>隣接リスト</i>は次のように定義できます:
+
+    <pre>
+k_n(N, Adjs) :-
+        <a href="clpfd#list_length">list_length</a>(Nodes, N),
+        Nodes ins 1..N,
+        all_distinct(Nodes),
+        once(label(Nodes)),
+        maplist(adjs(Nodes), Nodes, Adjs).
+
+adjs(Nodes, Node, Node-As) :-
+        <a href="metapredicates#if_3">tfilter</a>(dif(Node), Nodes, As).
+    </pre>
+
+    特に、K<sub>3</sub>に対しては次のようになります:
+
+    <pre>
+?- k_n(3, Adjs).
+<b>   Adjs = [1-[2,3],2-[1,3],3-[1,2]]
+;  ... .</b>
+    </pre>
+
+    もう一つの例として、K<sub>6</sub>は次のようになります:
+    <center>
+      <object data="k_6.svg" type="image/svg+xml" style="padding:20pt; width: 300pt; height: 300pt">
+      </object>
+    </center>
+
+    次に、以下のタスクを解決してみましょう:
+    <i>特定のノードから到達可能なノードはどれか、
+      反射的かつ推移的に?</i>
+    もしくは、もう少し一般的に言えば、
+    ノードの集合の<i>反射的推移閉包</i>は何か?
+    Prologでは、これを次のように記述できます:
+
+    <pre>
+reachable(_, _, From, From).
+reachable(Adjs, Visited, From, To) :-
+        maplist(dif(Next), Visited),
+        member(From-As, Adjs),
+        member(Next, As),
+        reachable(Adjs, [From|Visited], Next, To).
+    </pre>
+
+    <i>解</i>の集合を計算するには、
+    <a href="metapredicates#solutions"><tt>setof/3</tt></a>を使用できます。
+    たとえば、ノード1から到達可能な全ノード:
+
+    <pre>
+?- k_n(3, Adjs),
+   setof(To, reachable(Adjs, [], 1, To), Tos).
+   Adjs = [1-[2,3],2-[1,3],3-[1,2]], <b>Tos = [1,2,3]</b>
+;  false.
+    </pre>
+
+    このアプローチの主な欠点は、<i>スケーラビリティが悪い</i>ことです。
+    特に、次のようになります:
+
+    <pre>
+?- list_length(_, N), portray_clause(N),
+   k_n(N, Adjs),
+   time(setof(To, reachable(Adjs, [], 1, To), Tos)),
+   false.
+...
+6.
+   % CPU time: <b>0.171s</b>
+7.
+   % CPU time: <b>1.454s</b>
+8.
+   % CPU time: <b>13.628s</b>
+9.
+    </pre>
+
+    これは、グラフ内の<i>パス</i>の数が
+    ノードの数に対して<i>超指数的に増加する</i>ためであり、
+    単純な解法では<i>すべてのパス</i>を探索する必要があります。
+    このアプローチは、どの言語を使用してもすぐに遅くなります。
+
+    <br><br>
+
+    この具体的なケースでは、より効率的な方法でタスクを解決できます。
+    たとえば、推移的閉包を計算するために
+    ワーシャルのアルゴリズムを使用することができ、次のようなコードになります:
+
+    <pre>
+warshall(Adjs, Nodes0, Nodes) :-
+        phrase(reachables(Nodes0, Adjs), Nodes1, Nodes0),
+        sort(Nodes1, Nodes2),
+        <a href="metapredicates#if_3">if_</a>(Nodes2 = Nodes0,
+            Nodes = Nodes2,
+            warshall(Adjs, Nodes2, Nodes)).
+
+reachables([], _) --&gt; [].
+reachables([Node|Nodes], Adjs) --&gt;
+        { member(Node-Rs, Adjs) },
+        Rs,
+        reachables(Nodes, Adjs).
+    </pre>
+
+    ここでは、<a href="#sort"><tt>sort/2</tt></a>が
+    リストから<i>重複</i>を取り除くために使用され、
+    すでに見つかったノードの<i>集合</i>の標準表現を取得します。
+
+    サンプルクエリ:
+
+    <pre>
+?- k_n(9, Adjs),
+   time(warshall(Adjs, [1], Tos)).
+   <b>% CPU time: 0.000s</b>
+   ...,
+   Tos = [1,2,3,4,5,6,7,8,9]
+;  ... .
+    </pre>
+
+    これは明らかにより効率的です。
+    知的な戦略を実装することで、多くの探索タスクに対して
+    優雅で効率的なPrologソリューションを得ることができます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_searching')">原文</button>
+    <div id="原文_searching" class="hide_on_start">
     <center><h2 id="searching">Searching with Prolog</h2></center>
 
     There is an intimate connection between Prolog
@@ -392,7 +795,130 @@ reachables([Node|Nodes], Adjs) --&gt;
     This is clearly much more efficient. By implementing intelligent
     strategies, you can obtain elegant and efficient
     Prolog&nbsp;solutions for many search&nbsp;tasks.
+    </div>
+    
+    <center><h2 id="pruning">探索の剪定</h2></center>
 
+    整数のリストを重複なしでソートする特別なケースを考えてみましょう。
+    Prologでは、これを二つのリストの間の<i>関係</i>として実装できます。
+    この関係をintegers_ascending/2と呼びましょう。
+    これにより、ソートだけでなく、検証や生成にも利用できることが明確になります。
+    宣言的には、integers_ascending(Is0, Is)が満たすべき条件は次の通りです:
+    <ol>
+      <li><tt>Is0</tt>には重複がない</li>
+      <li><tt>Is</tt>は<tt>Is0</tt>の<i>順列</i>である</li>
+      <li><tt>Is</tt>の要素は<i>昇順</i>である</li>
+    </ol>
+
+    まず、(3)の部分から始めましょう。
+    ここでは、整数のリストが<i>昇順</i>であるとは何かを定義します:
+
+    <pre>
+ascending([]).
+ascending([I|Is]) :-
+        <a href="metapredicates#foldl">foldl</a>(ascending_, Is, I, _).
+
+ascending_(I, Prev, I) :- Prev #&lt; I.
+    </pre>
+
+    (2)については、
+    リストとそのすべての順列を関連付ける述語permutation/2
+    の利用を前提とします。
+    これを実装するのは練習問題として残します。
+
+    <br><br>
+
+    これらのビルディングブロックを使用して、integers_ascending/2を定義できます:
+
+    <pre>
+integers_ascending(Is0, Is) :-
+        all_distinct(Is0),
+        permutation(Is0, Is),
+        <b>ascending(Is)</b>.
+    </pre>
+
+    この述語は非常に単純なソート手法である<i>順列ソート</i>を実装しています:
+    操作的には、順列を<i>生成</i>し、
+    その順列の要素が<i>昇順</i>であれば成功します。
+    このアプローチは<i>生成とテスト</i>と呼ばれます。
+    小さな例ではうまく機能します:
+
+    <pre>
+?- integers_ascending([3,1,2], Is).
+<b>   Is = [1,2,3]</b>
+;  false.
+    </pre>    
+
+    しかし、この方法は長いリストに対しては<i>非常に</i>非効率的です:
+    長さがNのリストにはN!の順列があり、
+    最悪のケースの実行時間はリストの長さに対して
+    <i>超指数的に増加</i>します。
+    たとえば:
+
+    <pre>
+?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
+   % CPU time: <b>10.109s</b>
+   Ls = [1,2,3,4,5,6,7,8,9,10]
+;  ... .
+    </pre>
+
+    目標を再配置することで、実行時間を<i>大幅に</i>改善できます:
+
+    <pre>
+integers_ascending(Is0, Is) :-
+        all_distinct(Is0),
+        <b>ascending(Is),</b>
+        permutation(Is0, Is).
+    </pre>
+
+    この簡単な変更により、次のようになります:
+
+    <pre>
+?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
+   % CPU time: <b>0.184s</b>
+   Ls = [1,2,3,4,5,6,7,8,9,10]
+;  ... .
+    </pre>
+
+    リストの要素が<i>昇順</i>であることを最初に述べることで、
+    順列の探索が自動的に<i>剪定</i>され、
+    システムが部分的に完成した順列が制約に違反するため
+    完全な解決策にはつながらないことを推論できるようになります。
+
+    <br><br>
+
+    探索と早期剪定を組み合わせることで、
+    すべての可能性を生成するよりも
+    大幅にパフォーマンスが向上することがありますが、
+    特定のタスクに慎重に調整された専用のアルゴリズムは、
+    通常さらに効率的です。
+    たとえば、整数リストをソートする場合は、
+    比較に基づく検索に対して漸近的に最適なパフォーマンスを持つ
+    <a href="#sort"><tt>sort/2</tt></a>を使用できます。
+    一方で、専門のアルゴリズムを使用する際の「代償」は通常
+    <i>汎用性</i>です。
+    たとえば、次のケースでは、<tt>sort/2</tt>は二つの可能な解のうち一つを省略します:
+
+    <pre>
+?- sort([X,Y], [1,2]).
+   X = 1, Y = 2.
+    </pre>
+
+    対照的に、<tt>integers_ascending/2</tt>は<i>すべて</i>の解を提供します:
+
+    <pre>
+?- integers_ascending([X,Y], [1,2]).
+   X = 1, Y = 2
+;  <b>X = 2, Y = 1</b>
+;  false.
+    </pre>
+
+    <a href="https://en.wikipedia.org/wiki/Ceteris_paribus"><i>Ceteris paribus</i></a>、
+    プログラムをできるだけ一般的に保つことが良い実践です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_pruning')">原文</button>
+    <div id="原文_pruning" class="hide_on_start">
     <center><h2 id="pruning">Pruning the search</h2></center>
 
     Let us consider the special case of sorting a list
@@ -517,6 +1043,7 @@ integers_ascending(Is0, Is) :-
 
     <i>Ceteris paribus</i>, it is good practice to keep your
     programs as general as you&nbsp;can.
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>
