@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>Attributed Variables in Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="description" content="Attributed Variables in Prolog">
@@ -9,11 +10,61 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
 
     <br><br>
     <br><br>
+    <center><h1>Prolog での属性付き変数</h1></center>
+    <br><br>
+
+    <b>属性付き変数</b> について最も重要なことは、
+    Prolog アプリケーションプログラマーは通常
+    それを<i>利用する必要はない</i>、ということです。
+    この章は
+    宣言的言語構造を実装/改善したい
+    Prolog <b>ライブラリ作成者</b>を主な対象としています。
+
+    <br><br>
+
+    属性付き変数は宣言的構造を実装するための<b>低レベルメカニズム</b>です。
+    ただし、単独で考えると、<a href="purity">純粋な</a>Prolog プログラムに
+    適用したい<a href="reading#declarative"><i>宣言的読みやすさ</i></a>を妨げ、
+    それに反する可能性があります。
+    <br><br>
+    このため、属性付き変数は、より<i>高レベル</i>メカニズムの
+    <i>構成要素</i>としてのみ使用する必要があります。
+    <br><br>
+    もしあなたが Prolog ライブラリ作成者であるならば、
+    このトピックに関心があるのは当然です。
+    しかし、アプリケーション プログラマには、より宣言的なラッパーで
+    同等の機能を提供する既存のライブラリを使用することをお勧めします。
+    <br><br>
+    Prolog実装者は、インターフェイス述語の一般性を評価するために、
+    <a href="#minatotask"><b>Minato タスク</b></a>と
+    <a href="#equivalencetask"><b>Equivalence タスク</b></a>に
+    関心があるかもしれません。
+    <br><br>
+
+    <button onclick="toggleOriginalContent('原文_attributed_variables')">原文</button>
+    <div id="原文_attributed_variables" class="hide_on_start">
     <center><h1>Attributed Variables in Prolog</h1></center>
     <br><br>
 
@@ -51,7 +102,59 @@
     the <a href="#minatotask"><b>Minato&nbsp;task</b></a> and
     in the <a href="#equivalencetask"><b>Equivalence&nbsp;task</b></a> to
     assess the generality of their interface predicates.
+    </div>
 
+    <center><h2>どのように始まったか</h2></center>
+
+    初期の Prolog システム（<i>Prolog&nbsp;0</i>とも呼ばれる）で既に
+    <i>制約</i><a href="concepts#builtin"><tt>dif/2</tt></a> が
+    サポートされていました。
+
+    <br><br>
+
+    Prolog 実装者あるいは実践者はすぐに疑問を持ちました:
+    <i>どんな<b>一般的メカニズム</b>で
+      さらに便利で正しく効果的な制約を実装できるのか？</i>
+
+    <br><br>
+
+    この問題を解決する最初のメカニズムは、
+    <a href="https://www.complang.tuwien.ac.at/ulrich/">Ulrich&nbsp;Neumerkel</a>
+    による 1990 年の論文
+    <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/meta90.pdf"><i>Extensible Unification by Metastructures</i></a>
+    で提案されました。
+
+    <br><br>
+
+    論文からの重要な引用です:
+
+    <blockquote class="quote">
+      構文的単一化の拡張アプローチを考えると、次のことがわかります:
+      高度に特殊化された実装では、ユーザは単一化アルゴリズムを制御できません
+      (e.g.&nbsp;[Col87,JaLa87,vH89])。
+      効率的に実装するには一般的すぎ
+      既存の Prolog プログラムを再利用するには一般的すぎる[Ko84]、
+      あるいは、手続き的言語でのみ拡張を定義できる[CLiST89]
+      <br><br>
+
+      我々のアプローチでは効率を保ったうえでの十分に抽象的なインターフェースに
+      焦点を当て、
+      制約変数の実際の表現を無視した
+      <b>Prolog 上での制約の実装</b>の記述を可能にします。
+      メタ構造は適用可能ですが、以下の領域に限定されません:
+      <br><br>
+      ...
+    </blockquote>
+
+    計画された利用ケースにおいて、
+    副作用のないストリームベース I/O は論文で既に言及されています。
+    これは現在
+    <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/pio.pl"><tt>library(pio)</tt></a>
+    で利用可能です。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_it_started')">原文</button>
+    <div id="原文_how_it_started" class="hide_on_start">
     <center><h2>How it started</h2></center>
 
     Already the first Prolog system, sometimes
@@ -100,8 +203,72 @@ variables. Metastructures are applicable, but not restricted to the
     Among the projected use cases, stream-based side effect free I/O
     is already mentioned in the paper. This is now available
     in <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/pio.pl"><tt>library(pio)</tt></a>.
+    </div>
 
+    <center><h2>続いてなにが起きたか</h2></center>
 
+    Ulrich&nbsp;Neumerkel の非常に親しい同僚であった
+    Christian Holzbaur は、
+    1990 年の博士論文「
+    <i>Specification of Constraint Based Inference Mechanism through Extended Unification</i>」で
+    メタ構造を使用し、CLP(Q) を実装しました。
+
+    <br><br>
+
+    この経験の後、メタ構造のいくつかの欠点に気づいた
+    Holzbaur は
+    <b>属性付き変数</b>（<b>attributed&nbsp;variables</b>）
+    と呼ばれる非常に関連性の高い代替メカニズムを提案しました。
+
+    <br><br>
+
+    Holzbaur は後に比較する論文
+    <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.45.3893&rep=rep1&type=pdf"><i>Metastructures vs. Attributed Variables in the Context of Extensible Unification</i></a>
+    を公開しました。
+
+    <br><br>
+
+    Christian Holzbaur の提案は、
+    この分野の先駆となった SICStus Prolog に採用されました。
+
+    <br><br>
+
+    SICStus ドキュメントの
+    <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html"><i>Attributed&nbsp;Variables</i></a>
+    のセクションから引用すると:
+
+    <blockquote class="quote">
+      このパッケージは、属性付き変数を実装します。
+      属性付き変数は、<i>変数とその属性の関連付け</i>を提供します。
+      つまり、保存場所として使用できる名前付きプロパティを
+      変数に関連付ける手段を提供します。
+      また、そのような変数が他の項または互いに単一化するときに、
+      デフォルトの単一化アルゴリズムを拡張することもできます。
+
+      <br><br>
+
+      この機能は、主に Prolog と制約ソルバーの間の
+      クリーンなインターフェイスとして設計されましたが、
+      他にもさまざまな用途があります。
+      基本的なアイデアは Christian Holzbaur によるもので、
+      最終的な設計に積極的に関与しました。背景資料については、
+      [Holzbaur 90] を参照してください。
+    </blockquote>
+
+    開発の経緯についてより詳しく知りたい場合は
+    関係者に直接問い合わせることをおすすめします。
+
+    <br><br>
+
+    同様のインターフェースは
+    <a href="https://www.scryer.pl/">Scryer&nbsp;Prolog</a>、
+    <a href="https://ciao-lang.org/">Ciao</a>
+    といった他の Prolog システムにも実装されています。
+    </div>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_it_started')">原文</button>
+    <div id="原文_how_it_started" class="hide_on_start">
     <center><h2>How it continued</h2></center>
 
     Christian Holzbaur, who back then was a very close colleague of
@@ -158,7 +325,27 @@ dissertation&nbsp;[Holzbaur 90].
     The same interface is also implemented in other Prolog systems,
     such as in <a href="https://www.scryer.pl/">Scryer&nbsp;Prolog</a>
     and&nbsp;<a href="https://ciao-lang.org/">Ciao</a>.
+    </div>
 
+    <center><h2>現状、我々が手にしているもの</h2></center>
+
+    属性付き変数の具体的機能は<i>Prolog システムによって異なります</i>。
+
+    とはいえ、属性付き変数を提供するすべてのシステムにおいて、
+    基本的に次の機能を利用できます:
+
+    <ol>
+      <li>変数への<i>情報の付与</i>が可能です</li>
+      <li>変数が<i>単一化</i>されるときにこの情報を利用できます</li>
+      <li>Prolog <a href="concepts#toplevel">トップレベル</a>
+        の<i>回答表示</i> の際に、この情報を表示できます</li>
+    </ol>
+
+    続けて、特定の実装についてさらに機能の詳細を検討します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_what_we_have_now')">原文</button>
+    <div id="原文_what_we_have_now" class="hide_on_start">
     <center><h2>What we have now</h2></center>
 
     The concrete features of attributed variables <i>vary between
@@ -176,9 +363,54 @@ dissertation&nbsp;[Holzbaur 90].
 
     In the following, we consider one specific implementation of these
     features in more detail.
+    </div>
 
+    <center><h2>Scryer Prolog における属性付き変数</h2></center>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_scryer_prolog')">原文</button>
+    <div id="原文_scryer_prolog" class="hide_on_start">
     <center><h2>Attributed variables in Scryer Prolog</h2></center>
+    </div>
 
+    <center><h3>前置き</h3></center>
+
+    属性付き変数の鍵となる概念を説明するにあたって、Scryer Prolog を考えます。
+    これは、
+    SICStus Prolog と同じインターフェースの属性付き変数を実装している
+    フリーで利用可能な実装であるためです。
+
+    <br><br>
+
+    属性付き変数は Prolog アプリケーションでは
+    通常<i>利用すべきでない</i>ことを再度強調しておきます。
+
+    その代わりに、<b>制約論理プログラミング</b>機能、
+    例えば <tt>dif/2</tt> や CLP(&#x2124;) が
+    Scryer Prolog でも利用でき、
+    典型的ユースケースではこれら高レベル述語を使用すべきです。
+
+    <br><br>
+
+    属性付き変数を使用する場合、上にアウトラインを示した機能に従って
+    ３種類のインターフェース述語を知っておく必要があります:
+    <ol>
+      <li>属性を追加・更新・削除する述語</li>
+      <li>属性が追加された変数の<i>単一化</i>について推論するための述語</li>
+      <li>トップレベルで属性をなんらかの形式で<i>表示</i>させる述語</li>
+    </ol>
+
+    これらの述語を順に考えていきます。
+    さらに情報を得たい場合、
+    SICStus Prolog のマニュアル
+    「<a href="https://sicstus.sics.se/sicstus/docs/latest4/html/sicstus.html/lib_002datts.html#lib_002datts">Attributed Variables</a>」
+    を参照してください。
+    他の Prolog システムで詳細は異なるものの、
+    他のシステムでも述語の<i>種類</i>は同じです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_preliminaries')">原文</button>
+    <div id="原文_preliminaries" class="hide_on_start">
     <center><h3>Preliminaries</h3></center>
 
     To illustrate the key concepts of attributed variables, we
@@ -215,7 +447,121 @@ dissertation&nbsp;[Holzbaur 90].
     Variables</a> in the SICStus&nbsp;Prolog&nbsp;manual. Even though
     the details differ in other Prolog systems, the <i>kinds</i> of
     predicates are the same also in other systems.
+    </div>
 
+    <center><h3>属性の追加と更新</h3></center>
+
+    属性付き変数は
+    <i>変数</i>、<i>モジュール</i>、<i>値</i> の <i>関係</i> です。
+
+    <br><br>
+
+    SICStus や Scryer Prolog のインターフェースでは、
+    <i>Name/Arity</i> ペアを使って
+    <tt>attribute/1</tt> ディレクティブでモジュール内での属性を宣言します。
+
+    <pre>
+:- attribute Name<sub>1</sub>/Arity<sub>1</sub>, Name<sub>2</sub>/Arity<sub>2</sub>, ..., Name<sub><i>n</i></sub>/Arity<sub><i>n</i></sub>.
+    </pre>
+
+    <tt>library(atts)</tt> によってこのディレクティブは利用可能になります。
+
+    <br><br>
+
+    属性は以下で <i>追加</i>、<i>更新</i> が可能です:
+
+    <br>
+    <div id="put_atts" class="predicate">
+      <tt><b>Module:put_atts(Var, AccessSpec)</b></tt>:
+      <br>
+      <tt>AccessSpec</tt> が <tt>+(Attribute)</tt> の形ならば、
+      属性は指定された値に設定されます。
+      <br>
+      <tt>AccessSpec</tt> が <tt>-(Attribute)</tt> の形ならば、
+      属性は指定された値から削除されます。
+      <br>
+      ラッパー <tt>+</tt> は省略可能です。
+    </div>
+    <br>
+
+    これを試すために、
+    属性 <tt>a/1</tt> を定義するサンプルモジュール
+    <a href="attrmod.pl"><tt>attrmod.pl</tt></a>
+    を作成します:
+
+    <pre>
+:- module(attrmod, []).
+
+:- use_module(library(atts)).
+
+:- attribute a/1.
+    </pre>
+
+    このファイルを consult すると、
+    <a href="concepts#toplevel">トップレベル</a> で
+    変数に属性を追加できます。例:
+
+    <pre>
+?- attrmod:put_atts(X, a(test)).
+<b>   attrmod:put_atts(X,a(test)).</b>
+    </pre>
+
+    ここで応答として、Prolog トップレベルは
+    単純に投入された内容を繰り返しています。
+    そして、トップレベルは<i>答えが元のクエリと同等の宣言的に同等</i>という
+    不変条件を保持しています。
+    この例では、属性 <tt>a(test)</tt> はモジュール<tt>attrmod</tt>
+    の変数<tt>X</tt>に関連付けられており、
+    これが回答で述べられていることです。
+    属性が関連づけられた変数を<i>属性付き変数</i>と呼びます。
+
+    <br><br>
+
+    重要なのは、<tt>put_attr/3</tt>を
+    同じモジュールと同じ変数について<i>繰り返した</i>ならば、
+    以前の関連付けは単純に<i>上書き</i>されることです。
+    例えば:
+
+    <pre>
+?- attrmod:put_atts(X, a(hi)),
+   attrmod:put_atts(X, a(ho)).
+<b>   attrmod:put_atts(X,a(ho)).</b>
+    </pre>
+
+    とすると、これら２回の呼び出しで
+    <b><tt>a(ho)</tt></b> は
+    モジュール <tt>attrmod</tt> での <tt>X</tt>について残った
+    唯一の属性になります。
+
+    <br><br>
+
+    <tt>put_atts/2</tt> は属性を <i>破壊的に変更する</i> とも言えます。
+    このため、<tt>put_atts/2</tt>は、
+    <tt>setarg/3</tt>のより宣言的でエラーが発生しにくい
+    代替手段としても使用できます。
+
+    <br><br>
+    <tt>put_atts/2</tt> の効果はバックトラック時に<i>元に戻される</i>
+    ことにも留意してください。例えば:
+
+    <pre>
+?- ( attrmod:put_atts(X, a(hello))
+   ; true
+   ).
+<b>   attrmod:put_atts(X,a(hello))
+;  true.</b>
+    </pre>
+
+    別解が通知されるとき、<tt>true</tt> 以外のゴールがないことにより
+    <tt>X</tt> には<i>もはや属性はありません</i>。
+    このため、変数に属性を割り当てることは、Prolog 組み込みの
+    <a href="sorting#searching">探索</a>戦略とうまく調和しており、
+    <i>単一化</i>に似ています。
+    変更は<i>バックトラック可能</i>であると言うこともできます。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_adding_and_changing')">原文</button>
+    <div id="原文_adding_and_changing" class="hide_on_start">
     <center><h3>Adding and changing attributes</h3></center>
 
     An attributed variable is a <i>relation</i> between
@@ -324,8 +670,420 @@ dissertation&nbsp;[Holzbaur 90].
     built-in <a href="sorting#searching">search</a>&nbsp;strategy, and
     is similar to <i>unification</i> in that respect. We say that the
     modification is <i>backtrackable</i>.
+    </div>
 
+    <center><h3>属性付き変数の単一化</h3></center>
 
+    変数と<i>属性付き</i>変数との違いは、
+    <i>単一化</i>のときになにが起きるかです。
+
+    <br><br>
+
+    属性付き変数は単一化の際に
+    <i>拡張可能な</i>述語が<i>自動的に呼び出される</i>というのが特別です。
+    SICStus と Scryer では、属性が付与されている<i>モジュール</i>の
+    <tt>verify_attributes/3</tt>が呼び出されます。
+    Prolog プログラマはこの述語の<i>定義</i>を変更できます。
+    属性が付与された変数を単一化する際に Prolog エンジンは自動的に
+    その定義を呼び出します。
+
+    <br><br>
+    例えば、モジュール <a href="attrmod.pl"><tt>attrmod</tt></a>
+    で <tt>verify_attributes/3</tt> の非常に基本的なバージョンを定義します:
+
+    <pre>
+verify_attributes(X, Y, _) :- throw(cannot_unify(X,Y)).
+    </pre>
+
+    この定義では、単純に<i>例外</i>をスローするだけなので、このような結果を得ます:
+
+    <pre>
+?- attrmod:put_atts(X, a(1)),
+   attrmod:put_atts(Y, a(2)),
+   <b>X = Y</b>.
+   <b>throw(cannot_unify(_397,_399)).</b>
+    </pre>
+
+    <br>
+    <div id="verify_attributes" class="predicate">
+      <tt><b>M:verify_attributes(-Var, +Value, -Goals)</b></tt>:
+      <br><br>
+      <i>モジュール</i>内に属性を持つ可能性のある変数<i>Var</i>が
+      <i>Value</i>にバインドされようとしているときにこの変数が呼び出されます
+      （ない場合もあります）。
+      単一化は <tt>verify_attributes/3</tt> 呼び出しに後で再開されます。
+      <i>Value</i> は非変数、あるいは他の属性付き変数です。
+      <i>Var</i> は<i>モジュール</i>内に属性を持たない可能性があります。
+
+      <br><br>
+
+      <tt>verify_attributes/3</tt> は<i>Var</i>が<i>Value</i>に
+      バインドされる<i>前に</i>呼び出されます。
+      バインドが失敗した場合、単一化失敗です。
+      別解を得るために単一化がバックトラックした場合は、
+      非決定的に成功する場合があります。
+      <i>Goals</i>には、<i>Var</i>が<i>Value</i>に
+      バインドされた後に呼び出されるゴールのリストを返すことが期待されます。
+      最後に、<i>Goals</i>呼び出し後に、
+      <i>Var</i>でブロックされているなんらかのゴールが呼び出されます。
+
+      <br><br>
+
+      <tt>verify_attributes/3</tt> は任意の Prolog ゴールを呼び出します。
+      しかし、<i>Var</i> はそれによってバインドされるべきではありません。
+      <i>Var</i> のバインドは未定義動作の原因となります。
+
+      もし<i>Value</i>が非変数であるならば、
+      <tt>verify_attributes/3</tt>は<i>Var</i>の属性を検査し、それが
+      Value との互換性があるかチェックし、そうでなければ失敗します。
+      もし<i>Value</i>が他の属性付き変数であるならば、
+      <tt>verify_attributes/3</tt> は
+      <i>Var</i> を<i>Value</i>にバインドする準備として、
+      <i>Var</i>の属性を<i>Value</i>の
+      属性としてコピーするか、マージします。
+      どちらにしても、<tt>verify_attributes/3</tt> は
+      バインドされていない<i>List</i>の元で
+      <tt>get_atts(Var, List)</tt>を呼び出すことで
+      <i>Var</i>の現在の属性を判定します。
+
+      <br><br>
+
+      一つの単一化で複数の属性付き変数をバインドする場合、
+      そのようなバインドすべてを解除したうえで
+      各変数について次の動作を行います:
+
+      <ol>
+        <li>関連モジュール<tt>M</tt> それぞれについて、
+          <tt>M:verify_attributes/3</tt> を呼び出し、
+          その結果である <i>Goals</i> を取得します</li>
+        <li>変数のバインドをやり直します</li>
+        <li><i>Goals</i> を呼び出します</li>
+        <li>ブロックされているゴールを呼び出します</li>
+      </ol>
+
+    </div>
+
+    <br><br>
+
+    最初に、ドキュメントに記載されている内容を試してみましょう:
+    例えば、単一化を<i>fail</i>させます。
+
+    <pre>
+verify_attributes(_, _, _) :- <b>false</b>.
+    </pre>
+
+    クエリと回答の例:
+
+    <pre>
+?- attrmod:put_atts(X, a(n(1))),
+   attrmod:put_atts(Y, a(n(2))),
+   <b>X = Y</b>.
+   <b>false.</b>
+    </pre>
+
+    OK、これは宣伝どおりに動作します。この例およびこれに続く例で、
+    <tt>n(N)</tt>の形の<a href="data#term">複合項</a>で
+    整数<tt>N</tt>を表現します。
+    整数を直接使用する<i>ことも</i>できます。
+    しかし、これには<a href="data#clean">デフォルトの</a>表現で
+    終わってしまうリスクがあり、
+    以下のコードにおいて記号的に属性と変数との区別を妨げます。
+
+    <br><br>
+
+    次に、単一化について関連する属性を<i>変更</i>します。
+    単一化に<i>２つ</i>（あるいはもっと）変数を含む場合、
+    それらの変数に単一化がどう作用するか明確にする必要があります。
+
+    <br><br>
+
+    上記の例を拡張しましょう:
+    上記の例では、属性<tt>a/1</tt>を使って
+    Prolog 項 <tt>n(1)</tt> と <tt>n(2)</tt> を
+    変数 <tt>X</tt> と <tt>Y</tt> を結びつけました。
+    インターフェースの経験を積むために、
+    ２つの変数を単一化して、
+    属性 <tt>a(n(A))</tt> と <tt>a(n(B))</tt>
+    （ここで <tt>A</tt> と <tt>B</tt> は整数）
+    から新しい属性 <tt>a(n(C))</tt>
+    （ここで <tt>C</tt> は <tt>A</tt> と <tt>B</tt> の<i>合計</i>）
+    を得たいと思います。
+
+    <br><br>
+
+    これを実現するには、
+    変数の<i>既存の</i>属性を推論する方法が必要です。
+    述語 <tt>get_atts/2</tt> をこの目的で利用できます:
+
+    <br>
+    <div id="get_atts" class="predicate">
+      <tt><b>get_atts(Var, AccessSpec)</b></tt>:
+      <br>
+      <tt>AccessSpec</tt> が <tt>+(Attribute)</tt> の形ならば、
+      関連する属性が存在する必要があり、
+      かつ、<tt>Attribute</tt>と単一化されます。
+      <br>
+      ラッパー<tt>+</tt> は省略可能です。
+    </div>
+    <br>
+
+    したがって、次の手順を実装します:
+
+    <ol>
+      <li>モジュール<tt>attrmod</tt>から属性を持つ２つの変数を
+        単一化することで、<tt>a/</tt> 属性を<i>取得</i>します。
+      </li>
+
+      <li>属性に含まれる整数の<i>合計</i>を
+        <a href="clpfd">整数演算</a>
+        を用いて計算します。</li>
+      <li>新しい属性に合計を与えます。
+      </li>
+    </ol>
+
+    Prolog ではこのようになります:
+
+    <pre>
+verify_attributes(Var, Value, []) :-
+        get_atts(Var, a(n(A))),
+        get_atts(Value, a(n(B))),    % step (1)
+        C #= A + B,                  % step (2)
+        put_atts(Value, a(n(C))).    % step (3)
+    </pre>
+
+    それでは試してみましょう:
+
+    <pre>
+?- attrmod:put_atts(X, a(n(1))),
+   attrmod:put_atts(Y, a(n(2))),
+   X = Y.
+<b>   X = Y, attrmod:put_atts(Y,a(n(3))).</b>
+    </pre>
+
+    確かに動作します:
+    単一化後、<tt>a(n(3))</tt> は単一の変数に関連付けられ、
+    <tt>X</tt> と <tt>Y</tt> は<i>同様に</i> 1+2 の結果の 3 です。
+
+    <br><br>
+
+    次の例では <i>uninstantiation&nbsp;error</i> が発生します。
+    なぜなら（<tt>verify_attributes/3</tt>の定義に用いている）
+    <tt>get_atts/2</tt> の最初の引数は<i>変数</i>でなければならない
+    のにアトム<tt>b</tt>を使っているためです:
+
+    <pre>
+?- attrmod:put_atts(X, a(n(1))),
+   <b>X = b</b>.
+   <b>error(uninstantiation_error(b),get_atts/2).</b>
+    </pre>
+
+    実際、上の <tt>verify_attributes/3</tt> の定義では
+    非常に特殊な種類の単一化のみ<i>成功</i>します。
+    特に、<i>基底</i>値に関するすべての単一化は uninstantiation error
+    を発生します。
+    ただし、実際の制約システムでは
+    基底項は具体的な<i>解</i>の典型的な表現であるため、
+    基底項に特別な関心があります。
+
+    <br><br>
+
+    そこで、上記（モジュール<tt>attrmod</tt>での）
+    <tt>verify_attributes/3</tt> の定義を一般化して
+    インターフェース全体の重要な機能である
+    <i>選択的な単一化の拒否</i>を記述しましょう。
+    例えば、具体的ケースにおいて具体的な<b>整数</b>との単一化を許すのは
+    その整数が、関係する変数の属性に格納されている関連する整数値と
+    一致する場合とする場合とします。
+
+    <br><br>
+
+    そのためには
+    2つの項<tt>X</tt>と<tt>Y</tt>が単一化される2つの異なるケースを
+    <i>区別</i>する必要があります。
+    <tt>X</tt>の観点から考えてみます。
+    つまり、
+    <tt>verify_attributes/3</tt> が <tt>X</tt> を最初の引数として
+    呼び出されるものとします。
+    （もちろん、もう一方のケースは完全に対象的です。それでも議論には
+    両者を区別して扱う必要があります。）
+
+    そして、<tt>Y</tt>が<i>整数</i><i>k</i>で
+    <tt>X</tt> の属性にストアされた整数とマッチしないならば
+    単一化を拒否（つまり失敗）させる必要があります。
+
+    <tt>Y</tt>が属性付き<i>変数</i>の場合、
+    以前のように動作する必要があります:
+    関連する変数の２つの属性にストアされた
+    ２つの整数の<i>合計</i>を計算し、
+    単一化された変数にその合計を結びつけます。
+
+    <br><br>
+
+    Prolog では、組み込み述語 <tt>integer/1</tt> を用いて
+    この区別を表現します:
+
+    <pre>
+verify_attributes(Var, Value, []) :-
+        get_atts(Var, a(n(A))),
+        (   <b>integer(Value)</b> ->
+            Value =:= A
+        ;   get_atts(Value, a(n(B)))
+            C #= A + B,
+            put_atts(Var, -a(n(_))),
+            put_atts(Value, a(n(C)))
+        ).
+    </pre>
+
+    以下にいくつかのサンプルクエリとその結果を示します:
+
+    <pre>
+?- attrmod:put_atts(X, a(n(1))), X = 1.
+   <b>X = 1.</b>
+
+?- attrmod:put_atts(X, a(n(1))), X = 3.
+   <b>false.</b>
+
+?- attrmod:put_atts(X, a(n(1))),
+   attrmod:put_atts(Y, a(n(2))),
+   X = Y,
+   X = 3.
+   <b>X = Y, Y = 3.</b>
+    </pre>
+
+    このように、すべてが意図したとおりに機能しているようです。
+    私たちは、確かにかなり特異なセマンティクスを持ちますが、
+    私たちが概説したことを実装する、
+    単純な<i>制約ソルバー</i>を作成できました。
+    ただし、このソルバーには非常に重大な宣言的欠陥があります。
+    上記の結合で 目標<tt>X = Y</tt>を削除するとそれが明らかになります。
+
+    <pre>
+?- attrmod:put_atts(X, a(n(1))),
+   attrmod:put_atts(Y, a(n(2))),
+   X = 3.
+   <b>false.</b>
+    </pre>
+
+    この例では、クエリの（制約を<i>削除</i>することによる）<i>一般化</i>
+    が<i>より具体的</i>プログラム（<tt>false</tt>と同じ）を生成しています。
+    これは、論理プログラムに期待される基本的なプロパティに違反しており、
+    たとえば<a href="debugging">宣言的デバッグ</a>を妨げます。
+
+    <br><br>
+
+    このことから得られる重要なポイントは、
+    <i>属性付き変数のインターフェイスだけでは、
+      結果として得られる制約ソルバーの保証がまったく提供されない</i>
+    ということです。
+    プログラマーは、結果として得られるプログラムで
+    望ましいプロパティが保持されるように
+    システムを実装する必要があります。この点については後で説明します。
+
+    <br><br>
+
+    今はとりあえずこのセクションを、より興味深く、より現実的な例で
+    締めくくります:
+    ここでは、<i>有限ドメイン</i>上の単純な制約ソルバーを実装します。
+    ここで、関係する各変数の属性は、変数の許容<i>ドメイン</i>を表す
+    要素の<i>順序付きリスト</i>です。
+
+    <br><br>
+
+    このような制約ソルバーに適した統一フックは次のようにものです:
+
+    <pre>
+verify_attributes(Var, Other, []) :-
+        (   get_atts(Var, domain(Dom1)) ->
+            (   var(Other),
+                get_atts(Other, domain(Dom2)) ->
+                ord_intersection(Dom1, Dom2, Dom),
+                dif(Dom, []),
+                (   Dom = [Value] ->
+                    Other = Value
+                ;   put_atts(Other, domain(Dom))
+                )
+            ;   ord_memberchk(Other, Dom1)
+            )
+        ;   true
+        ).
+    </pre>
+
+    非公式には、次のように読むことができます:
+
+    <ol>
+      <li><tt>Var</tt> が関連するドメイン<tt>Dom1</tt>を持ち、
+        <tt>Other</tt> が関連するドメイン<tt>Dom2</tt>を持つ場合、
+        共通部分(intersection)
+        <tt>Dom</tt> = <tt>Dom1</tt> &cap; <tt>Dom2</tt>
+        を構築します。この順序付きリストは
+        単一化された<i>両方の</i>変数に許容されるすべての要素を含みます。
+      </li>
+
+      <li><tt>Dom</tt>が空<a href="data#list">リスト</a> <tt>[]</tt>
+        と<i>異なる</i>(<tt>dif/2</tt>)ときにのみ続行します。
+        結果の単一化変数に許容されるドメイン要素が少なくとも一つ残ります。
+      </li>
+
+      <li><tt>Dom</tt>が残り要素一つだけ持っているとき、
+        その要素は単一化変数と<i>等しい</i>必要があります
+        （他の選択肢がないため）。
+      </li>
+
+      <li>その他の場合、共通部分<tt>Dom</tt>を単一化変数の
+        <i>属性</i>として割り当てます。</li>
+
+      <li><tt>Other</tt>に関連するドメインがない場合、
+        <tt>Other</tt>がドメイン<tt>Dom1</tt>のメンバーであるときのみ
+        単一化を許容します。
+      </li>
+    </ol>
+
+    付け加えて、変数とそのドメインを関連付ける次の定義を使用します:
+
+    <pre>
+domain(X, List) :-
+        list_to_ord_set(List, Dom),
+        <a href="#put_atts">put_atts</a>(X, domain(Dom)).
+    </pre>
+
+    これらの定義によって、クエリを実行できます:
+
+    <pre>
+?- domain(X, "abc"),
+   domain(Y, "cde"),
+   X = Y.
+    </pre>
+
+    応答として、具体的な解が得られます:
+
+    <pre>
+   <b>X = Y, Y = c.</b>
+    </pre>
+
+    単一化についてこれが動作するのは、フックが呼び出されることで
+    ２つのドメインの共通部分が構築されて、
+    結果の変数がその要素と単一化されるためです。
+    <tt>X</tt>と<tt>Y</tt>は完全に区別できなくなったことに注意してください。
+    単一化はこれらを完全に<i>単一化</i>します。
+
+    <br><br>
+
+    <b>練習</b>（難しい）:
+    次の特性は、制約ソルバーにとって非常に望ましいものです。
+    この場合に当てはまることを証明するか、反例を示してください。
+    <br>
+    <i><tt>domain/2</tt>および<tt>(=)/2</tt>のゴールのみで構成される
+      すべての Prolog クエリ <tt>Q</tt>について、
+      ゴールの 1 つ を<i>削除</i>すると、
+      結果のクエリ<tt>Q'</tt>は、
+      <tt>Q</tt>のソリューションの集合が
+      <tt>Q'</tt>のソリューションの集合のサブセットである
+      という意味において、少なくとも<tt>Q</tt>と同じくらい一般化される。
+    </i>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_unification')">原文</button>
+    <div id="原文_unification" class="hide_on_start">
     <center><h3>Unification of attributed variables</h3></center>
 
     The key distinction between variables and <i>attributed</i>
@@ -735,7 +1493,103 @@ domain(X, List) :-
       least as general as&nbsp;<tt>Q</tt>, in the sense that the set
       of solutions of <tt>Q</tt> is a subset of those
       of&nbsp;<tt>Q'</tt>.</i>
+    </div>
+    
+    <center><h3>属性の表示</h3></center>
 
+    実際の制約ソルバーでは、
+    <tt>attrmod:put_atts(X,a(test))</tt>
+    のような見た目の答えでは満足できません。
+    制約ソルバーに期待するのはそんな表示でなく、
+    <i>人間にとって意味のある</i>属性を表現した表示です。
+    制約ソルバー内部でどのように実装されているかは関係なく、
+    明確に定義された意味を持つ、
+    より高レベルの<i>Prolog ゴール</i>を回答として生成することを期待します。
+
+    <br><br>
+
+    このために、
+    <a href="dcg">DCG 非終端</a>の
+    <tt>M:attribute_goals//1</tt>があります。
+    Scryer Prolog では、モジュール<tt>M</tt>でこの非終端を定義でき、
+    <tt>M</tt>に属性を持つ変数<tt>X</tt>それぞれについて自動的に
+    Prolog エンジンから呼び出されます。
+    これは次のような定義です:
+
+    <br>
+    <div id="attribute_goals" class="predicate">
+      <tt><b>M:attribute_goals(V)</b></tt>:
+      <br>
+      これは、<a href="dcg">DCG非終端記号</a>で、
+      モジュール<tt>M</tt>内で<tt>V</tt>に属性が
+      存在する原因となった
+      Prologゴールの<i>リスト</i>を記述しています。
+      つまり、これらのゴールを実行すると、
+      モジュール<tt>M</tt>内で<tt>X</tt>に対して
+      同等の属性が生成されるべきであることを意味します。
+    </div>
+    <br>
+
+    例として、上で考えた単純な有限ドメインの制約ソルバーに
+    この機能を適用しましよう。
+    それは<tt>domain/2</tt>という単純なインターフェース述語のみ持ちます。
+    理想的には、トップレベルで表示する答えは
+    ユーザに意味が知られている
+    パブリックなインターフェース述語だけを使うべきです。
+
+    <br><br>
+
+    従って、上記の非終端を使って
+    属性を<i>残余ゴール</i>（<i>residual&nbsp;goals</i>）
+    と呼ばれるものに<i>変換</i>する必要があります。
+    上記の具体的ケースでは、このように実行できます:
+
+    <pre>
+attribute_goals(Var) --&gt;
+        (   { get_atts(Var, domain(Dom)) } -&gt;
+            [domain(Var, Dom)]
+        ;   []
+        ).
+    </pre>
+
+    これは単純に属性を取得し、<i>単一</i>ゴールのリストを記述します。
+    この述語が答えの表示の際にトップレベルから自動的に呼び出される
+    様子の例です:
+
+    <pre>
+?- domain(X, "abc").
+   <b>domain(X, "abc").</b>
+    </pre>
+
+    さらに複雑なクエリにも同様に動作します:
+
+    <pre>
+?- domain(X, "abc"),
+   domain(Y, "bcd"),
+   X = Y.
+   X = Y,
+   <b>domain(Y, "bc")</b>.
+    </pre>
+
+    この機構を利用して、内部属性をもっとユーザにとって意味のある
+    Prolog ゴールに変換できます。
+
+    <br><br>
+
+    トップレベルは、この機能を述語<tt>copy_term/3</tt>を
+    内部的に呼び出すことで提供します。
+    この述語は、制約に関係する可能性のある変数の<i>コピー</i>を作成し、
+    <tt>attribute_goals//1</tt>を使用して、呼び出されると
+    コピーに同等の属性を作成する<i>ゴールのリスト</i>を作成します。
+    <tt>copy_term(X, X, Gs)</tt>を使用して、
+    <tt>X</tt>が関係する制約<tt>Gs</tt>について推論できます。
+    ゴールの<i>リスト</i>が使用されていることに注意してください。
+    これは、ゴールの<a href="data#clean">クリーンな</a>表現であり、
+    さらに便利な分析を可能にするためです。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_displaying')">原文</button>
+    <div id="原文_displaying" class="hide_on_start">
     <center><h3>Displaying attributes</h3></center>
 
     In an actual constraint solver, we are not content with answers
@@ -823,7 +1677,102 @@ attribute_goals(Var) --&gt;
     involved&nbsp;in. Note that a <i>list</i> of goals is used, since
     this is a <a href="data#clean">clean</a> representation
     of&nbsp;goals that allows convenient further analysis.
+    </div>
 
+    <center><h2>落とし穴と些事</h2></center>
+
+    属性付き変数を扱うと、エラーが発生しやすくなります。
+    私の経験では、教育、研究、実践をどれだけ積んでも、
+    属性付き変数を扱うときにごく基本的なミスを犯すことは避けられません。
+
+    <br><br>
+
+    システム実装者が、特定の種類のエラーを不可能にする
+    インターフェイスを提供することで、
+    Prolog プログラマーの作業をできるだけ簡単にすることが、
+    なおさら重要です。
+    実装者は、利便性と正確さを犠牲にしてパフォーマンスを向上させるために、
+    低レベルのインターフェイスを提供したくなることがあります。
+
+    <br><br>
+
+    例えば、2002年に Bart Demoen は非常に影響力のある論文
+    （<a href="https://pdfs.semanticscholar.org/3104/a69b2ed0bc58d67678c6b91eb3d864fe1de2.pdf"><i>Dynamic attributes, their hProlog implementation, and a first evaluation</i></a>）
+    を公開しました。
+
+    <br><br>
+
+    Bart Demoen は
+    Prolog コミュニティで非常に多作で高く評価されているメンバーであるため、
+    いくつかのシステムが彼の提案したアプローチを採用しました。
+
+    <br><br>
+
+    彼が提案し、実装したインターフェイスは、重要な点で不十分です。
+    私はその論文から引用し、重要な箇所を強調します。
+
+    
+    <blockquote class="quote">
+      <b>4 基本的選択 III: <tt><i>pre_unify</i></tt>を使わない</b>
+
+      <br><br>
+
+      SICStus Prolog と ECLiPSe の属性付き変数の最も大きな違いは、
+      単一化ハンドラが呼び出された瞬間における変数の状態です。
+
+      <br><br>
+
+      例えば:
+      属性付き変数 X が (モジュール<tt>user</tt>において)
+      ある属性 Aを持ち、X が整数 666 と単一化されたとします。
+      <br>
+      SICStus Prolog では<b>まだバインドされていない</b> X について
+      <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html#IDX980"><tt>verify_attributes</tt></a>
+      が呼び出されます。
+      <br>
+      ECLiPSe では
+      <b>X が既に 666 にバインドされた状態</b>で A を引数として
+      単一化ハンドラが呼び出されます。
+
+      <br><br>
+
+      SICStus Prolog の振る舞いは
+      [6] に従っており、
+      <b>変数をまだバインドされていないかのようにすることが重要である</b>
+      と主張しています。
+
+      <br><br>
+
+      一方で ECLiPSe の人々 (Joachim Schimpf) は
+      <b>これは不要である</b> と主張しています。
+
+      <br><br>
+
+      私達はこの問題で立場を取りたくありません:
+      私達はある時点で完全な SICStus Prolog の動作を実装しましたが
+      (もちろん動的属性に対して)、
+      実装の複雑さが余分なメリットに見合うとは確信できませんでした。
+      しかし、SICStus Prolog と ECLiPSe のマニュアルには、
+      <tt>pre_unify</tt>中に X をバインドすると
+      予期しない結果が生じると書かれており、
+      私たちは感心しませんでした。
+      私たちの意見 (および経験) では、
+      SICStus Prolog や ECLiPSe のような完全なシステムで
+      <tt>pre_unify</tt>の完全サポートを
+      実装および維持するには面倒すぎるということを示しています。
+      そこで、互換性の理由から<tt>pre_unify</tt>をサポートするという妥協はせず、
+      ECLiPSe モデルに切り替えました。オッカムの剃刀はありがたいものです
+      :-)
+    </blockquote>
+
+    不幸にも、スマイリーがあるにも関わらず、
+    この一文は Prolog 実装者に真面目なものとして受け取られてしまいました。
+    現在ではこの限定されたインターフェースは、
+    例えば SWI-Prolog で提供されています。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_pitfalls')">原文</button>
+    <div id="原文_pitfalls" class="hide_on_start">
     <center><h2>Pitfalls and Errands</h2></center>
 
     Working with attributed variables is very error-prone.
@@ -908,7 +1857,128 @@ attribute_goals(Var) --&gt;
     Unfortunately, despite the smiley, the above passage was taken
     seriously by Prolog implementors, and this limited interface is
     what for example SWI-Prolog now provides.
+    </div>
 
+    <center><h2>オッカムの剃刀</h2></center>
+
+    <a href="https://ja.wikipedia.org/wiki/%E3%82%AA%E3%83%83%E3%82%AB%E3%83%A0%E3%81%AE%E5%89%83%E5%88%80">オッカムの剃刀</a>
+    （<a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam's razor</a>）
+    の最もよく知られているバージョンでは、
+    「必要ないならエンティティを増やしてはならない」
+    （<i>"Entities are not to be multiplied without necessity"</i>）
+    と述べられています。
+
+    <br><br>
+
+    ならば、
+    <i>属性付き変数にはなぜ３つの異なるインターフェースがあり、そのうち２つは他に比べて汎用性が低いのでしょうか？</i>
+
+    <br><br>
+
+    保守的なアプローチとして
+    Neumerkel と Holzbaur による２０年以上前の研究があります:
+
+    <br><br>
+
+    広く使われている４つの Prolog システム、
+    SICStus, GNU-Prolog, ECLiPSe, SWI は
+    ４つ種類の制約を使っています:
+    <a href="optimization">CLP(H)</a>,
+    <a href="clpfd">CLP(FD)</a>,
+    <a href="/clpb/">CLP(B)</a>,
+    <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_32.html">CLP(Q)</a>
+
+    <br><br>
+
+    SICStus はそれら４つをサポートします。<br>
+    ECLiPSe と GNU-Prolog はそれらのうち２つをサポートします。<br>
+    それらのシステムにおいて、
+    <i>どれが一般性の高い属性付き引数インターフェースを持つのでしょうか</i>？
+    そのシステムを、私たちが目指すものとして採用します。
+    <i>オッカムの剃刀によるならば</i>、
+    それらが提供する制約ソルバーをサポートするのに
+    <i>必要なことだけを行っている</i>でしょう。
+
+    <br><br>
+
+    属性付き変数に対する SWI-Prolog インターフェースの根本的な欠点は、
+    <tt>verify_attributes/3</tt>がサポートされておらず、
+    代わりに<tt>attr_unify_hook/2</tt>と呼ばれる
+    はるかに汎用性の低い述語のみが提供されていることです。
+    重大なこととして、<tt>attr_unify_hook/2</tt>は、
+    変数がすでに単一化された後にのみ呼び出されます。
+
+    <br><br>
+
+    これは、最初はまったく無害に思えるかもしれません:
+    結局のところ、その変数の (前の) 属性は
+    <tt>attr_unify_hook/2</tt>の引数なので、
+    知る必要のあるすべての情報が利用できる、<i>ですよね</i>？
+    これが事実だと仮定しましょう
+    (ただし、以下で説明するように、そう<i>ではありません</i>)。
+    その場合でも、たとえば<tt>[X,Y] = [0,1]</tt>のような目標を介して、
+    複数の変数が一度にインスタンス化される可能性があります。
+    このような単一化に<tt>n</tt>個の 変数が含まれる場合、
+    一つの単一化で少なくとも 2<sup><i>n</i></sup> <i>種類</i>の
+    インスタンス化パターンが発生する可能性があることは容易にわかります。
+    すべてのケースを完全に考え抜くことは誰にもできません。
+    同時単一化によって発生する可能性がある状況の例は、
+    コミット
+    <a href="https://github.com/SWI-Prolog/swipl-devel/commit/9c8ea20b7c9aa5a2b86d4bcc82a93f8f0e7b34c1">9c8ea20b7</a>
+    で説明されています。
+    制約プログラミングの経験豊富な専門家が、
+    Prolog システムが提供する最も単純で
+    最も基本的な制約の 1 つである<tt>dif/2</tt>制約の独自の実装で
+    <a href="https://github.com/SWI-Prolog/issues/issues/15">同じ問題</a>
+    に遭遇しました。
+    数年後、 SWI-Prolog の<tt>dif/2</tt>の実装で
+    <a href="https://github.com/SWI-Prolog/issues/issues/112">別の間違い</a>
+    が見つかり、修正されました。
+    そして
+    <a href="https://github.com/SWI-Prolog/issues/issues/122"><i>別の間違い</i></a>
+    が見つかって修正され、
+    今日まで
+    <a href="https://github.com/SWI-Prolog/issues/issues/113">非循環項についてすら</a>、
+    <a href="https://github.com/SWI-Prolog/issues/issues/128">
+      SWI-Prolog の<tt>dif/2</tt>は誤った実装のままです</a>。
+
+    <br><br>
+
+    しかしインターフェースに責任はない、そうでしょうか？
+    結局のところ、下手な職人だけが<i>ツール</i>のせいにする、そうでしょうか？
+
+    <br><br>
+
+    <b>違います!</b>
+    インターフェースはそのような間違いを可能にするのみならず、
+    そのような間違いを<i>強制する</i>、ならばそのインターフェースを
+    考え直すべきです。
+    通常、そのような問題は真剣なインターフェース再考の十分な理由です。
+    しかし、Prolog コミュニティにおいては、
+    このインターフェースのエラーを誘発しやすい性質は、
+    それだけでは変更の十分な理由にはなりません。
+    伝統的に、最も重要なのは<i>パフォーマンス</i>であり、
+    システムが高速である限り正確さなど気にしません。<i>そうでしょうか</i>？
+    したがって、2 番目の議論を示します:
+
+    <br><br>
+
+    SWI-Prolog のインターフェースでは、
+    制約ソルバーの重要なクラスを表現するのに<i>十分ではありません</i>。
+    単一化<tt>[X,Y] = [0,1]</tt> について再び考えてみましょう。
+    これは、<i>両方の</i>変数の属性が同時に使用できなくなることを意味します。
+    確かに、<tt>attr_unify_hook/2</tt>が<tt>X</tt>に対して実行されると、
+    以前の属性にアクセスできます。
+    しかし、その時点では、<tt>get_attr/3</tt>経由で<tt>Y</tt>の
+    以前の属性にアクセスできなくなります。
+    実際、<tt>Y</tt>が変数であったことさえわからなくなります。
+    次のセクションでは、これが必要であるのに不可能である例を示します。
+
+    <br><br>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_occams_razor')">原文</button>
+    <div id="原文_occams_razor" class="hide_on_start">
     <center><h2>Occam's razor</h2></center>
 
     <a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam's
@@ -1011,9 +2081,220 @@ attribute_goals(Var) --&gt;
     of&nbsp;<tt>Y</tt> via <tt>get_attr/3</tt>, and in fact you can
     no&nbsp;longer even tell that <tt>Y</tt> was a variable. The next
     section shows an example where this is needed, but not possible.
+    </div>
+    <br><br>
+
+    <center><h2 id="minatotask">湊タスク</h2></center>
+
+    ここで、
+    <a href="https://en.wikipedia.org/wiki/Zero-suppressed_decision_diagram">Zero-suppressed decision diagrams</a>(ZDD)
+    に基づく
+    <a href="/clpb/">CLP(B) システム</a>
+    を実装するときに簡単に遭遇する特定のタスクについて考えてみましょう。
+
+    ZDD は非常に重要なデータ構造であり、
+    <a href="http://www-cs-faculty.stanford.edu/~knuth/">Donald Knuth</a>
+    は
+    <a href="https://www.youtube.com/watch?v=xLBvCB2kr4Q">講演</a>で
+    ZDD を「コンピュータ サイエンスにおける最も美しい構造」と呼んでいます。
 
     <br><br>
 
+    私はこのタスクを、 ZDD の発明者である
+    <a href="http://art.ist.hokudai.ac.jp/~minato/index-j.html">湊 真一 (みなと しんいち)</a>
+    に敬意を表して<b>湊タスク</b>と呼んでいます
+    ( 「<a href="https://pdfs.semanticscholar.org/9593/6223362a16a50de2959475d87aefe2a1fec7.pdf"><i>Zero-Suppressed BDDs for Set Manipulation in Combinatorial Problems</i></a>」を参照)。
+    このタスクを使用して、Prolog システムの属性変数の
+    インターフェイス述語が、実用上非常に重要な特定のクラスの制約を
+    自然に表現<i>できるほど一般的であるか</i>どうかを判断します。
+
+    <br><br>
+
+    ZDD は<i>決定図</i>です。
+    つまり、図の線をたどるだけで真理値に到達できます。
+    ZDD のノードは<i>分岐変数</i>です。
+    変数が<tt>1</tt>の場合は<i>直線</i>を取り、
+    変数が<tt>0</tt>の場合は<i>点線</i>を取ります。
+    その点では、ZDD は<i>バイナリ決定図</i>(BDD)に似ています。
+    ただし、ZDD は次のような際立ったひねりを加えて解釈されます:
+    変数が<b>true</b>につながるパス上に<i>現れない</i>場合、
+    その変数は<tt>0</tt>に等しくなければなりません。
+
+    <br><br>
+
+    たとえば、ブール関数X xor Y の真理値を表す ZDD を示します:
+
+    <br><br>
+
+    <center>
+      <object data="xor.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    ZDD を Prolog の<a href="data#term">項</a>で表現できます。
+    真理値<b>true</b>と<b>false</b>は<i>アトム</i>で表現でき、
+    内部ノードは
+    <tt>(&nbsp;X&nbsp;&rightarrow;&nbsp;Then&nbsp;;&nbsp;Else&nbsp;)</tt>
+    で表現できます。
+    ここで:
+
+    <ul>
+      <li><tt>X</tt> は <i>分岐変数</i></li>
+      <li><tt>Then</tt> と <tt>Else</tt>はノード
+      </li>
+    </ul>
+
+    Prolog 文法のアナロジーでは、
+    <tt>Then</tt> は <tt>X</tt>が<tt>1</tt>(<b>true</b>) であることを、
+    <tt>Else</tt> は <tt>X</tt>が<tt>0</tt>(<b>false</b>) であることを
+    意味します。
+
+    <br><br>
+
+    例えば、上記 ZDD は次のように表せます:
+
+    <pre>
+( X -&gt; <b>true</b> ; ( Y -&gt; <b>true</b> ; <b>false</b> ) )
+    </pre>
+
+    <tt>X</tt> と <tt>Y</tt> 両方の変数がこの決定図に関係します。
+    よって Prolog でこのような制約について推論するには、
+    この図を両方の変数に<i>属性</i>として添付するのが自然です。
+    <a href="#put_attr">put_attr/3</a>を使用して
+    これを行う方法は次のとおりです:
+
+    <pre>
+?- ZDD = ( X -> true ; ( Y -> true ; false ) ),
+   put_attr(X, zdd, ZDD),
+   put_attr(Y, zdd, ZDD).
+    </pre>
+
+    ここで、一連の単一化について検討し、
+    システムのインターフェース述語を使用して<tt>X</tt>と<tt>Y</tt>の
+    正しい真理値に到達する方法を教えてください。
+
+    <ol>
+      <li>
+        まず、次の単一化について考えます: <tt>X = 0</tt>.
+
+        <br><br>
+        あなたは例えば次のように答えます:
+        それは簡単、決定図を見ると単純にそれは:
+
+    <pre>
+( 0 -> true ; ( Y -> true ; false ) )
+    </pre>
+
+    最初の分岐変数はインスタンス化されているから
+    どの分岐を取るかは明確で、
+    図全体を次のように置き換えることができます:
+
+    <pre>
+( Y -> true ; false )
+    </pre>
+    これにより、続く単一化は簡単です。
+
+    <br><br>
+
+      </li>
+
+
+      <li>
+
+        少しむずかしいケースです: <tt>X = 1</tt>.
+
+        <br><br>
+
+        これは ZDD を次のように簡略化できることを意味します:
+
+    <pre>
+true
+    </pre>
+
+    しかし待ってください。それがすべてではありません！
+    説明したように、<b>true</b>へのパスに表示されない変数は
+    <tt>0</tt>に等しくなければなりません。
+    この場合、<tt>Y</tt> はそのような変数なので、
+    <tt>0</tt>に設定する必要があります。
+    しかし、どのようにすればよいのでしょうか？
+    これを行う 1 つの方法は、制約にこれまで表示された
+    <i>すべての変数</i>を追跡し、
+    たとえば ZDD を次のような項の<i>ペア</i>として表すことです:
+
+    <pre>
+( X -&gt; true ; ( Y -&gt; true ; false ) )-<b>[X,Y]</b>
+    </pre>
+
+    これは、上記のケースが次のようになることを意味します:
+
+    <pre>
+true-[1,Y]
+    </pre>
+
+    そこから <tt>Y&nbsp;=&nbsp;0</tt> を述べるのは簡単です。
+
+      </li>
+
+
+      <li>三番目のケースです: <tt>[X,Y]&nbsp;=&nbsp;[1,1]</tt>.
+
+        <br><br>
+
+        た、インターフェイス述語を使用して、
+        変数が関係する制約によりこの単一化が<i>許容されない</i>ことを
+        どのように判断するかを示すことで、
+        <b>湊タスク</b>を解決します。
+
+        <br><br>
+
+        比較のために、ZDD が次の例の場合には
+        単一化が<i>成功する</i>必要があります:
+
+        <pre>
+ZDD = ( X -> Inner ; Inner ), Inner = ( Y -> true ; false )
+        </pre>
+
+        これは、ZDD の<i>他の</i>分岐を調べても
+        <tt>Y</tt>に関する情報を回復できないことを示しています。
+      </li>
+    </ol>
+
+    特に次の点に注意してください:
+    この問題は、属性付き変数の非常に原始的なインターフェースでも、
+    <i>何らかの方法で</i>解決できることは間違いありません。
+    一つの例は、あらゆる種類の属性を複製して、
+    どこにでも存在するすべてのデータ構造で
+    冗長的に使用できるようにすることです。
+    ただし、このような変形を要求するインターフェースは
+    真剣に受け止められません。
+    さらに、特に決定図で推論する場合、
+    メモリが主なボトルネックになることが多いため、
+    この理由からもデータのコピーは避けたいものです。
+
+    <br><br>
+
+    私の見解では、重要な質問は次のとおりです:
+
+    <ul>
+      <li>このようなタスクを解決するために、
+        インターフェースをどの程度<i>自然に</i>使用できるか?</li>
+      <li>それを使用するアプリケーションプログラマーによる
+        <i>ミス</i>の可能性はどのくらいあるか？</li>
+      <li>無視できるほどの追加の性能のために、
+        私たちはどれだけ労力をかけられるか？</li>
+    </ul>
+
+    私の意見では、間違いが<i>可能な限り起こりにくい</i>、
+    便利で<i>汎用的な</i>インターフェース述語を目指すべきです。
+    人々は「SICStus インターフェースが欲しい」と言います。
+    実際、私はさらに<i>強力な保証</i>を提供するインターフェースを好みます。
+    しかし、現在利用可能なインターフェースの中では、
+    SICStus インターフェースが最も望ましいと考えており、
+    そのエミュレーションを推奨します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_minato_task')">原文</button>
+    <div id="原文_minato_task" class="hide_on_start">
     <center><h2 id="minatotask">Minato task</h2></center>
 
     Let us now consider a specific task, which is easily encountered
@@ -1227,7 +2508,153 @@ ZDD = ( X -> Inner ; Inner ), Inner = ( Y -> true ; false )
     interfaces that are currently available, I consider the SICStus
     interface the most desirable, and therefore recommend its
     emulation.
+    </div>
 
+    <center><h3 id="minatotask_sicstus">SICStus Prolog でのソリューション</h3></center>
+
+    完全を期すために、
+    SICStus Prolog の属性付き変数の非常に一般的な
+    <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html#IDX980">インターフェース</a>
+    を使用した、
+    湊タスクについて取りうるソリューションを次に示します。
+
+    <br><br>
+
+    まず、次のようなノードの
+    <a href="data#clean"><i>クリーン</i></a>な
+    表現を使用します:
+
+    <ul>
+      <li><i>葉</i>は <tt>b(true)</tt> または <tt>b(false)</tt></li>
+      <li><i>内部ノード</i>は<tt>( Var -&gt; Then ; Else )</tt>、
+      ここで <tt>Then</tt> と<tt>Else</tt>はノード</li>
+    </ul>
+
+    特に、具体的なブール値に使用する<tt>b/1</tt>ラッパーのおかげで、
+    葉と内部ノードを<i>記号的に</i>区別できるようになったことに
+    注目してください。
+
+    <br><br>
+
+    準備として、ZDD のいわゆる<b>制限</b>を表現しましょう。
+    これは、1 つの ZDD と、
+    変数<tt>Var</tt>が
+    具体的なブール値の真理値<tt>Value</tt>
+    (<tt>0</tt>または<tt>1</tt>のいずれか)と単一化されたときに発生する
+    新しい ZDD との関係を意味します。
+
+    <pre>
+zdd_restriction(b(T), _, _, b(T)).
+zdd_restriction(( Var0 -&gt; Then0 ; Else0), Var, Value, ZDD) :-
+        (   Var0 == Var -&gt;
+            (   Value =:= 0 -&gt; ZDD = Else0
+            ;   Value =:= 1 -&gt; ZDD = Then0
+            ;   throw(no_boolean)
+            )
+        ;   zdd_restriction(Then0, Var, Value, Then),
+            zdd_restriction(Else0, Var, Value, Else),
+            ZDD = ( Var0 -&gt; Then ; Else )
+        ).
+    </pre>
+
+    クエリ例:
+
+    <pre>
+?- zdd_restriction((X -> b(true) ; b(false)), X, 1, ZDD).
+<b>ZDD = b(true).</b>
+    </pre>
+
+    上記の方法は、ZDD の制限を計算する方法としては
+    非常に非効率的であることに注意してください。
+    <a href="/prolog/memoization"><b>メモ化</b></a>を使用して
+    高速化する方法については、演習として残しておきます。
+
+    <br><br>
+
+    ソリューションがどのように機能するかを示すために、
+    一つのパブリック述語が必要です:
+    <tt><b>variables_set_zdd(Vs, ZDD)</b></tt>
+    は、指定された ZDD を<tt>Vs</tt>内のすべての変数に
+    <i>属性</i>として添付します。
+    属性は<tt>zdd_vs(ZDD, Vs)</tt>の形式であり、
+    ZDD と推論するすべての変数を格納します。
+
+    <br><br>
+
+    SICStus Prolog では、<tt>library(atts)</tt> を使用して
+    属性を宣言し、推論します。例えば:
+
+    <pre>
+:- use_module(library(atts)).
+
+:- attribute zdd_vs/2.
+
+variables_set_zdd(Vs, ZDD) :-
+        maplist(set_zdd(ZDD, Vs), Vs).
+
+set_zdd(ZDD, Vs, V) :-
+        put_atts(V, +zdd_vs(ZDD, Vs)).
+    </pre>
+
+    これで、<tt>verify_attributes/3</tt>を実装する準備が整いました。
+    ZDD が葉ノード<tt>b(true)</tt>に縮小されると、
+    その分岐で遭遇しなかったすべての変数は
+    <tt>0</tt>でなければなりません。
+    残りの変数ごとに一つずつ、<tt>V=0</tt>の
+    目標のリストを記述する<a href="dcg">DCG</a>を使用して
+    これを強制します:
+
+    <pre>
+verify_attributes(Var, Value, Goals) :-
+        (   get_atts(Var, +zdd_vs(ZDD0,Vs)) -&gt;
+            (   integer(Value) -&gt;
+                zdd_restriction(ZDD0, Var, Value, ZDD)
+            ;   throw(aliasing_not_implemented)
+            ),
+            phrase(remaining_vars_0(ZDD, Var, Vs), Goals)
+        ;   Goals = []
+        ).
+
+remaining_vars_0(b(true), Var, Vs) --&gt; all_others_0(Vs, Var).
+remaining_vars_0((_;_), _, _) --&gt; [].
+
+all_others_0([], _) --&gt; [].
+all_others_0([V|Vs], Var) --&gt;
+        (   { var(V), V \== Var } -&gt; [V=0]
+        ;   []
+        ),
+        all_others_0(Vs, Var).
+    </pre>
+
+    完全なコードはこちらから利用可能です:
+    <a href="minatotask.pl"><tt>minatotask.pl</tt></a>
+
+    <br><br>
+
+    いくつかのサンプルクエリが含まれています。
+    特に、湊タスクは期待どおりに動作します:
+
+    <pre>
+?- ZDD = ( X -&gt; b(true) ; ( Y -&gt; b(true) ; b(false) ) ),
+   Vs = [X,Y],
+   variables_set_zdd(Vs, ZDD),
+   Vs = [1,1].
+<b>no</b>
+    </pre>
+
+    汎用的で宣言的な SICStus インターフェースは、
+    より限定されたフックと比較して、
+    パフォーマンスにいくらか影響を与えることは明らかです。
+    しかし、その汎用性に加えて、
+    SICStus Prolog は<i>最も効率的な</i>Prolog システムの一つとしても
+    広く知られています。
+    したがって、効率のために正確さを犠牲にすべきだという議論は、
+    たとえそれが理にかなったものであったとしても、
+    この場合には<i>当てはまりません</i>。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_with_sicstus_prolog')">原文</button>
+    <div id="原文_with_sicstus_prolog" class="hide_on_start">
     <center><h3 id="minatotask_sicstus">Solution with SICStus Prolog</h3></center>
 
     For completeness, here is a possible solution of the
@@ -1363,7 +2790,84 @@ all_others_0([V|Vs], Var) --&gt;
     that we should sacrifice correctness for efficiency, even if it
     were a sensible&nbsp;one, can therefore <i>not</i> be applied in
     this case.
+    </div>
 
+    <center><h2 id="equivalencetask">同等性タスク</h2></center>
+
+    ここで、私が<b>同等性タスク</b>（<b>Equivalence&nbsp;task</b>）と呼ぶ
+    ２番目のタスクについて考えます。
+    このタスクも<a href="/clpb/">CLP(B)</a>に関連して発生します。
+    このタスクが、システムのインターフェース述語の
+    一般性と表現力を評価するのに役立つことを願っています。
+
+    <br><br>
+
+    <a href="https://sicstus.sics.se/sicstus/docs/4.3.5/html/sicstus/CLPB-Interface.html#CLPB-Interface">SICStus ドキュメント</a>
+    には、<tt>Expression</tt> が充足できる場合にのみ true となる
+    <tt>sat(Expression)</tt> について、以下のように記載されています:
+
+    <blockquote class="quote">
+      式に現れる  変数<tt>X</tt>が
+      何らかの項<tt>T</tt>と単一化される場合、
+      これは制約の省略形として扱われる
+
+<pre>
+| ?- sat(X=:=T).
+</pre>
+    </blockquote>
+    <br><br>
+
+    これを Prolog で実装するには、
+    属性付き変数のインターフェースが、単一化実行<i>前に</i>
+    単一化について推論する能力を持っている必要があります。
+    ここでも、異なる実装戦略では、非常に不自然で
+    エラーが発生しやすいエンコードが必要になります。
+
+    <br><br>
+
+    例として次のクエリを考えます:
+
+    <pre>
+?- sat(X=:=Z), X = X+1.
+    </pre>
+
+    これをシステムでどのように処理できるか考えてみてください。
+    SICStus のドキュメントによると、これは次のコードと同等です:
+
+    <pre>
+?- sat(X=:=Z), sat(X=:=X+1).
+    </pre>
+
+    これは<i>充足</i>可能であることから、例えば次のようになるはずです:
+
+    <pre>
+<b>X = Z, Z = 1.</b>
+    </pre>
+
+    システムがそのような答えを生成できない場合は、
+    適切な近似値とはどのようなものか、またそれをどのように
+    計算できるかを考えてください。
+
+    <br><br>
+
+    たとえば、属性付き変数のインターフェース述語を使用して、
+    少なくとも上記のケースを次のケースと<i>区別</i>できますか:
+
+    <pre>
+?- sat(X=:=Z), X = ~X.
+    </pre>
+
+    これは次と同等です:
+
+    <pre>
+?- sat(X=:=Z), sat(X =:= ~X).
+    </pre>
+
+    そして<i>失敗</i>します。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_equivalence_task')">原文</button>
+    <div id="原文_equivalence_task" class="hide_on_start">
     <center><h2 id="equivalencetask">Equivalence task</h2></center>
 
     We now consider a second task, which I
@@ -1438,7 +2942,64 @@ all_others_0([V|Vs], Var) --&gt;
     </pre>
 
     and hence <i>fail</i>.
+    </div>
 
+    <center><h2>さらなる学びと今後の取り組み</h2></center>
+
+    属性付き変数は通常、Prolog 上に
+    制約ソルバーを実装するために使用されます。
+    これは最も重要な使用例ですが、<i>唯一</i>の使用例ではありません。
+
+    <br><br>
+
+    特に、破壊的な割り当てや
+    <a href="optimization#graph"><i>グラフ</i></a>
+    についての推論が必要な Prolog プログラムの場合、
+    属性付き変数は多くの場合、適切で便利な表現です。
+    ただし、破壊的な割り当てに夢中にならないでください。
+    コードの関係性が破壊されるためです。
+
+    <br><br>
+
+    良い方法は、ライブラリのより
+    宣言的なインターフェイス述語の背後に
+    属性付き変数の使用を<i>カプセル化</i>することです。
+    たとえば、グラフの いわゆる<i>強連結部分</i>を見つけるための
+    Tarjan アルゴリズムの実装
+    <a href="/scc.pl"><tt><b>scc.pl</b></tt></a>
+    を考えてみましょう。
+    その場合、属性付き変数を使用すると、
+    漸近的に最適なパフォーマンスに近いアルゴリズムを実装できます。
+
+    <br><br>
+
+    私は、査読済みの出版物
+    <a href="/swiclpb.pdf"><i><b>The Boolean Constraint Solver of SWI-Prolog</b></i></a>
+    (2016) と拡張されたジャーナルバージョンの
+    <a href="/boolean.pdf"><i><b>Boolean Constraints in SWI-Prolog: Aprehensive system description</b></i></a>
+    (2018) でいくつかの問題について説明しました。
+
+    <br><br>
+
+    私にとって、属性付き変数のインターフェース述語の現状は、
+    せいぜい、間違いなく<i>さらなる作業</i>に値するものと言えます。
+    たとえば、<i>異なる</i>制約ソルバーがそれぞれのドメインの交差点で
+    <i>連携</i>できるようにするには、どのような方法が最適でしょうか？
+
+    <br><br>
+
+    新しいインターフェース述語について良いアイデアをお持ちの場合は、
+    低レベルの変更を必要とせずに既存の Prolog システムを拡張することで、
+    コミュニティにメカニズムを提示できる
+    <a href="/acomip/">メタインタープリター</a>
+    の作成を検討してください。
+    または、Douglas Miles の例に倣って、
+    <a href="https://github.com/SWI-Prolog/roadmap/issues/14">既存のエンジンを直接拡張</a>
+    してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_further_reading')">原文</button>
+    <div id="原文_further_reading" class="hide_on_start">
     <center><h2>Further reading and future work</h2></center>
 
     Attributed variables are typically used to implement constraint
@@ -1493,7 +3054,7 @@ all_others_0([V|Vs], Var) --&gt;
     changes. Alternatively, follow the example of Douglas&nbsp;Miles
     and <a href="https://github.com/SWI-Prolog/roadmap/issues/14">extend
     an existing engine directly</a>.
-
+    </div>
 
     <br><br><br>
     <b><a href="/prolog">More about Prolog</a></b>

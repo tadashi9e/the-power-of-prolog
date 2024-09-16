@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>
       PceProlog - Emacs definitions for Prolog development
     </title>
@@ -8,10 +9,58 @@
     <meta name="keywords" content="Prolog,Development,Emacs">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          var all_hide_on_start = document.getElementsByClassName('hide_on_start');
+          for (var i = 0, m = all_hide_on_start.length; i < m; i++) {
+              var element = all_hide_on_start[i];
+              element.style.display = "none";
+          }
+      });
+      function toggleOriginalContent(id) {
+          var element = document.getElementById(id);
+          if (element.style.display === "none") {
+              element.style.display = "block";
+          } else {
+              element.style.display = "none";
+          }
+      }
+    </script>
   </head>
   <body style="padding-right: 5%; padding-left: 5%; padding-bottom: 3cm">
     <br><br>
+    <center><h1>Emacs での Prolog 開発</h1></center>
+    <br>
 
+    このページでは効果的 Prolog 開発のための
+    GNU Emacs あるいは XEmacs の設定法を説明します。
+
+    <blockquote style="border: 1px dotted; padding: 5pt">
+      <b>注意:</b> 小規模編集作業について、
+      SWI-Prolog は PceEmacs と呼ばれる Emacs クローンの独自のエディタを
+      提供しています。次のように試すことができます：
+
+    <pre>
+?- emacs.
+    </pre>
+
+    この組み込みエディタは Emacs 機能の限定サブセットを提供します。
+    このページでは PceEmacs に触発された <i>PceEmacs</i> と私が呼ぶ
+    いくつかの機能を示します。
+    </blockquote>
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>ビデオ</i>:</td>
+        <td><a href="/prolog/videos/emacs"><img src="/prolog/videos/t_emacs.png" alt="Prolog development with GNU Emacs"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_development_with_emacs')">原文</button>
+    <div id="原文_prolog_development_with_emacs" class="hide_on_start">
     <center><h1>Prolog development with Emacs</h1></center>
     <br>
 
@@ -40,8 +89,75 @@
         </td>
       </tr>
     </table>
+    </div>
 
+    <center><h2>Prolog コードの編集</h2></center>
 
+    Stefan Bruda がメンテナンスしている優れた
+    <a href="https://bruda.ca/emacs/prolog_mode_for_emacs"><b>Prolog mode for Emacs</b></a>
+    があります。
+
+    <br><br>
+
+    最近の GNU Emacs にはこのモードの派生版が付属しています。
+    残念なことに、GNU Emacs 付属の派生版にはインデントやナビゲーションに
+    <i>重大な障害</i> を引き起こす変更が含まれています。
+    これらの誤りが修正されるまで、
+    Stefan 提供版を直接使用することをおすすめします。
+
+    <br><br>
+
+    PceEmacs スタイルの振る舞いを SWI-Prolog と共に利用するには、
+    .emacs に次の行を追加してください:
+
+    <pre>
+(setq prolog-system 'swi
+      prolog-program-switches '((swi ("-O"))
+                                (t nil))
+      prolog-electric-if-then-else-flag t)
+    </pre>
+
+    <tt>prolog-electric-if-then-else-flag</tt> には特に注意してください:
+
+    <div>
+      <blockquote class="box">
+        <b>prolog-electric-if-then-else-flag</b>: Non-nil makes `(', `&gt;'
+        and `;' electric to automatically indent if-then-else constructs.
+      </blockquote>
+    </div>
+
+    <br>
+
+    PceEmacs のように C-c q でコメントブロックを挿入できるようにするには
+    .emacs に以下のコードを追加します:
+
+    <pre>
+(defun prolog-insert-comment-block ()
+  "Insert a PceEmacs-style comment block like /* - - ... - - */ "
+  (interactive)
+  (let ((dashes "-"))
+    (dotimes (_ 36) (setq dashes (concat "- " dashes)))
+    (insert (format "/* %s\n\n%s */" dashes dashes))
+    (forward-line -1)
+    (indent-for-tab-command)))
+
+(global-set-key "\C-cq" 'prolog-insert-comment-block)
+    </pre>
+
+    これに加えて、C-c&nbsp;l が
+    <tt>:-&nbsp;use_module(library()).</tt>
+    を挿入してポインタを括弧内に配置するように次の定義をお勧めします。
+
+    <pre>
+(global-set-key "\C-cl" (lambda ()
+                          (interactive)
+                          (insert ":- use_module(library()).")
+                          (forward-char -3)))
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_editing_prolog_code')">原文</button>
+    <div id="原文_editing_prolog_code" class="hide_on_start">
     <center><h2>Editing Prolog code</h2></center>
 
     There is an
@@ -107,8 +223,32 @@
                           (insert ":- use_module(library()).")
                           (forward-char -3)))
     </pre>
+    </div>
 
+    <center><h2>Prolog 操作</h2></center>
 
+    <i>埋め込みクエリ</i> を Emacs バッファ上で評価するには、
+    <a href="/ediprolog/"><b>ediprolog</b></a> を使用します:
+
+    <br><br>
+
+    <a href="/ediprolog/">
+    <img style="width: 300; border: 2px solid black; margin-left: 10%;"
+         src="/ediprolog/factorial.png"
+         alt="Factorial using CLP(FD)"></a>
+
+    <br><br>
+
+    GNU Emacs 24.3 では、Emacs Lisp Package Archive (ELPA) を使って
+    <i>ediprolog</i> をインストールできます:
+
+    <br><br>
+
+    <tt>M-x&nbsp;package-install&nbsp;RET&nbsp;ediprolog&nbsp;RET</tt>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_prolog_interaction')">原文</button>
+    <div id="原文_prolog_interaction" class="hide_on_start">
     <center><h2>Prolog interaction</h2></center>
 
     Use <a href="/ediprolog/"><b>ediprolog</b></a> to
@@ -129,7 +269,40 @@
     <br><br>
 
     <tt>M-x&nbsp;package-install&nbsp;RET&nbsp;ediprolog&nbsp;RET</tt>
+    </div>
 
+    <center><h2>文法チェック</h2></center>
+
+    GNU Emacs version 22.1 以降で flymake が Emacs と共に提供されています。
+    これは、Prolog コンパイラを文法チェッカーとした
+    on-the-fly の文法チェックを可能にします。
+    SWI-Prolog と共に利用するには、以下を .emacs に追加してください:
+
+    <pre>
+(add-hook 'prolog-mode-hook
+          (lambda ()
+            (require 'flymake)
+            (make-local-variable 'flymake-allowed-file-name-masks)
+            (make-local-variable 'flymake-err-line-patterns)
+            (setq flymake-err-line-patterns
+                  '(("ERROR: (?\\(.*?\\):\\([0-9]+\\)" 1 2)
+                    ("Warning: (\\(.*\\):\\([0-9]+\\)" 1 2)))
+            (setq flymake-allowed-file-name-masks
+                  '(("\\.pl\\'" flymake-prolog-init)))
+            (flymake-mode 1)))
+
+(defun flymake-prolog-init ()
+  (let* ((temp-file   (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+         (local-file  (file-relative-name
+                       temp-file
+                       (file-name-directory buffer-file-name))))
+    (list "swipl" (list "-q" "-t" "halt" "-s " local-file))))
+    </pre>
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_syntax_checking')">原文</button>
+    <div id="原文_syntax_checking" class="hide_on_start">
     <center><h2>Syntax checking</h2></center>
 
     As of GNU Emacs version 22.1, flymake ships with Emacs. This
@@ -158,7 +331,28 @@
                        (file-name-directory buffer-file-name))))
     (list "swipl" (list "-q" "-t" "halt" "-s " local-file))))
     </pre>
+    </div>
 
+    <center><h2>Prolog 実行のトレース</h2></center>
+
+    SWI-Prolog のグラフィカルトレーサの限定サブセットを
+    Emacs バッファ上で模倣する Emacs 定義があり、
+    <a href="/etrace/">etrace</a> として利用できます。
+    <br><br>
+
+    <i>etrace</i> は現状では主として概念実証であり、
+    X11 がインストールされていない場合に有用です。
+
+    <br><br>
+
+    Prolog プログラムのミスを見つけるには、
+    トレースを使うよりも
+    <a href="/prolog/debugging"><b>宣言的デバッグ</b></a>
+    の利用を検討してください。
+
+    <br><br>
+    <button onclick="toggleOriginalContent('原文_tracing_prolog_execution')">原文</button>
+    <div id="原文_tracing_prolog_execution" class="hide_on_start">
     <center><h2>Tracing Prolog execution</h2></center>
 
     There are Emacs definitions that mimic a limited subset of
@@ -174,6 +368,7 @@
     Instead of tracing, consider
     using <a href="/prolog/debugging"><b>declarative
     debugging</b></a> to locate mistakes in Prolog&nbsp;programs.
+    </div>
 
     <br><br><br>
     More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
